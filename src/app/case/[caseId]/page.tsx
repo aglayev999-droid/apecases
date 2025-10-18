@@ -8,6 +8,7 @@ import { ChevronLeft, Trash2, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import type { Case, Item } from '@/lib/types';
@@ -73,6 +74,7 @@ export default function CasePage() {
 
     const [isSpinning, setIsSpinning] = useState(false);
     const [wonItem, setWonItem] = useState<Item | null>(null);
+    const [isWinModalOpen, setIsWinModalOpen] = useState(false);
     const { user, updateBalance, addInventoryItem, updateSpending, setLastFreeCaseOpen, lastFreeCaseOpen } = useUser();
     const { toast } = useToast();
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
@@ -86,7 +88,6 @@ export default function CasePage() {
             .map(i => ALL_ITEMS.find(item => item.id === i.itemId))
             .filter((item): item is Item => !!item);
         
-        // Shuffle on client to avoid hydration mismatch
         const shuffleArray = (array: Item[]) => {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -95,9 +96,13 @@ export default function CasePage() {
             return array;
         }
         
-        // To make the reel feel infinite, we repeat the items multiple times
-        const extendedItems = [...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems];
-        setReelItems(shuffleArray(extendedItems));
+        if (typeof window !== 'undefined') {
+          const extendedItems = [...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems];
+          setReelItems(shuffleArray(extendedItems));
+        } else {
+           const extendedItems = [...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems];
+           setReelItems(extendedItems);
+        }
 
     }, [caseData]);
     
@@ -132,25 +137,13 @@ export default function CasePage() {
         }
 
         const prize = selectItem(caseData);
-        
-        // Find a valid index for the prize in the reel
-        let prizeIndexInReel = -1;
-        // Prioritize finding an index in the middle of the reel for a better visual
-        for (let i = Math.floor(reelItems.length / 3); i < reelItems.length * 2 / 3; i++) {
-            if(reelItems[i]?.id === prize.id){
-                prizeIndexInReel = i;
-                break;
-            }
-        }
-        // Fallback to searching the whole array if not found in the middle
-        if(prizeIndexInReel === -1) {
-            prizeIndexInReel = reelItems.findIndex(item => item?.id === prize.id);
+        let prizeIndexInReel = reelItems.findIndex((item, index) => item?.id === prize.id && index > reelItems.length / 3);
+        if (prizeIndexInReel === -1) {
+          prizeIndexInReel = reelItems.findIndex(item => item?.id === prize.id);
         }
         
-        // If still not found, something is very wrong, but we prevent a crash.
         if (prizeIndexInReel === -1) {
             console.error("Prize item not found in reel items array.");
-            // Pick a random item from the reel as fallback to prevent crash
             const fallbackPrize = reelItems[Math.floor(Math.random() * reelItems.length)];
             prizeIndexInReel = reelItems.indexOf(fallbackPrize);
             setWonItem(fallbackPrize);
@@ -158,15 +151,13 @@ export default function CasePage() {
              setWonItem(prize);
         }
         
-        
         const spinTime = isFast ? 1000 : 4000 + Math.random() * 1000;
-        const animationOptions = { duration: spinTime, ease: (t: number) => 1 - Math.pow(1 - t, 4) }; // easeOutQuart
-
-        emblaApi.scrollTo(prizeIndexInReel, false, animationOptions);
         
-        const timeoutId = setTimeout(() => {
-          emblaApi.scrollTo(prizeIndexInReel, false);
+        emblaApi.scrollTo(prizeIndexInReel, false);
+        const transitionEndHandler = () => {
+          emblaApi.off('transitionEnd', transitionEndHandler);
           setIsSpinning(false);
+          setIsWinModalOpen(true);
           
           if (prize.id.startsWith('item-stars-')) {
             updateBalance(prize.value, 0);
@@ -177,11 +168,22 @@ export default function CasePage() {
           } else {
             addInventoryItem(prize);
           }
-        }, spinTime);
-        
-        return () => clearTimeout(timeoutId);
+        };
+
+        emblaApi.on('transitionEnd', transitionEndHandler);
+
+        setTimeout(() => {
+          // Fallback in case transitionEnd doesn't fire
+          transitionEndHandler();
+        }, spinTime + 500);
+
 
     }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, toast, reelItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
+
+    const closeModal = () => {
+        setIsWinModalOpen(false);
+        setWonItem(null);
+    }
 
     const handleSell = () => {
         if (!wonItem) return;
@@ -190,16 +192,13 @@ export default function CasePage() {
             title: `Sold: ${wonItem.name}!`,
             description: `You got ${wonItem.value} stars.`,
         });
-        setWonItem(null); // Go back to spin view
+        closeModal();
     };
 
     const handleGoToInventory = () => {
+        closeModal();
         router.push('/inventory');
     };
-    
-    const handleClaimStars = () => {
-        setWonItem(null);
-    }
 
     if (!caseData) {
         return (
@@ -248,39 +247,6 @@ export default function CasePage() {
         </Accordion>
     );
 
-    const WinScreen = () => {
-        if (!wonItem || isSpinning) return null;
-
-        const isStars = wonItem.id.startsWith('item-stars-');
-
-        return (
-            <div className="text-center animate-in fade-in-50 space-y-4">
-                 <div className="relative w-48 h-48 mx-auto">
-                    <Image src={wonItem.image} alt={wonItem.name} fill sizes="50vw" className="object-contain" data-ai-hint={wonItem.imageHint} />
-                </div>
-                <div>
-                    <h3 className="text-xl font-bold">You won: <span className={cn(RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.name}</span></h3>
-                    <p className={cn("font-semibold", RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.rarity}</p>
-                </div>
-                { isStars ? (
-                    <Button variant="default" size="lg" className="w-full" onClick={handleClaimStars}>
-                        Awesome!
-                    </Button>
-                ) : (
-                    <div className="grid grid-cols-2 gap-4 pt-4">
-                        <Button variant="destructive" size="lg" onClick={handleSell}>
-                            Sell {wonItem.value}
-                            <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain ml-2" />
-                        </Button>
-                        <Button variant="default" size="lg" onClick={handleGoToInventory}>
-                            Go to inventory
-                        </Button>
-                    </div>
-                )}
-            </div>
-        );
-    };
-
     return (
         <div className="flex flex-col h-full">
             {/* Custom Header */}
@@ -302,7 +268,7 @@ export default function CasePage() {
             <div className="flex-grow flex flex-col justify-between">
                 {/* Roulette Reel */}
                  <div className="flex-grow flex flex-col items-center justify-center relative">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-primary">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-primary z-10">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
                     </div>
                     
@@ -311,9 +277,9 @@ export default function CasePage() {
                             {reelItems.length > 0 ? reelItems.map((item, index) => (
                                 <div key={index} className="flex-[0_0_9rem] mx-2">
                                     <Card className={cn(
-                                        "p-2 border-2 bg-card/50 transition-opacity duration-300", 
+                                        "p-2 border-2 bg-card/50 transition-all duration-300", 
                                         item ? RARITY_PROPERTIES[item.rarity].border : 'border-gray-500',
-                                        isSpinning ? 'opacity-70' : 'opacity-30'
+                                        isSpinning ? 'opacity-70 scale-95' : 'opacity-50'
                                         )}>
                                         <div className="aspect-square relative">
                                             {item && <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" data-ai-hint={item.imageHint}/>}
@@ -330,39 +296,72 @@ export default function CasePage() {
                         </div>
                     </div>
 
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-primary">
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-primary z-10">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L2 9H22L12 19Z"/></svg>
                     </div>
                 </div>
 
                 {/* Controls */}
                 <div className="mt-auto pt-8">
-                     {wonItem && !isSpinning ? (
-                       <WinScreen />
-                    ) : (
-                        <>
-                            <Button 
-                                onClick={() => handleSpin()}
-                                onDoubleClick={() => handleSpin(true)}
-                                disabled={isSpinning || !canAfford || reelItems.length === 0} 
-                                className="w-full h-16 text-xl"
-                                size="lg"
-                            >
-                               <div className="flex flex-col">
-                                    <div className="flex items-center justify-center gap-2">
-                                        <span>{isFree ? 'Spin' : `Spin ${caseData.price}`}</span>
-                                        {!isFree && <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />}
-                                    </div>
-                                     <span className="text-xs font-normal text-primary-foreground/70">(Double-click for a quick spin)</span>
-                               </div>
-                            </Button>
-                            <div className="mt-4">
-                                <GiftsInside />
+                    <Button 
+                        onClick={() => handleSpin()}
+                        onDoubleClick={() => handleSpin(true)}
+                        disabled={isSpinning || !canAfford || reelItems.length === 0} 
+                        className="w-full h-16 text-xl"
+                        size="lg"
+                    >
+                       <div className="flex flex-col">
+                            <div className="flex items-center justify-center gap-2">
+                                <span>{isFree ? 'Spin' : `Spin ${caseData.price}`}</span>
+                                {!isFree && <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />}
                             </div>
-                        </>
-                    )}
+                             <span className="text-xs font-normal text-primary-foreground/70">(Double-click for a quick spin)</span>
+                       </div>
+                    </Button>
+                    <div className="mt-4">
+                        <GiftsInside />
+                    </div>
                 </div>
             </div>
+
+            {/* Win Modal */}
+            <Dialog open={isWinModalOpen} onOpenChange={setIsWinModalOpen}>
+                <DialogContent className="sm:max-w-[425px] p-0 border-0 bg-transparent shadow-none">
+                     {wonItem && (
+                        <div className="text-center space-y-4 p-6 bg-card rounded-lg relative">
+                             <DialogClose asChild>
+                                <button onClick={closeModal} className="absolute top-2 right-2 p-1 rounded-full bg-background/50 hover:bg-background">
+                                    <X className="h-5 w-5 text-muted-foreground" />
+                                </button>
+                            </DialogClose>
+
+                            <div className="relative w-48 h-48 mx-auto">
+                                <Image src={wonItem.image} alt={wonItem.name} fill sizes="50vw" className="object-contain" data-ai-hint={wonItem.imageHint} />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold">You won: <span className={cn(RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.name}</span></h3>
+                                <p className={cn("font-semibold", RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.rarity}</p>
+                            </div>
+                            { wonItem.id.startsWith('item-stars-') ? (
+                                <Button variant="default" size="lg" className="w-full" onClick={closeModal}>
+                                    Awesome!
+                                </Button>
+                            ) : (
+                                <div className="grid grid-cols-2 gap-4 pt-4">
+                                    <Button variant="destructive" size="lg" onClick={handleSell}>
+                                        Sell {wonItem.value}
+                                        <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain ml-2" />
+                                    </Button>
+                                    <Button variant="default" size="lg" onClick={handleGoToInventory}>
+                                        Go to inventory
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                     )}
+                </DialogContent>
+            </Dialog>
+
         </div>
     );
 }
