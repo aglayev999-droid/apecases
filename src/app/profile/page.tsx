@@ -9,7 +9,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { DescriptionGenerator } from '@/components/DescriptionGenerator';
 
 export default function ProfilePage() {
   const { user } = useUser();
@@ -102,8 +101,6 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
-
-      <DescriptionGenerator />
 
     </div>
   );
