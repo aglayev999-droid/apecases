@@ -56,7 +56,7 @@ const EmptyInventory = () => (
         </div>
         <h2 className="text-2xl font-bold mt-6">No gifts yet!</h2>
         <p className="text-muted-foreground mt-2">
-            Send a gift to <span className="text-primary">@onecase_relayer</span>
+            Send a gift to <span className="text-primary">@nullprime</span>
         </p>
         <div className="mt-8 space-y-4 w-full max-w-sm">
             <button className="w-full bg-primary text-primary-foreground py-3 px-6 rounded-lg font-bold flex items-center justify-center gap-2">
