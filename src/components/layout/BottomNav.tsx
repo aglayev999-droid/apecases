@@ -17,7 +17,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 border-t bg-card md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-card/80 backdrop-blur-sm border-t border-border md:hidden rounded-t-xl">
       <div className="container mx-auto max-w-md px-2">
         <div className="grid h-16 grid-cols-4 items-center">
           {navItems.map((item) => {
@@ -26,13 +26,21 @@ export default function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={cn(
-                  'flex flex-col items-center justify-center gap-1 text-xs font-medium transition-colors',
-                  isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
-                )}
+                className="flex flex-col items-center justify-center gap-1"
               >
-                <item.icon className="h-6 w-6" />
-                <span>{item.label}</span>
+                <div className={cn(
+                    'flex flex-col items-center justify-center gap-1 rounded-lg p-2 transition-colors w-[60px]',
+                    isActive ? 'bg-primary/20' : ''
+                  )}>
+                  <item.icon className={cn(
+                    'h-6 w-6',
+                    isActive ? 'text-primary' : 'text-muted-foreground'
+                  )} />
+                  <span className={cn(
+                    'text-xs font-medium',
+                     isActive ? 'text-primary' : 'text-muted-foreground'
+                    )}>{item.label}</span>
+                </div>
               </Link>
             );
           })}

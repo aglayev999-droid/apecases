@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { StarIcon } from '@/components/icons/StarIcon';
 import type { Case } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { Badge } from './ui/badge';
 
 interface CaseCardProps {
   caseData: Case;
@@ -23,7 +22,7 @@ export function CaseCard({ caseData, onOpen }: CaseCardProps) {
   return (
     <Card className="flex flex-col group overflow-hidden bg-card border-none shadow-lg rounded-xl">
       <CardContent className="p-0 relative">
-         <div className="aspect-square relative overflow-hidden">
+         <div className="aspect-square relative overflow-hidden rounded-t-xl">
           <Image
             src={caseData.image}
             alt={caseData.name}
@@ -32,25 +31,21 @@ export function CaseCard({ caseData, onOpen }: CaseCardProps) {
             className="object-cover group-hover:scale-105 transition-transform duration-300"
             data-ai-hint={caseData.imageHint}
           />
-           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
         </div>
       </CardContent>
       
-      <CardFooter className="p-3 flex flex-col items-start">
-        <div className="w-full flex justify-between items-center mb-2">
-            <h3 className="font-headline font-bold text-base uppercase tracking-wider">{caseData.name}</h3>
-            <Badge variant="secondary" className="bg-muted/50 text-muted-foreground">#{caseData.id.split('-')[1].slice(0, 4)}</Badge>
-        </div>
+      <CardFooter className="p-2 flex flex-col items-start bg-card rounded-b-xl">
+        <h3 className="font-semibold text-base text-foreground mb-2 px-1">{caseData.name}</h3>
         
         {isFree ? (
-           <div className="w-full text-center py-2 bg-muted rounded-lg text-sm font-mono">
+           <div className="w-full text-center py-2 bg-muted rounded-lg text-sm font-mono text-yellow-400">
              01:40:23
            </div>
         ) : (
-            <Button onClick={onOpen} className="w-full font-bold group" size="lg" variant="default">
+            <Button onClick={onOpen} className="w-full font-bold group" size="lg">
                 <div className="flex items-center justify-center gap-2">
-                    <span>{formatPrice(caseData.price)}</span>
                     <StarIcon className="h-5 w-5 text-yellow-400" />
+                    <span>{formatPrice(caseData.price)}</span>
                 </div>
             </Button>
         )}
