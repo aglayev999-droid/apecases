@@ -46,7 +46,7 @@ export function CaseCard({ caseData, onOpen }: CaseCardProps) {
              01:40:23
            </div>
         ) : (
-            <Button onClick={onOpen} className="w-full font-bold group bg-cyan-600 hover:bg-cyan-500 text-white py-2 rounded-xl text-md" size="lg">
+            <Button onClick={onOpen} className="w-full font-bold group text-white py-2 rounded-xl text-md" size="lg">
                 <div className="flex items-center justify-center gap-1">
                     <span>{formatPrice(caseData.price)}</span>
                     <StarIcon className="h-5 w-5 text-yellow-400" />
