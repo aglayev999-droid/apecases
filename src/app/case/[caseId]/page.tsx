@@ -8,7 +8,7 @@ import { ChevronLeft, Trash2, X } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogClose } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogClose, DialogTitle } from '@/components/ui/dialog';
 import { useUser } from '@/contexts/UserContext';
 import { useToast } from '@/hooks/use-toast';
 import type { Case, Item } from '@/lib/types';
@@ -174,7 +174,9 @@ export default function CasePage() {
 
         setTimeout(() => {
           // Fallback in case transitionEnd doesn't fire
-          transitionEndHandler();
+          if (emblaApi) {
+            transitionEndHandler();
+          }
         }, spinTime + 500);
 
 
@@ -329,6 +331,7 @@ export default function CasePage() {
                 <DialogContent className="sm:max-w-[425px] p-0 border-0 bg-transparent shadow-none">
                      {wonItem && (
                         <div className="text-center space-y-4 p-6 bg-card rounded-lg relative">
+                             <DialogTitle className="sr-only">You Won!</DialogTitle>
                              <DialogClose asChild>
                                 <button onClick={closeModal} className="absolute top-2 right-2 p-1 rounded-full bg-background/50 hover:bg-background">
                                     <X className="h-5 w-5 text-muted-foreground" />
