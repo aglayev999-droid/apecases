@@ -55,10 +55,17 @@ const STATUS_BADGE_VARIANT = {
 export function InventoryCard({ item }: InventoryCardProps) {
   const { toast } = useToast();
 
-  const handleAction = (action: string, details: string) => {
+  const handleSell = (details: string) => {
     toast({
-      title: `Action: ${action}`,
+      title: 'Item Sold!',
       description: details,
+    });
+  }
+
+  const handleTransfer = (itemName: string) => {
+    toast({
+      title: `Transfer Request Sent`,
+      description: `${itemName} will be sent to @nullprime shortly.`,
     });
   }
 
@@ -86,13 +93,13 @@ export function InventoryCard({ item }: InventoryCardProps) {
       </CardContent>
       <CardFooter className="p-2 flex flex-col gap-1">
         {item.status === 'won' && item.rarity !== 'NFT' && (
-          <Button variant="secondary" size="sm" className="w-full" onClick={() => handleAction('Sell', `Simulating selling ${item.name} for ${item.value} stars.`)}>
+          <Button variant="secondary" size="sm" className="w-full" onClick={() => handleSell(`Simulating selling ${item.name} for ${item.value} stars.`)}>
             Sell for {item.value} 
             <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
           </Button>
         )}
         {item.status === 'won' && item.rarity === 'NFT' && (
-          <Button variant="default" size="sm" className="w-full bg-gradient-to-r from-primary to-accent text-primary-foreground" onClick={() => handleAction('Transfer NFT', `Simulating transfer process for ${item.name}. This would trigger a Cloud Function.`)}>
+          <Button variant="default" size="sm" className="w-full bg-gradient-to-r from-primary to-accent text-primary-foreground" onClick={() => handleTransfer(item.name)}>
             Transfer
           </Button>
         )}
