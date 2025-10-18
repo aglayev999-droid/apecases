@@ -74,18 +74,19 @@ export default function CasePage() {
     const { user, updateBalance, addInventoryItem, updateSpending, setLastFreeCaseOpen, lastFreeCaseOpen } = useUser();
     const { toast } = useToast();
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
+    const [reelItems, setReelItems] = useState<Item[]>([]);
 
     const caseData = useMemo(() => MOCK_CASES.find(c => c.id === caseId), [caseId]);
 
-    const reelItems = useMemo(() => {
-        if (!caseData) return [];
+    useEffect(() => {
+        if (!caseData) return;
         const caseItems = caseData.items.map(i => ALL_ITEMS.find(item => item.id === i.itemId)).filter(Boolean) as Item[];
-        // To make the reel feel infinite, we repeat the items multiple times
-        return [...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems].sort(() => 0.5 - Math.random());
+        // To make the reel feel infinite, we repeat the items multiple times and shuffle on client
+        setReelItems([...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems].sort(() => 0.5 - Math.random()));
     }, [caseData]);
     
     const handleSpin = useCallback((isFast: boolean = false) => {
-        if (!caseData || !user || !emblaApi) return;
+        if (!caseData || !user || !emblaApi || reelItems.length === 0) return;
         
         const isFree = caseData.price === 0;
         
@@ -125,6 +126,10 @@ export default function CasePage() {
             }
         }
         if(prizeIndexInReel === -1) prizeIndexInReel = reelItems.findIndex(item => item.id === prize.id);
+        if (prizeIndexInReel === -1) {
+            // Fallback if prize not found in reel, though it should be.
+            prizeIndexInReel = Math.floor(reelItems.length / 2);
+        }
         
         
         const spinTime = isFast ? 1000 : 4000 + Math.random() * 1000;
@@ -221,7 +226,7 @@ export default function CasePage() {
                     
                     <div className="overflow-hidden w-full" ref={emblaRef}>
                         <div className="flex">
-                            {reelItems.map((item, index) => (
+                            {reelItems.length > 0 ? reelItems.map((item, index) => (
                                 <div key={index} className="flex-[0_0_9rem] mx-2">
                                     <Card className={cn(
                                         "p-2 border-2 bg-card/50 transition-opacity duration-300", 
@@ -233,7 +238,13 @@ export default function CasePage() {
                                         </div>
                                     </Card>
                                 </div>
-                            ))}
+                            )) : (
+                                <div className="flex-[0_0_9rem] mx-2">
+                                    <Card className="p-2 border-2 bg-card/50">
+                                         <div className="aspect-square relative" />
+                                    </Card>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -253,7 +264,7 @@ export default function CasePage() {
                     <Button 
                         onClick={() => handleSpin()}
                         onDoubleClick={() => handleSpin(true)}
-                        disabled={isSpinning || !canAfford} 
+                        disabled={isSpinning || !canAfford || reelItems.length === 0} 
                         className="w-full h-16 text-xl"
                         size="lg"
                     >
