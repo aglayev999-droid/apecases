@@ -84,7 +84,7 @@ export default function RocketPage() {
             const containerWidth = gameContainerRef.current.offsetWidth;
             const containerHeight = gameContainerRef.current.offsetHeight;
     
-            const startX = 20; // Start from bottom-left
+            const startX = 20;
             const startY = containerHeight - 50;
     
             if (gameState === 'waiting' || gameState === 'crashed' || multiplier < 1.01) {
@@ -215,7 +215,7 @@ export default function RocketPage() {
 
                 {/* Rocket Image */}
                 <div 
-                    className={cn("z-20", gameState === 'playing' ? 'rocket-shake' : '')}
+                    className={cn("z-20", multiplier >= 5 ? 'rocket-shake' : '')}
                      style={rocketStyle}
                 >
                     <div className="relative w-20 h-20 sm:w-24 sm:h-24">
@@ -289,7 +289,7 @@ export default function RocketPage() {
         }
         
         if(isButtonDisabled) {
-             buttonClass = 'bg-gray-500';
+             buttonClass += ' disabled:opacity-50 cursor-not-allowed';
         }
 
 
@@ -408,5 +408,3 @@ export default function RocketPage() {
 const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
     return <div className={cn("px-3 py-1 rounded-md text-sm font-bold", className)} {...props} />
 }
-
-    
