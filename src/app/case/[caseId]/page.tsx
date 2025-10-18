@@ -102,7 +102,7 @@ export default function CasePage() {
     }, [caseData]);
     
     const handleSpin = useCallback((isFast: boolean = false) => {
-        if (!caseData || !user || !emblaApi || reelItems.length === 0) return;
+        if (isSpinning || !caseData || !user || !emblaApi || reelItems.length === 0) return;
         
         const isFree = caseData.price === 0;
         
@@ -168,15 +168,25 @@ export default function CasePage() {
           emblaApi.scrollTo(prizeIndexInReel, false);
           setIsSpinning(false);
           addInventoryItem(prize);
-          toast({
-            title: `You won: ${prize.name}!`,
-            description: "It has been added to your inventory.",
-          });
         }, spinTime);
         
         return () => clearTimeout(timeoutId);
 
-    }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, toast, reelItems, setLastFreeCaseOpen, lastFreeCaseOpen]);
+    }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, toast, reelItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
+
+    const handleSell = () => {
+        if (!wonItem) return;
+        updateBalance(wonItem.value, 0);
+        toast({
+            title: `Sold: ${wonItem.name}!`,
+            description: `You got ${wonItem.value} stars.`,
+        });
+        setWonItem(null); // Go back to spin view
+    };
+
+    const handleGoToInventory = () => {
+        router.push('/inventory');
+    };
 
     if (!caseData) {
         return (
@@ -225,6 +235,31 @@ export default function CasePage() {
         </Accordion>
     );
 
+    const WinScreen = () => {
+        if (!wonItem || isSpinning) return null;
+
+        return (
+            <div className="text-center animate-in fade-in-50 space-y-4">
+                 <div className="relative w-48 h-48 mx-auto">
+                    <Image src={wonItem.image} alt={wonItem.name} fill sizes="50vw" className="object-contain" data-ai-hint={wonItem.imageHint} />
+                </div>
+                <div>
+                    <h3 className="text-xl font-bold">You won: <span className={cn(RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.name}</span></h3>
+                    <p className={cn("font-semibold", RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.rarity}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4 pt-4">
+                    <Button variant="destructive" size="lg" onClick={handleSell}>
+                        Sell {wonItem.value}
+                        <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain ml-2" />
+                    </Button>
+                    <Button variant="default" size="lg" onClick={handleGoToInventory}>
+                        Go to inventory
+                    </Button>
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="flex flex-col h-full">
             {/* Custom Header */}
@@ -256,11 +291,11 @@ export default function CasePage() {
                                 <div key={index} className="flex-[0_0_9rem] mx-2">
                                     <Card className={cn(
                                         "p-2 border-2 bg-card/50 transition-opacity duration-300", 
-                                        RARITY_PROPERTIES[item.rarity].border,
+                                        item ? RARITY_PROPERTIES[item.rarity].border : 'border-gray-500',
                                         isSpinning ? 'opacity-70' : 'opacity-30'
                                         )}>
                                         <div className="aspect-square relative">
-                                            <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" data-ai-hint={item.imageHint}/>
+                                            {item && <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" data-ai-hint={item.imageHint}/>}
                                         </div>
                                     </Card>
                                 </div>
@@ -281,34 +316,32 @@ export default function CasePage() {
 
                 {/* Controls */}
                 <div className="mt-auto pt-8">
-                     {wonItem && !isSpinning && (
-                        <div className="text-center mb-4 animate-in fade-in-50">
-                            <h3 className={cn("text-2xl font-bold", RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.name}</h3>
-                            <p className={cn("font-semibold", RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.rarity}</p>
-                        </div>
-                    )}
-                    <Button 
-                        onClick={() => handleSpin()}
-                        onDoubleClick={() => handleSpin(true)}
-                        disabled={isSpinning || !canAfford || reelItems.length === 0} 
-                        className="w-full h-16 text-xl"
-                        size="lg"
-                    >
-                       <div className="flex flex-col">
-                            <div className="flex items-center justify-center gap-2">
-                                <span>{isFree ? 'Spin' : `Spin ${caseData.price}`}</span>
-                                {!isFree && <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />}
+                     {wonItem && !isSpinning ? (
+                       <WinScreen />
+                    ) : (
+                        <>
+                            <Button 
+                                onClick={() => handleSpin()}
+                                onDoubleClick={() => handleSpin(true)}
+                                disabled={isSpinning || !canAfford || reelItems.length === 0} 
+                                className="w-full h-16 text-xl"
+                                size="lg"
+                            >
+                               <div className="flex flex-col">
+                                    <div className="flex items-center justify-center gap-2">
+                                        <span>{isFree ? 'Spin' : `Spin ${caseData.price}`}</span>
+                                        {!isFree && <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />}
+                                    </div>
+                                     <span className="text-xs font-normal text-primary-foreground/70">(Double-click for a quick spin)</span>
+                               </div>
+                            </Button>
+                            <div className="mt-4">
+                                <GiftsInside />
                             </div>
-                             <span className="text-xs font-normal text-primary-foreground/70">(Double-click for a quick spin)</span>
-                       </div>
-                    </Button>
-                    <div className="mt-4">
-                        <GiftsInside />
-                    </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
     );
 }
-
-    
