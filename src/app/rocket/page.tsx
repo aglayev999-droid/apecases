@@ -19,12 +19,11 @@ type GameState = 'waiting' | 'playing' | 'crashed';
 type PlayerStatus = 'waiting' | 'playing' | 'cashed_out' | 'lost';
 
 const generateCrashPoint = () => {
-    // Simple skewed distribution towards lower numbers
     const r = Math.random();
-    if (r < 0.5) return 1 + Math.random(); // 50% chance for 1x-2x
-    if (r < 0.8) return 2 + Math.random() * 2; // 30% chance for 2x-4x
-    if (r < 0.95) return 4 + Math.random() * 6; // 15% chance for 4x-10x
-    return 10 + Math.random() * 20; // 5% chance for 10x-30x
+    if (r < 0.5) return 1 + Math.random(); 
+    if (r < 0.8) return 2 + Math.random() * 2;
+    if (r < 0.95) return 4 + Math.random() * 6;
+    return 10 + Math.random() * 20;
 };
 
 const mockPlayers = [
@@ -48,12 +47,11 @@ export default function RocketPage() {
     
     const [players, setPlayers] = useState<any[]>([]);
     
-    // Player specific state
     const [playerStatus, setPlayerStatus] = useState<PlayerStatus>('waiting');
     const [cashedOutMultiplier, setCashedOutMultiplier] = useState<number | null>(null);
 
     const parsedBetAmount = parseInt(betAmount) || 0;
-    const hasPlacedBet = playerStatus === 'playing' || playerStatus === 'cashed_out' || playerStatus === 'lost';
+    const hasPlacedBet = playerStatus !== 'waiting';
 
     const resetGame = useCallback(() => {
         setGameState('waiting');
@@ -63,7 +61,6 @@ export default function RocketPage() {
         setPlayerStatus('waiting');
         setCashedOutMultiplier(null);
         
-        // Simulate other players joining for the next round
         const numPlayers = 2 + Math.floor(Math.random() * (mockPlayers.length - 2));
         const shuffled = mockPlayers.sort(() => 0.5 - Math.random());
         setPlayers(shuffled.slice(0, numPlayers).map(p => ({
@@ -73,7 +70,6 @@ export default function RocketPage() {
         })));
     }, []);
 
-    // Game state timer
     useEffect(() => {
         let timer: NodeJS.Timeout;
 
@@ -97,7 +93,7 @@ export default function RocketPage() {
                 } else {
                     setMultiplier(newMultiplier);
                 }
-            }, 60); // Faster updates for smoother animation
+            }, 60);
         }
 
         return () => clearTimeout(timer);
@@ -113,14 +109,23 @@ export default function RocketPage() {
         toast({ title: "Bet placed!", description: `You bet ${parsedBetAmount} stars.` });
     };
 
-    const handleCashOut = () => {
+    const handleCashOut = async () => {
         if (gameState !== 'playing' || playerStatus !== 'playing') return;
-        
+    
         const winnings = parsedBetAmount * multiplier;
         updateBalance(winnings, 0);
-        setPlayerStatus('cashed_out');
-        setCashedOutMultiplier(multiplier);
-        toast({ title: "Cashed out!", description: `You won ${winnings.toFixed(0)} stars at ${multiplier.toFixed(2)}x.` });
+    
+        // Use Promise.all to ensure state updates are batched if possible,
+        // but more importantly, it makes the logic clearer.
+        await Promise.all([
+            Promise.resolve(setPlayerStatus('cashed_out')),
+            Promise.resolve(setCashedOutMultiplier(multiplier))
+        ]);
+    
+        toast({
+            title: "Cashed out!",
+            description: `You won ${winnings.toFixed(0)} stars at ${multiplier.toFixed(2)}x.`
+        });
     };
 
     const GameScreen = () => {
@@ -164,50 +169,53 @@ export default function RocketPage() {
 
     const BetControls = () => {
         const canBet = gameState === 'waiting' && playerStatus === 'waiting' && user && user.balance.stars >= parsedBetAmount && parsedBetAmount > 0;
+        const canCashOut = gameState === 'playing' && playerStatus === 'playing';
 
         const handleButtonClick = () => {
-            if (gameState === 'waiting') {
+            if (canBet) {
                 handlePlaceBet();
-            } else if (gameState === 'playing') {
+            } else if (canCashOut) {
                 handleCashOut();
             }
         };
         
-        const isButtonDisabled = () => {
-            if (gameState === 'waiting') return !canBet;
-            if (gameState === 'playing') return playerStatus !== 'playing';
-            return true;
+        let buttonText = 'Place Bet';
+        let buttonClass = 'bg-primary hover:bg-primary/90';
+        let isButtonDisabled = true;
+
+        if (gameState === 'waiting') {
+            if (playerStatus === 'waiting') {
+                buttonText = 'Place Bet';
+                isButtonDisabled = !canBet;
+            } else {
+                buttonText = 'Waiting for round';
+                isButtonDisabled = true;
+            }
+        } else if (gameState === 'playing') {
+            if (playerStatus === 'playing') {
+                buttonText = `Cash out ${Math.floor(parsedBetAmount * multiplier).toLocaleString()}`;
+                buttonClass = 'bg-green-500 hover:bg-green-600';
+                isButtonDisabled = false;
+            } else if (playerStatus === 'cashed_out' && cashedOutMultiplier) {
+                const winnings = parsedBetAmount * cashedOutMultiplier;
+                buttonText = `You won ${winnings.toFixed(0)}`;
+                buttonClass = 'bg-green-500';
+                isButtonDisabled = true;
+            }
+        } else if (gameState === 'crashed') {
+            if (playerStatus === 'lost') {
+                buttonText = 'Crashed';
+                buttonClass = 'bg-red-500';
+            } else if (playerStatus === 'cashed_out' && cashedOutMultiplier) {
+                const winnings = parsedBetAmount * cashedOutMultiplier;
+                buttonText = `You won ${winnings.toFixed(0)}`;
+                buttonClass = 'bg-green-500';
+            } else {
+                 buttonText = 'Round Over';
+            }
+            isButtonDisabled = true;
         }
 
-        const getButtonText = () => {
-            if (gameState === 'waiting') {
-                return playerStatus !== 'waiting' ? 'Waiting for round' : 'Place Bet';
-            }
-            if (gameState === 'playing') {
-                if (playerStatus === 'playing') {
-                    return `Cash out ${Math.floor(parsedBetAmount * multiplier).toLocaleString()}`;
-                }
-                if (playerStatus === 'cashed_out' && cashedOutMultiplier) {
-                    const winnings = parsedBetAmount * cashedOutMultiplier;
-                    return `You won ${winnings.toFixed(0)}`;
-                }
-            }
-            if (gameState === 'crashed') {
-                if(playerStatus === 'lost') return 'Crashed';
-                if(playerStatus === 'cashed_out' && cashedOutMultiplier) {
-                    const winnings = parsedBetAmount * cashedOutMultiplier;
-                    return `You won ${winnings.toFixed(0)}`;
-                }
-            }
-            return 'Round Over';
-        }
-        
-        const getButtonClass = () => {
-            if (playerStatus === 'cashed_out') return 'bg-green-500 hover:bg-green-600';
-            if (playerStatus === 'lost') return 'bg-red-500 hover:bg-red-600';
-            if (gameState === 'playing' && playerStatus === 'playing') return 'bg-green-500 hover:bg-green-600';
-            return 'bg-primary hover:bg-primary/90';
-        };
 
         return (
             <Card className="w-full max-w-md p-4">
@@ -223,10 +231,10 @@ export default function RocketPage() {
                 </div>
                  <Button 
                     onClick={handleButtonClick}
-                    disabled={isButtonDisabled()}
-                    className={cn( "w-full h-14 text-xl", getButtonClass() )}
+                    disabled={isButtonDisabled}
+                    className={cn( "w-full h-14 text-xl", buttonClass )}
                 >
-                    {getButtonText()}
+                    {buttonText}
                 </Button>
             </Card>
         )
@@ -331,3 +339,5 @@ export default function RocketPage() {
 const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
     return <div className={cn("px-3 py-1 rounded-md text-sm font-bold flex-shrink-0", className)} {...props} />
 }
+
+    
