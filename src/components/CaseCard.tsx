@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { StarIcon } from '@/components/icons/StarIcon';
 import type { Case } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useUser } from '@/contexts/UserContext';
@@ -87,7 +86,7 @@ export function CaseCard({ caseData, onOpen }: CaseCardProps) {
             <Button onClick={onOpen} variant="default" className="w-full font-bold group text-white py-2 rounded-xl text-md" size="lg">
                 <div className="flex items-center justify-center gap-1">
                     <span>{formatPrice(caseData.price)}</span>
-                    <StarIcon className="h-5 w-5 text-yellow-400" />
+                    <Image src="https://i.ibb.co/gMdH1VZN/stars.png" alt="stars" width={20} height={20} className="h-5 w-5" />
                 </div>
             </Button>
         )}

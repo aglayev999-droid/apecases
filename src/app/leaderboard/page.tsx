@@ -10,10 +10,10 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { StarIcon } from '@/components/icons/StarIcon';
 import { useUser } from '@/contexts/UserContext';
 import { cn } from '@/lib/utils';
 import { Trophy } from 'lucide-react';
+import Image from 'next/image';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
@@ -67,7 +67,7 @@ export default function LeaderboardPage() {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2 font-semibold">
-                    <StarIcon className="w-5 h-5 text-yellow-400" />
+                    <Image src="https://i.ibb.co/gMdH1VZN/stars.png" alt="stars" width={20} height={20} className="h-5 w-5" />
                     {formatNumber(entry.spent)}
                   </div>
                 </TableCell>

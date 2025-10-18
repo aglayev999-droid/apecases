@@ -1,12 +1,12 @@
 'use client';
 
 import { useUser } from '@/contexts/UserContext';
-import { StarIcon } from '@/components/icons/StarIcon';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import { TonConnectButton } from '@tonconnect/ui-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Image from 'next/image';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
@@ -31,7 +31,7 @@ export default function AppHeader() {
                </Link>
                <div className="flex items-center gap-1 rounded-full bg-card p-1 border">
                 <div className="flex items-center gap-1 text-yellow-400 pl-2">
-                  <StarIcon className="h-5 w-5" />
+                  <Image src="https://i.ibb.co/gMdH1VZN/stars.png" alt="stars" width={20} height={20} className="h-5 w-5" />
                   <span className="font-semibold text-sm">{formatNumber(user.balance.stars)}</span>
                 </div>
                 <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full bg-green-500">

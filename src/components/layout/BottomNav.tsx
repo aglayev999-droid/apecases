@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Box, User as UserIcon, BarChart3 } from 'lucide-react';
+import { Box, User as UserIcon, BarChart3, Home } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 
@@ -10,7 +10,7 @@ import Image from 'next/image';
 const navItems = [
   { href: '/inventory', label: 'Inventory', icon: Box },
   { href: '/profile', label: 'Profile', icon: UserIcon },
-  { href: '/', label: 'Cases', icon: 'logo' },
+  { href: '/', label: 'Cases', icon: Box },
   { href: '/leaderboard', label: 'Rating', icon: BarChart3 },
 ];
 
@@ -31,13 +31,8 @@ export default function BottomNav() {
               >
                 <div className={cn(
                     'flex flex-col items-center justify-center gap-1 rounded-lg p-2 transition-colors w-[60px]',
-                    isActive && item.icon !== 'logo' ? 'bg-primary/20' : ''
+                    isActive ? 'bg-primary/20' : ''
                   )}>
-                  {item.icon === 'logo' ? (
-                     <div className="relative -top-5 w-20 h-20">
-                        <Image src="https://i.ibb.co/F4V0dGX3/Apex-Case.png" alt="Cases" fill className={cn('transition-transform', isActive && 'scale-110')} />
-                     </div>
-                  ) : (
                     <>
                         <item.icon className={cn(
                             'h-6 w-6',
@@ -48,7 +43,6 @@ export default function BottomNav() {
                             isActive ? 'text-primary' : 'text-muted-foreground'
                             )}>{item.label}</span>
                     </>
-                  )}
                 </div>
               </Link>
             );

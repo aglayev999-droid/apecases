@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { StarIcon } from './icons/StarIcon';
 
 interface InventoryCardProps {
   item: InventoryItem;
@@ -89,7 +88,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
         {item.status === 'won' && item.rarity !== 'NFT' && (
           <Button variant="secondary" size="sm" className="w-full" onClick={() => handleAction('Sell', `Simulating selling ${item.name} for ${item.value} stars.`)}>
             Sell for {item.value} 
-            <StarIcon className="w-4 h-4 ml-1 text-yellow-400" />
+            <Image src="https://i.ibb.co/gMdH1VZN/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1" />
           </Button>
         )}
         {item.status === 'won' && item.rarity === 'NFT' && (
@@ -101,5 +100,3 @@ export function InventoryCard({ item }: InventoryCardProps) {
     </Card>
   );
 }
-
-    

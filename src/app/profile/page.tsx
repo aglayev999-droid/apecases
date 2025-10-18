@@ -3,11 +3,11 @@
 import { useUser } from '@/contexts/UserContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { StarIcon } from '@/components/icons/StarIcon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import Image from 'next/image';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
@@ -72,7 +72,7 @@ export default function ProfilePage() {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between p-4 rounded-lg bg-card-foreground/5">
               <div className="flex items-center gap-3">
-                <StarIcon className="h-8 w-8 text-yellow-400" />
+                <Image src="https://i.ibb.co/gMdH1VZN/stars.png" alt="stars" width={32} height={32} className="h-8 w-8" />
                 <span className="text-lg font-bold">Stars</span>
               </div>
               <span className="text-xl font-mono font-bold">{formatNumber(user.balance.stars)}</span>
@@ -93,7 +93,7 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Commission Earned</span>
               <div className="flex items-center gap-2 font-bold text-lg text-primary">
-                <StarIcon className="h-5 w-5 text-yellow-400" />
+                <Image src="https://i.ibb.co/gMdH1VZN/stars.png" alt="stars" width={20} height={20} className="h-5 w-5" />
                 {formatNumber(user.referrals.commissionEarned)}
               </div>
             </div>

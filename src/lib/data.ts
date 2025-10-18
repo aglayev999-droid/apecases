@@ -17,7 +17,7 @@ export const MOCK_CASES: Case[] = [
     id: 'case-free-2',
     name: 'Free box',
     price: 0,
-    image: 'https://i.ibb.co/bJC2S3M/photo-2024-07-29-19-14-10.jpg',
+    image: 'https://i.ibb.co/jZZBNxLD/free-box.png',
     imageHint: 'gift box gingerbread',
     freeCooldownSeconds: 86400, // 24 hours
     items: [
@@ -30,7 +30,7 @@ export const MOCK_CASES: Case[] = [
     id: 'case-floor-8',
     name: 'FLOOR CASE',
     price: 180,
-    image: 'https://i.ibb.co/Pgp1dD1/photo-2024-07-29-19-14-11.jpg',
+    image: 'https://i.ibb.co/twnxRfvP/floor.png',
     imageHint: 'glowing chest',
     items: [
       { itemId: 'item-sword-1', probability: 0.4 },
@@ -58,7 +58,7 @@ export const MOCK_CASES: Case[] = [
     id: 'case-snoop-7',
     name: 'SNOOP DOG CASE',
     price: 180,
-    image: 'https://i.ibb.co/0VfNThY/photo-2024-07-29-19-14-12.jpg',
+    image: 'https://i.ibb.co/F4V0dGX3/Apex-Case.png',
     imageHint: 'legendary artifact',
     items: [
       { itemId: 'item-sword-1', probability: 0.7 },

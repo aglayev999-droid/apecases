@@ -11,7 +11,6 @@ import { useToast } from '@/hooks/use-toast';
 import type { Case, Item } from '@/lib/types';
 import { ALL_ITEMS } from '@/lib/data';
 import { cn } from '@/lib/utils';
-import { StarIcon } from './icons/StarIcon';
 
 interface CaseOpeningModalProps {
   caseData: Case | null;
@@ -212,7 +211,7 @@ export function CaseOpeningModal({ caseData, isOpen, onOpenChange }: CaseOpening
                   {isFree ? 'Open for Free' : (
                     <>
                       <span>Open for</span>
-                      <StarIcon className="h-5 w-5 text-yellow-400" />
+                      <Image src="https://i.ibb.co/gMdH1VZN/stars.png" alt="stars" width={20} height={20} className="h-5 w-5" />
                       <span>{caseData.price}</span>
                     </>
                   )}
