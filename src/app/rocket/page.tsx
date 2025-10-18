@@ -219,7 +219,7 @@ export default function RocketPage() {
                      style={rocketStyle}
                 >
                     <div className="relative w-20 h-20 sm:w-24 sm:h-24">
-                         <Image src="https://i.ibb.co/bJC22G4/rocket-1.png" alt="Rocket" layout="fill" objectFit="contain" />
+                         <Image src="https://i.ibb.co/93bWYZZf/3f7ad183-dda1-4dda-996c-69961a4fabdc-removebg-preview.png" alt="Rocket" layout="fill" objectFit="contain" />
                     </div>
                 </div>
 
@@ -408,3 +408,5 @@ export default function RocketPage() {
 const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
     return <div className={cn("px-3 py-1 rounded-md text-sm font-bold", className)} {...props} />
 }
+
+    
