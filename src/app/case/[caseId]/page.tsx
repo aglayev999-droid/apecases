@@ -56,12 +56,14 @@ const selectItem = (currentCase: Case): Item => {
         cumulativeProbability += probability;
         if (rand < cumulativeProbability) {
             const foundItem = ALL_ITEMS.find(i => i.id === itemId);
-            if (!foundItem) continue;
-            return foundItem;
+            if (foundItem) {
+                return foundItem;
+            }
         }
     }
-    // Fallback to the first item
-    return ALL_ITEMS.find(i => i.id === currentCase.items[0].itemId)!;
+    // Fallback to a random item from the case if something goes wrong
+    const fallbackItemId = currentCase.items[Math.floor(Math.random() * currentCase.items.length)].itemId;
+    return ALL_ITEMS.find(i => i.id === fallbackItemId)!;
 };
 
 export default function CasePage() {
@@ -80,9 +82,23 @@ export default function CasePage() {
 
     useEffect(() => {
         if (!caseData) return;
-        const caseItems = caseData.items.map(i => ALL_ITEMS.find(item => item.id === i.itemId)).filter(Boolean) as Item[];
-        // To make the reel feel infinite, we repeat the items multiple times and shuffle on client
-        setReelItems([...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems].sort(() => 0.5 - Math.random()));
+        const caseItems = caseData.items
+            .map(i => ALL_ITEMS.find(item => item.id === i.itemId))
+            .filter((item): item is Item => !!item);
+        
+        // Shuffle on client to avoid hydration mismatch
+        const shuffleArray = (array: Item[]) => {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+        
+        // To make the reel feel infinite, we repeat the items multiple times
+        const extendedItems = [...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems];
+        setReelItems(shuffleArray(extendedItems));
+
     }, [caseData]);
     
     const handleSpin = useCallback((isFast: boolean = false) => {
@@ -119,16 +135,27 @@ export default function CasePage() {
         
         // Find a valid index for the prize in the reel
         let prizeIndexInReel = -1;
-        for (let i = reelItems.length / 2; i < reelItems.length; i++) {
-            if(reelItems[i].id === prize.id){
+        // Prioritize finding an index in the middle of the reel for a better visual
+        for (let i = Math.floor(reelItems.length / 3); i < reelItems.length * 2 / 3; i++) {
+            if(reelItems[i]?.id === prize.id){
                 prizeIndexInReel = i;
                 break;
             }
         }
-        if(prizeIndexInReel === -1) prizeIndexInReel = reelItems.findIndex(item => item.id === prize.id);
+        // Fallback to searching the whole array if not found in the middle
+        if(prizeIndexInReel === -1) {
+            prizeIndexInReel = reelItems.findIndex(item => item?.id === prize.id);
+        }
+        
+        // If still not found, something is very wrong, but we prevent a crash.
         if (prizeIndexInReel === -1) {
-            // Fallback if prize not found in reel, though it should be.
-            prizeIndexInReel = Math.floor(reelItems.length / 2);
+            console.error("Prize item not found in reel items array.");
+            // Pick a random item from the reel as fallback to prevent crash
+            const fallbackPrize = reelItems[Math.floor(Math.random() * reelItems.length)];
+            prizeIndexInReel = reelItems.indexOf(fallbackPrize);
+            setWonItem(fallbackPrize);
+        } else {
+             setWonItem(prize);
         }
         
         
@@ -140,7 +167,6 @@ export default function CasePage() {
         const timeoutId = setTimeout(() => {
           emblaApi.scrollTo(prizeIndexInReel, false);
           setIsSpinning(false);
-          setWonItem(prize);
           addInventoryItem(prize);
           toast({
             title: `You won: ${prize.name}!`,
@@ -284,3 +310,5 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
