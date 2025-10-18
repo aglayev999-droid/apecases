@@ -26,6 +26,7 @@ export interface User {
   id: string;
   telegramId: string;
   name: string;
+  username: string;
   avatar: string;
   balance: {
     stars: number;

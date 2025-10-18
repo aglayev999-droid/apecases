@@ -73,6 +73,7 @@ export const MOCK_USER: User = {
   id: 'user-123',
   telegramId: '987654321',
   name: 'Cipher',
+  username: 'cipher_dev',
   avatar: DEFAULT_AVATAR,
   balance: {
     stars: 25000,
