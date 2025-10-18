@@ -235,7 +235,7 @@ export default function RocketPage() {
                         style={{ height: trailHeight, filter: 'blur(1px)' }}
                     ></div>
                     <div className="relative w-24 h-24 sm:w-32 sm:h-32">
-                         <Image src="https://i.ibb.co/ZJp22hB/rocket-1.png" alt="Rocket" width={128} height={128} />
+                         <Image src="https://i.ibb.co/93bWYZZf/3f7ad183-dda1-4dda-996c-69961a4fabdc-removebg-preview.png" alt="Rocket" width={128} height={128} />
                     </div>
                 </div>
 
@@ -402,7 +402,7 @@ export default function RocketPage() {
 
     return (
         <div className="flex flex-col h-full">
-            <audio ref={musicRef} src="https://cdn.pixabay.com/download/audio/2023/05/27/audio_8b248dfb22.mp3" loop />
+            <audio ref={musicRef} src="https://cdn.pixabay.com/download/audio/2022/08/04/audio_2d9ce45e99.mp3" loop />
             <audio ref={crashSfxRef} src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_b6238b0b87.mp3" />
             <History />
             <GameScreen />
@@ -419,3 +419,4 @@ const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
 }
 
       
+    
