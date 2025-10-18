@@ -71,19 +71,41 @@ const selectItem = (currentCase: Case): Item => {
 export function CaseOpeningModal({ caseData, isOpen, onOpenChange }: CaseOpeningModalProps) {
   const [isSpinning, setIsSpinning] = useState(false);
   const [wonItem, setWonItem] = useState<Item | null>(null);
-  const { user, updateBalance, addInventoryItem, updateSpending } = useUser();
+  const { user, updateBalance, addInventoryItem, updateSpending, setLastFreeCaseOpen, lastFreeCaseOpen } = useUser();
   const { toast } = useToast();
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
 
   const reelItems = React.useMemo(() => [...ALL_ITEMS, ...ALL_ITEMS, ...ALL_ITEMS].sort(() => 0.5 - Math.random()), []);
 
   const handleOpenCase = useCallback(() => {
-    if (!caseData || !user || user.balance.stars < caseData.price || !emblaApi) return;
-
+    if (!caseData || !user || !emblaApi) return;
+    
+    const isFree = caseData.price === 0;
+    
+    if (isFree) {
+        if (lastFreeCaseOpen && caseData.freeCooldownSeconds) {
+            const now = new Date();
+            const endTime = new Date(lastFreeCaseOpen.getTime() + caseData.freeCooldownSeconds * 1000);
+            if (now < endTime) {
+                toast({ variant: 'destructive', title: "Cooldown active", description: "You can't open this free case yet." });
+                return;
+            }
+        }
+    } else {
+        if (user.balance.stars < caseData.price) {
+          toast({ variant: 'destructive', title: "Not enough stars", description: "You don't have enough stars to open this case." });
+          return;
+        }
+        updateBalance(-caseData.price, 0);
+        updateSpending(caseData.price);
+    }
+    
     setIsSpinning(true);
     setWonItem(null);
-    updateBalance(-caseData.price, 0);
-    updateSpending(caseData.price);
+    
+    if (isFree) {
+        setLastFreeCaseOpen(new Date());
+    }
 
     const prize = selectItem(caseData);
     const prizeIndexInReel = reelItems.findIndex(item => item.id === prize.id);
@@ -93,14 +115,11 @@ export function CaseOpeningModal({ caseData, isOpen, onOpenChange }: CaseOpening
 
     emblaApi.scrollTo(targetIndex, false, animationOptions);
     
-    // This is a simplified client-side animation.
-    // A true "provably fair" system would have server-side logic driving the final result.
     const spinTime = 4000 + Math.random() * 1000;
 
     const timeoutId = setTimeout(() => {
-      // Force stop at the exact prize index
       if(emblaApi.selectedScrollSnap() !== targetIndex) {
-         emblaApi.scrollTo(targetIndex, true); // Jump to correct item
+         emblaApi.scrollTo(targetIndex, true);
       }
       setIsSpinning(false);
       setWonItem(prize);
@@ -113,7 +132,7 @@ export function CaseOpeningModal({ caseData, isOpen, onOpenChange }: CaseOpening
     
     return () => clearTimeout(timeoutId);
 
-  }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, toast, reelItems]);
+  }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, toast, reelItems, setLastFreeCaseOpen, lastFreeCaseOpen]);
 
   const handleClose = () => {
     onOpenChange(false);
@@ -126,7 +145,19 @@ export function CaseOpeningModal({ caseData, isOpen, onOpenChange }: CaseOpening
   
   if (!caseData) return null;
 
-  const canAfford = user ? user.balance.stars >= caseData.price : false;
+  const isFree = caseData.price === 0;
+  let canAfford = user ? user.balance.stars >= caseData.price : false;
+  if (isFree) {
+    canAfford = true; // Always "can afford" a free case
+    if (lastFreeCaseOpen && caseData.freeCooldownSeconds) {
+      const now = new Date();
+      const endTime = new Date(lastFreeCaseOpen.getTime() + caseData.freeCooldownSeconds * 1000);
+      if (now < endTime) {
+        canAfford = false; // Cannot open if on cooldown
+      }
+    }
+  }
+
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open ? handleClose() : onOpenChange(open)}>
@@ -177,10 +208,14 @@ export function CaseOpeningModal({ caseData, isOpen, onOpenChange }: CaseOpening
           ) : (
             <Button onClick={handleOpenCase} disabled={isSpinning || !canAfford} className="w-full">
               {isSpinning ? 'Opening...' : (
-                <div className="flex items-center gap-2">
-                  <span>Open for</span>
-                  <StarIcon className="h-5 w-5 text-yellow-400" />
-                  <span>{caseData.price}</span>
+                <div className="flex items-center justify-center gap-2">
+                  {isFree ? 'Open for Free' : (
+                    <>
+                      <span>Open for</span>
+                      <StarIcon className="h-5 w-5 text-yellow-400" />
+                      <span>{caseData.price}</span>
+                    </>
+                  )}
                 </div>
               )}
             </Button>
@@ -190,5 +225,3 @@ export function CaseOpeningModal({ caseData, isOpen, onOpenChange }: CaseOpening
     </Dialog>
   );
 }
-
-    

@@ -15,6 +15,7 @@ export interface Case {
   image: string;
   imageHint: string;
   items: { itemId: string; probability: number }[]; // Sum of probabilities should be 1
+  freeCooldownSeconds?: number;
 }
 
 export interface InventoryItem extends Item {
