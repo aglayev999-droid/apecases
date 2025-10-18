@@ -111,9 +111,10 @@ export default function RocketPage() {
     };
 
     const handleCashOut = () => {
-        if (playerStatus !== 'playing' || !hasPlacedBet) return;
+        if (gameState !== 'playing' || playerStatus !== 'playing' || !hasPlacedBet) return;
+        
         const winnings = parsedBetAmount * multiplier;
-        updateBalance(winnings, 0);
+        updateBalance(winnings, 0); // Correctly add winnings to balance
         setPlayerStatus('cashed_out');
         setCashedOutMultiplier(multiplier);
     };
@@ -186,8 +187,9 @@ export default function RocketPage() {
                     return `Cashed Out at ${cashedOutMultiplier?.toFixed(2)}x`;
                 }
             }
-            if (gameState === 'crashed' && playerStatus === 'lost') {
-                return 'Crashed';
+            if (gameState === 'crashed') {
+                if(playerStatus === 'lost') return 'Crashed';
+                if(playerStatus === 'cashed_out') return `Cashed Out at ${cashedOutMultiplier?.toFixed(2)}x`;
             }
             return 'Round Over';
         }
@@ -209,7 +211,9 @@ export default function RocketPage() {
                     disabled={isButtonDisabled()}
                     className={cn(
                         "w-full h-14 text-xl",
-                        gameState === 'playing' && playerStatus === 'playing' && 'bg-green-500 hover:bg-green-600'
+                        gameState === 'playing' && playerStatus === 'playing' && 'bg-green-500 hover:bg-green-600',
+                        playerStatus === 'cashed_out' && 'bg-green-500 hover:bg-green-600',
+                        gameState === 'crashed' && playerStatus === 'lost' && 'bg-red-500 hover:bg-red-600'
                     )}
                 >
                     {getButtonText()}
@@ -261,7 +265,7 @@ export default function RocketPage() {
                                     <span>{parsedBetAmount.toLocaleString()}</span>
                                 </div>
 
-                                {playerStatus === 'playing' && (
+                                {playerStatus === 'playing' && gameState === 'playing' && (
                                     <span className="font-bold text-gray-400 w-24 text-right">{Math.floor(parsedBetAmount * multiplier).toLocaleString()}</span>
                                 )}
                                 {playerStatus === 'cashed_out' && (
@@ -270,7 +274,7 @@ export default function RocketPage() {
                                         <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="h-4 w-4 object-contain" />
                                     </div>
                                 )}
-                                {playerStatus === 'lost' && (
+                                {(playerStatus === 'lost' || (gameState === 'crashed' && playerStatus !== 'cashed_out')) && (
                                     <span className="font-bold text-red-500 w-24 text-right">Crashed</span>
                                 )}
                             </div>
@@ -316,3 +320,5 @@ export default function RocketPage() {
 const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
     return <div className={cn("px-3 py-1 rounded-md text-sm font-bold flex-shrink-0", className)} {...props} />
 }
+
+    
