@@ -82,63 +82,56 @@ export default function RocketPage() {
 
         useEffect(() => {
             if (!gameContainerRef.current) return;
-
             const containerWidth = gameContainerRef.current.offsetWidth;
             const containerHeight = gameContainerRef.current.offsetHeight;
+            
             const startX = 20;
             const startY = containerHeight - 50;
 
             const getRocketPosition = () => {
-                 if (gameState === 'waiting' || gameState === 'crashed' || multiplier < 1.01) {
+                if (gameState === 'waiting' || gameState === 'crashed' || multiplier < 1.01) {
                     return { x: startX, y: startY, rotation: -45 };
                 }
-        
+
                 const progress = multiplier - 1;
                 
                 let x, y, rotation;
-        
+                const centerTargetX = containerWidth / 2;
+                const centerTargetY = containerHeight / 2;
+
                 if (multiplier < VERTICAL_THRESHOLD) {
-                    // Diagonal flight towards the center
-                    const targetX = containerWidth / 2;
-                    const targetY = containerHeight / 2;
                     const pathProgress = progress / (VERTICAL_THRESHOLD - 1);
-        
-                    x = startX + (targetX - startX) * pathProgress;
-                    y = startY - (startY - targetY) * pathProgress;
+                    x = startX + (centerTargetX - startX) * pathProgress;
+                    y = startY - (startY - centerTargetY) * pathProgress;
                     rotation = -45;
                 } else {
-                    // Vertical flight upwards from the center
                     const postThresholdProgress = multiplier - VERTICAL_THRESHOLD;
-                    const centerTargetX = containerWidth / 2;
-                    const centerTargetY = containerHeight / 2;
-        
                     x = centerTargetX;
-                    y = centerTargetY - postThresholdProgress * 25; // Increase vertical speed
+                    y = centerTargetY - (postThresholdProgress * 25);
                     rotation = 0;
                 }
-                return { x, y: y, rotation };
-            }
+                return { x, y, rotation };
+            };
 
-            const newPos = getRocketPosition();
-            setPosition(newPos);
-
-            // Generate SVG path for the trail
-            const getTrailPath = () => {
+            const getTrailPath = (newPos: { x: number, y: number }) => {
                 if (multiplier < 1.02) return `M ${startX} ${startY}`;
-                
+
                 let path = `M ${startX} ${startY}`;
+                const centerTargetX = containerWidth / 2;
+                const centerTargetY = containerHeight / 2;
 
                 if (multiplier < VERTICAL_THRESHOLD) {
-                     path += ` L ${newPos.x} ${newPos.y}`;
+                    path += ` L ${newPos.x} ${newPos.y}`;
                 } else {
-                    const centerX = containerWidth / 2;
-                    const centerY = containerHeight / 2;
-                    path += ` L ${centerX} ${centerY}`;
+                    path += ` L ${centerTargetX} ${centerTargetY}`;
                     path += ` L ${newPos.x} ${newPos.y}`;
                 }
                 return path;
-            }
-            setTrailPath(getTrailPath());
+            };
+
+            const newPos = getRocketPosition();
+            setPosition(newPos);
+            setTrailPath(getTrailPath(newPos));
 
         }, [multiplier, gameState]);
 
