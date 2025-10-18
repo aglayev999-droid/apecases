@@ -1,18 +1,16 @@
 'use client'
 
-import React, { useState } from 'react';
+import React from 'react';
+import { useRouter } from 'next/navigation';
 import { CaseCard } from '@/components/CaseCard';
-import { CaseOpeningModal } from '@/components/CaseOpeningModal';
 import { MOCK_CASES } from '@/lib/data';
 import type { Case } from '@/lib/types';
 
 export default function Home() {
-  const [selectedCase, setSelectedCase] = useState<Case | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
 
   const handleCaseSelect = (caseData: Case) => {
-    setSelectedCase(caseData);
-    setIsModalOpen(true);
+    router.push(`/case/${caseData.id}`);
   };
 
   return (
@@ -23,11 +21,6 @@ export default function Home() {
           <CaseCard key={caseData.id} caseData={caseData} onOpen={() => handleCaseSelect(caseData)} />
         ))}
       </div>
-      <CaseOpeningModal
-        caseData={selectedCase}
-        isOpen={isModalOpen}
-        onOpenChange={setIsModalOpen}
-      />
     </div>
   );
 }
