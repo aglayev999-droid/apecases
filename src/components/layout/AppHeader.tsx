@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import { TonConnectButton } from '@tonconnect/ui-react';
-import { DiamondIcon } from '../icons/DiamondIcon';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function AppHeader() {
   const { user } = useUser();
@@ -19,24 +19,28 @@ export default function AppHeader() {
     <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          <Link href="/">
-             <h1 className="font-headline text-2xl font-bold tracking-wider">1CASE</h1>
-          </Link>
+          {user && (
+            <div className="flex items-center gap-2">
+               <Link href="/profile">
+                  <Avatar className="h-10 w-10 border-2 border-primary">
+                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                  </Avatar>
+               </Link>
+               <div className="flex items-center gap-1 rounded-full bg-card p-1 border">
+                <div className="flex items-center gap-1 text-yellow-400 pl-2">
+                  <StarIcon className="h-5 w-5" />
+                  <span className="font-semibold text-sm">{formatNumber(user.balance.stars)}</span>
+                </div>
+                <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full bg-green-500">
+                  <Plus className="h-4 w-4 text-primary-foreground" />
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
         
         <div className="flex items-center gap-2 sm:gap-4">
-          {user && (
-            <div className="flex items-center gap-1 sm:gap-2 rounded-full bg-card p-1 border">
-              <div className="flex items-center gap-1 text-yellow-400">
-                <StarIcon className="h-5 w-5" />
-                <span className="font-semibold text-sm">{formatNumber(user.balance.stars)}</span>
-              </div>
-              <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full bg-green-500">
-                <Plus className="h-4 w-4 text-primary-foreground" />
-              </Button>
-            </div>
-          )}
-
           <TonConnectButton />
         </div>
       </div>
