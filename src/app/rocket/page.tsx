@@ -13,7 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import type { RocketPlayer } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const MOCK_PLAYER_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
 export default function RocketPage() {
     const { 
@@ -29,12 +28,12 @@ export default function RocketPage() {
     } = useUser();
     const { toast } = useToast();
     const [betAmount, setBetAmount] = useState('25');
-
-    const parsedBetAmount = parseInt(betAmount) || 0;
+    
     const playerStatus = user ? getPlayerStatus(user.id) : undefined;
-    const hasPlacedBet = playerStatus?.status && playerStatus.status !== 'waiting';
+    const hasPlacedBet = !!playerStatus?.bet && playerStatus.bet > 0;
 
     const handlePlaceBet = () => {
+        const parsedBetAmount = parseInt(betAmount) || 0;
         if (!user || user.balance.stars < parsedBetAmount || parsedBetAmount <= 0) {
             toast({ variant: 'destructive', title: "Not enough stars", description: "You don't have enough stars to place this bet." });
             return;
@@ -51,10 +50,9 @@ export default function RocketPage() {
     };
 
     const GameScreen = () => {
-        // Simple bobbing animation, stays in place
-        const rocketPosition = 15; // fixed vertical position
         const rocketStyle: React.CSSProperties = {
-            bottom: `${rocketPosition}%`,
+            position: 'absolute',
+            bottom: '15%',
             left: '50%',
             transform: `translateX(-50%)`,
             transition: 'all 0.5s ease-in-out',
@@ -82,7 +80,7 @@ export default function RocketPage() {
                 </style>
                 <div 
                     className={cn(
-                        "absolute transition-all duration-300 ease-linear",
+                        "transition-all duration-300 ease-linear",
                          gameState === 'playing' ? 'opacity-100' : 'opacity-80',
                     )}
                      style={rocketStyle}
@@ -114,6 +112,8 @@ export default function RocketPage() {
     };
 
     const BetControls = () => {
+        const parsedBetAmount = parseInt(betAmount) || 0;
+        
         const canPlaceBet = gameState === 'waiting' && !hasPlacedBet && user && user.balance.stars >= parsedBetAmount && parsedBetAmount > 0;
         const canCashOut = gameState === 'playing' && playerStatus?.status === 'playing';
 
@@ -126,26 +126,27 @@ export default function RocketPage() {
             buttonText = `Cash out ${Math.floor((playerStatus?.bet || 0) * multiplier).toLocaleString()}`;
             buttonAction = handleCashOut;
             buttonClass = 'bg-green-500 hover:bg-green-600';
-            isButtonDisabled = false; // Make the button clickable
-        } else if (canPlaceBet) {
-            buttonText = `Place Bet`;
-            buttonAction = handlePlaceBet;
-            buttonClass = 'bg-primary hover:bg-primary/90';
             isButtonDisabled = false;
         } else if (playerStatus?.status === 'cashed_out' && playerStatus.cashedOutAt) {
             const winnings = (playerStatus.bet || 0) * playerStatus.cashedOutAt;
             buttonText = `You won ${winnings.toFixed(0)}`;
             buttonClass = 'bg-green-500';
             isButtonDisabled = true;
+        } else if (hasPlacedBet && gameState === 'waiting') {
+             buttonText = 'Waiting for next round';
+             buttonClass = 'bg-gray-500';
+             isButtonDisabled = true;
         } else if (hasPlacedBet && gameState === 'crashed') {
             buttonText = 'Crashed';
             buttonClass = 'bg-red-500';
             isButtonDisabled = true;
-        } else if (hasPlacedBet) {
-            buttonText = 'Waiting for next round';
-            buttonClass = 'bg-gray-500';
-            isButtonDisabled = true;
+        } else if (canPlaceBet) {
+            buttonText = `Place Bet`;
+            buttonAction = handlePlaceBet;
+            buttonClass = 'bg-primary hover:bg-primary/90';
+            isButtonDisabled = false;
         }
+
 
         return (
             <Card className="w-full max-w-md p-4">
@@ -196,6 +197,7 @@ export default function RocketPage() {
                 <ScrollArea className="h-[200px] md:h-auto md:max-h-[300px]">
                     <CardContent className="p-2 space-y-1">
                         {players.map(p => {
+                            if (p.bet === 0) return null; // Don't show players who haven't bet
                             const isCurrentUser = user?.id === p.id;
                              return (
                              <div key={p.id} className={cn("flex items-center justify-between p-2 rounded-lg",
@@ -216,7 +218,7 @@ export default function RocketPage() {
                                         <span>{p.bet.toLocaleString()}</span>
                                     </div>
                                     <div className="w-32 text-right">
-                                        {p.status === 'playing' && gameState === 'playing' && isCurrentUser &&(
+                                        {p.status === 'playing' && gameState === 'playing' && (
                                             <span className="font-bold text-gray-400">{Math.floor(p.bet * multiplier).toLocaleString()}</span>
                                         )}
                                         {p.status === 'cashed_out' && p.cashedOutAt && (
@@ -228,7 +230,7 @@ export default function RocketPage() {
                                         {p.status === 'lost' && (
                                             <span className="font-bold text-red-500">Crashed</span>
                                         )}
-                                         {(p.status === 'playing' || p.status === 'waiting') && gameState !== 'playing' && (
+                                         {(p.status === 'waiting' || (p.status !== 'cashed_out' && p.status !== 'lost')) && gameState !== 'playing' && (
                                             <span className="font-bold text-gray-500">-</span>
                                         )}
                                     </div>

@@ -67,37 +67,36 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setCrashPoint(generateCrashPoint());
     setCountdown(10);
     
-    // Simulate other players joining/placing bets
-    setPlayers(prevPlayers => {
-        const humanPlayerIds = new Set(prevPlayers.filter(p => p.id === user?.id).map(p => p.id));
+    // Reset players for the new round, keeping the current user if they exist
+    setPlayers(currentPlayers => {
+        const humanPlayer = currentPlayers.find(p => p.id === user?.id);
+        const playerMap = new Map<string, RocketPlayer>();
+
+        // Re-add human player if they exist, resetting their status for the new round
+        if (humanPlayer) {
+            playerMap.set(humanPlayer.id, { ...humanPlayer, bet: 0, status: 'waiting', cashedOutAt: null });
+        }
         
+        // Add some bots
         const numBots = 2 + Math.floor(Math.random() * (mockPlayersData.length - 2));
         const shuffledBots = mockPlayersData.sort(() => 0.5 - Math.random());
         
-        const botPlayers = shuffledBots.slice(0, numBots).map(p => ({
-            id: p.id,
-            name: p.name,
-            avatar: p.avatar,
-            bet: Math.floor(10 + Math.random() * 100),
-            status: 'waiting',
-            cashedOutAt: null,
-        } as RocketPlayer));
-
-        const newPlayerMap = new Map<string, RocketPlayer>();
-        
-        // Add bots first
-        botPlayers.forEach(p => newPlayerMap.set(p.id, p));
-
-        // Keep human players if they existed
-        prevPlayers.forEach(p => {
-            if (humanPlayerIds.has(p.id)) {
-                 newPlayerMap.set(p.id, { ...p, status: 'waiting', cashedOutAt: null });
-            }
+        shuffledBots.slice(0, numBots).forEach(p => {
+             if (!playerMap.has(p.id)) {
+                 playerMap.set(p.id, {
+                    id: p.id,
+                    name: p.name,
+                    avatar: p.avatar,
+                    bet: Math.floor(10 + Math.random() * 100),
+                    status: 'waiting',
+                    cashedOutAt: null,
+                });
+             }
         });
-
-        return Array.from(newPlayerMap.values());
+        
+        return Array.from(playerMap.values());
     });
-  }, [user]);
+  }, [user?.id]);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -107,9 +106,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             timer = setTimeout(() => setCountdown(prev => prev - 1), 1000);
         } else {
             setGameState('playing');
-             // Set status to 'playing' for everyone who is 'waiting'
+             // Set status to 'playing' for everyone who has placed a bet
             setPlayers(currentPlayers => currentPlayers.map(p => 
-                p.bet > 0 ? { ...p, status: 'playing' } : p
+                p.bet > 0 && p.status === 'waiting' ? { ...p, status: 'playing' } : p
             ));
         }
     } else if (gameState === 'playing') {
@@ -213,32 +212,33 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const playerCashOut = useCallback((userId: string) => {
     if (gameState !== 'playing' || !user) return;
-
-    const player = players.find(p => p.id === userId);
-    if (!player || player.status !== 'playing') return;
-
-    const winnings = player.bet * multiplier;
-
-    // Perform all state updates together
-    setUser(currentUser => {
-      if (!currentUser) return null;
-      return {
-        ...currentUser,
-        balance: {
-          ...currentUser.balance,
-          stars: currentUser.balance.stars + winnings,
-        },
-      };
+  
+    setPlayers(currentPlayers => {
+      const playerIndex = currentPlayers.findIndex(p => p.id === userId);
+      if (playerIndex === -1 || currentPlayers[playerIndex].status !== 'playing') {
+        return currentPlayers;
+      }
+  
+      const player = currentPlayers[playerIndex];
+      const winnings = player.bet * multiplier;
+  
+      // Update balance in the same state update as players
+      setUser(currentUser => {
+        if (!currentUser) return null;
+        return {
+          ...currentUser,
+          balance: {
+            ...currentUser.balance,
+            stars: currentUser.balance.stars + winnings,
+          },
+        };
+      });
+  
+      const newPlayers = [...currentPlayers];
+      newPlayers[playerIndex] = { ...player, status: 'cashed_out', cashedOutAt: multiplier };
+      return newPlayers;
     });
-
-    setPlayers(currentPlayers =>
-      currentPlayers.map(p =>
-        p.id === userId
-          ? { ...p, status: 'cashed_out', cashedOutAt: multiplier }
-          : p
-      )
-    );
-  }, [gameState, multiplier, players, user]);
+  }, [gameState, multiplier, user, setUser]);
 
   const getPlayerStatus = useCallback((userId: string) => {
       return players.find(p => p.id === userId);
