@@ -1,0 +1,183 @@
+/**
+ * @fileoverview Firestore Security Rules for Apex Case Battles.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for user-specific data
+ * and uses public read with owner-only write for globally accessible data.
+ *
+ * Data Structure:
+ * - /users/{userId}: Stores user profiles and related data. Each user's data is
+ *   nested under their UID for access control.
+ * - /cases/{caseId}: Stores case information that is publicly readable but
+ *   only writable by authorized users (e.g., admins, or via Cloud Functions).
+ * - /users/{userId}/inventory/{inventoryId}: Stores user-specific inventory
+ *   items. Access is strictly controlled by user ownership.
+ * - /nft_inventory/{nftId}: Stores the bot's NFT inventory. Write access is
+ *   highly restricted and should only be modified by backend services.
+ * - /items/{itemId}: Stores general item data. This data is publicly readable
+ *   but only writable by authorized users.
+ * - /roles_admin/{userId}: Documents existence grants admin privileges.
+ *
+ * Key Security Decisions:
+ * - Users can only read/write their own user document.
+ * - Listing users is not allowed.
+ * - Cases and Items are publicly readable, but write access is restricted.
+ * - NFT inventory is managed by the bot and not directly accessible by users.
+ *
+ * Denormalization for Authorization:
+ * - User ownership is enforced through path-based rules (e.g., /users/{userId}).
+ * - NFT ownership is tracked via the `currentOwnerId` field in the NFTInventory
+ *   documents.
+ *
+ * Structural Segregation:
+ * - User-specific data (inventory) is stored in a private subcollection under
+ *   the user's document, while global data (cases, items) is stored in
+ *   top-level collections.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Checks if the request is authenticated.
+     * @return {boolean} True if the request is authenticated, false otherwise.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * @description Checks if the authenticated user ID matches the provided user ID.
+     * @param {string} userId The user ID to compare against.
+     * @return {boolean} True if the user is signed in and the UID matches, false otherwise.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * @description Checks if the authenticated user ID matches the provided user ID, and the document exists.
+     * @param {string} userId The user ID to compare against.
+     * @return {boolean} True if the user is signed in and the UID matches, and the document exists, false otherwise.
+     */
+    function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+    }
+
+    /**
+     * @description Checks if the user has admin role.
+     * @return {boolean} True if the user has admin role, false otherwise.
+     */
+    function isAdmin() {
+        return exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    /**
+     * @description Rules for user documents.
+     * @path /users/{userId}
+     * @allow (create) User 'test_user' with UID 'test_user' can create their own document.
+     * @deny (create) User 'test_user' with UID 'other_user' cannot create a document with ID 'test_user'.
+     * @allow (get) User 'test_user' with UID 'test_user' can read their own document.
+     * @deny (get) User 'other_user' with UID 'other_user' cannot read document of user 'test_user'.
+     * @allow (update) User 'test_user' with UID 'test_user' can update their own document.
+     * @deny (update) User 'other_user' with UID 'other_user' cannot update document of user 'test_user'.
+     * @allow (delete) User 'test_user' with UID 'test_user' can delete their own document.
+     * @deny (delete) User 'other_user' with UID 'other_user' cannot delete document of user 'test_user'.
+     * @principle Enforces document ownership for writes.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for case documents.
+     * @path /cases/{caseId}
+     * @allow (get) Any user can read case documents.
+     * @allow (list) Any user can list case documents.
+     * @deny (create) Only admins can create case documents.
+     * @deny (update) Only admins can update case documents.
+     * @deny (delete) Only admins can delete case documents.
+     * @principle Public read, admin-only writes.
+     */
+    match /cases/{caseId} {
+      allow get, list: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    /**
+     * @description Rules for user inventory documents.
+     * @path /users/{userId}/inventory/{inventoryId}
+     * @allow (create) User 'test_user' with UID 'test_user' can create an inventory item for themselves.
+     * @deny (create) User 'other_user' with UID 'other_user' cannot create an inventory item for user 'test_user'.
+     * @allow (get) User 'test_user' with UID 'test_user' can read their own inventory item.
+     * @deny (get) User 'other_user' with UID 'other_user' cannot read inventory item of user 'test_user'.
+     * @allow (update) User 'test_user' with UID 'test_user' can update their own inventory item.
+     * @deny (update) User 'other_user' with UID 'other_user' cannot update inventory item of user 'test_user'.
+     * @allow (delete) User 'test_user' with UID 'test_user' can delete their own inventory item.
+     * @deny (delete) User 'other_user' with UID 'other_user' cannot delete inventory item of user 'test_user'.
+     * @principle Enforces document ownership for writes within the user's inventory.
+     */
+    match /users/{userId}/inventory/{inventoryId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.userId == userId;
+      allow delete: if isExistingOwner(userId);
+    }
+
+    /**
+     * @description Rules for NFT inventory documents (owned by the bot).
+     * @path /nft_inventory/{nftId}
+     * @deny (get) No user can read NFT inventory documents.
+     * @deny (list) No user can list NFT inventory documents.
+     * @deny (create) No user can create NFT inventory documents.
+     * @deny (update) No user can update NFT inventory documents.
+     * @deny (delete) No user can delete NFT inventory documents.
+     * @principle Restricts access to NFT inventory to prevent unauthorized modification.
+     */
+    match /nft_inventory/{nftId} {
+      allow get, list: if false;
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Rules for item documents.
+     * @path /items/{itemId}
+     * @allow (get) Any user can read item documents.
+     * @allow (list) Any user can list item documents.
+     * @deny (create) Only admins can create item documents.
+     * @deny (update) Only admins can update item documents.
+     * @deny (delete) Only admins can delete item documents.
+     * @principle Public read, admin-only writes.
+     */
+    match /items/{itemId} {
+      allow get, list: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    /**
+     * @description Admin role check
+     * @path /roles_admin/{userId}
+     * @allow (get) only the specific uid
+     * @allow (create) Admins can create role assignment
+     * @allow (update) Admins can update role assignment
+     * @allow (delete) Admins can delete role assignment
+     * @deny (list) no listing
+    */
+    match /roles_admin/{userId}{
+        allow get: if isAdmin() || isOwner(userId);
+        allow list: if false;
+        allow create: if isAdmin();
+        allow update: if isAdmin();
+        allow delete: if isAdmin();
+    }
+  }
+}

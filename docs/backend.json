@@ -1,0 +1,323 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the Apex Case Battles app.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "telegramId": {
+          "type": "string",
+          "description": "The user's Telegram ID, used for authentication."
+        },
+        "username": {
+          "type": "string",
+          "description": "The user's username."
+        },
+        "starsBalance": {
+          "type": "number",
+          "description": "The user's Stars balance."
+        },
+        "referralCode": {
+          "type": "string",
+          "description": "The user's unique referral code."
+        },
+        "invitedById": {
+          "type": "string",
+          "description": "Reference to the User who invited this user. (Relationship: User 1:N User (referrals))"
+        },
+        "referralsCount": {
+          "type": "number",
+          "description": "The number of users this user has referred."
+        },
+        "spinsCountWeekly": {
+          "type": "number",
+          "description": "The number of spins the user has used this week."
+        },
+        "starsSpentWeekly": {
+          "type": "number",
+          "description": "The number of Stars the user has spent this week."
+        }
+      },
+      "required": [
+        "id",
+        "telegramId",
+        "username",
+        "starsBalance",
+        "referralCode",
+        "referralsCount",
+        "spinsCountWeekly",
+        "starsSpentWeekly"
+      ]
+    },
+    "Case": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Case",
+      "type": "object",
+      "description": "Represents a case that users can open.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Case entity."
+        },
+        "nameEn": {
+          "type": "string",
+          "description": "The English name of the case."
+        },
+        "priceStars": {
+          "type": "number",
+          "description": "The price of the case in Stars."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "The URL of the case's image."
+        },
+        "isFree": {
+          "type": "boolean",
+          "description": "Whether the case is free to open."
+        },
+        "freeCooldownSeconds": {
+          "type": "number",
+          "description": "The cooldown time in seconds before a free case can be opened again."
+        },
+        "itemIds": {
+          "type": "array",
+          "description": "References to Items contained in this case. (Relationship: Case 1:N Item)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "nameEn",
+        "priceStars",
+        "imageUrl",
+        "isFree",
+        "freeCooldownSeconds",
+        "itemIds"
+      ]
+    },
+    "NFTInventory": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "NFTInventory",
+      "type": "object",
+      "description": "Represents the inventory of real TON NFTs owned by the bot.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the NFTInventory entity."
+        },
+        "collectionAddress": {
+          "type": "string",
+          "description": "The address of the NFT collection."
+        },
+        "caseId": {
+          "type": "string",
+          "description": "Reference to the Case this NFT can be won from. (Relationship: Case 1:N NFTInventory)"
+        },
+        "currentOwnerId": {
+          "type": "string",
+          "description": "Reference to the User or Bot that currently owns the NFT. (Relationship: User/Bot 1:N NFTInventory)"
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the NFT (available, won, transferred)."
+        }
+      },
+      "required": [
+        "id",
+        "collectionAddress",
+        "caseId",
+        "currentOwnerId",
+        "status"
+      ]
+    },
+    "Inventory": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Inventory",
+      "type": "object",
+      "description": "Represents a list of items (including NFTs) won by users.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Inventory entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who won the item. (Relationship: User 1:N Inventory)"
+        },
+        "itemId": {
+          "type": "string",
+          "description": "Reference to the Item won. (Relationship: Item 1:N Inventory)"
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of item (e.g., NFT, in-game item)."
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the item (won, exchanged, shipped)."
+        },
+        "wonAt": {
+          "type": "string",
+          "description": "The timestamp when the item was won.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "itemId",
+        "type",
+        "status",
+        "wonAt"
+      ]
+    },
+    "Item": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Item",
+      "type": "object",
+      "description": "Represents a generic item that can be won in the game (including NFTs).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Item entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the item."
+        },
+        "description": {
+          "type": "string",
+          "description": "The description of the item (generated by AI)."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "The URL of the item's image."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "imageUrl"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user data, including telegram ID, username, stars balance, referral information.  The 'userId' parameter is the Firebase Authentication UID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Authentication UID of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/cases/{caseId}",
+        "definition": {
+          "entityName": "Case",
+          "schema": {
+            "$ref": "#/backend/entities/Case"
+          },
+          "description": "Stores case data, including name, price, image URL, and item IDs.",
+          "params": [
+            {
+              "name": "caseId",
+              "description": "The unique identifier of the case."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/inventory/{inventoryId}",
+        "definition": {
+          "entityName": "Inventory",
+          "schema": {
+            "$ref": "#/backend/entities/Inventory"
+          },
+          "description": "Stores the user's inventory of won items, including NFTs. Path-based ownership is used to secure user-specific inventory data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Authentication UID of the user."
+            },
+            {
+              "name": "inventoryId",
+              "description": "The unique identifier of the inventory item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/nft_inventory/{nftId}",
+        "definition": {
+          "entityName": "NFTInventory",
+          "schema": {
+            "$ref": "#/backend/entities/NFTInventory"
+          },
+          "description": "Stores the inventory of real TON NFTs owned by the bot. The 'currentOwnerId' field indicates the current owner (User ID or Bot ID).",
+          "params": [
+            {
+              "name": "nftId",
+              "description": "The unique identifier of the NFT in the bot's inventory."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/items/{itemId}",
+        "definition": {
+          "entityName": "Item",
+          "schema": {
+            "$ref": "#/backend/entities/Item"
+          },
+          "description": "Stores item data, including name, description, and image URL.",
+          "params": [
+            {
+              "name": "itemId",
+              "description": "The unique identifier of the item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "AdminRole",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Documents existence grants admin privileges. Authorization relies solely on request.auth.uid.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "Firebase Auth UID of admin"
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to ensure authorization independence, clarity, and scalability for the Apex Case Battles app. It leverages denormalization, structural segregation, and consistent access modeling to simplify security rules and enable atomic operations.  User data is stored under `/users/{userId}`. Cases are stored globally under `/cases`. User-specific inventory is managed under `/users/{userId}/inventory/{inventoryId}`.  The `NFTInventory` is kept separate to track bot-owned NFTs.  Items are stored in a global `/items` collection. This structure supports listing cases and items without filtering based on user-specific data, addressing the QAPs requirement.  Authorization independence is achieved by avoiding `get()` calls in security rules, relying instead on the path-based ownership for private data and the `NFTInventory` fields to determine NFT availability and ownership."
+  }
+}
