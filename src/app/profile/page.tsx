@@ -17,11 +17,12 @@ export default function ProfilePage() {
   const { toast } = useToast();
 
   const formatNumber = (num: number) => {
+    if (num === undefined || num === null) return '0'; 
     return new Intl.NumberFormat('en-US').format(num);
   };
   
   const copyReferralCode = () => {
-    if(!user) return;
+    if (!user || !user.referrals || !user.referrals.code) return; 
     navigator.clipboard.writeText(user.referrals.code);
     toast({
       title: 'Copied!',
@@ -32,12 +33,17 @@ export default function ProfilePage() {
   if (!user) {
     return (
       <div className="space-y-8">
-        <Skeleton className="h-12 w-1/2 mx-auto" />
+        <div className="flex flex-col sm:flex-row items-center gap-6">
+            <Skeleton className="h-24 w-24 rounded-full" />
+            <div className="space-y-2">
+                <Skeleton className="h-8 w-48" />
+                <Skeleton className="h-6 w-64" />
+            </div>
+        </div>
         <div className="grid md:grid-cols-2 gap-8">
           <Skeleton className="h-64 w-full" />
           <Skeleton className="h-64 w-full" />
         </div>
-        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
@@ -52,7 +58,7 @@ export default function ProfilePage() {
         <div>
           <h1 className="text-4xl font-bold tracking-tighter">{user.name}</h1>
           <div className="flex items-center gap-2 mt-1">
-            <a href={`https://t.me/${user.username}`} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">@{user.username}</a>
+            <a href="https://t.me/apexcasesbot" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">@apexcasesbot</a>
             <p className="text-muted-foreground">ID: {user.telegramId}</p>
           </div>
         </div>
@@ -73,11 +79,12 @@ export default function ProfilePage() {
             </div>
           </CardContent>
         </Card>
+        
         <Card>
           <CardHeader>
             <CardTitle>Referral Program</CardTitle>
             <CardDescription>Invite friends and earn commissions.</CardDescription>
-          </Header>
+          </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Friends Referred</span>
@@ -99,7 +106,6 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
-
-    </div>
+    </div> 
   );
 }
