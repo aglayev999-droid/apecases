@@ -17,11 +17,7 @@ export default function Home() {
 
   return (
     <div className="space-y-8">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-tighter">Choose Your Case</h1>
-        <p className="text-muted-foreground mt-2">Select a case to reveal your prize.</p>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 gap-4">
         {MOCK_CASES.map((caseData) => (
           <CaseCard key={caseData.id} caseData={caseData} onOpen={() => handleCaseSelect(caseData)} />
         ))}

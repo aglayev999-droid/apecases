@@ -1,76 +1,59 @@
 'use client';
 
 import { useUser } from '@/contexts/UserContext';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { StarIcon } from '@/components/icons/StarIcon';
 import { DiamondIcon } from '@/components/icons/DiamondIcon';
-import { Logo } from '@/components/icons/Logo';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
+import { MoreVertical, Plus, X } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
-
-const navItems = [
-  { href: '/', label: 'Cases' },
-  { href: '/inventory', label: 'Inventory' },
-  { href: '/leaderboard', label: 'Ranking' },
-];
 
 export default function AppHeader() {
   const { user } = useUser();
-  const pathname = usePathname();
 
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US').format(num);
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(num);
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur-sm">
+    <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2">
-            <Logo className="h-8 w-8 text-primary" />
-            <span className="font-bold text-xl hidden sm:inline-block">Apex</span>
+        <div className="flex items-center gap-2">
+          <Link href="/">
+             <h1 className="font-headline text-2xl font-bold tracking-wider">1CASE</h1>
           </Link>
-           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            {navItems.map(item => (
-              <Link key={item.href} href={item.href} className={cn(
-                "transition-colors hover:text-foreground/80",
-                pathname === item.href ? "text-foreground" : "text-foreground/60"
-              )}>
-                {item.label}
-              </Link>
-            ))}
-          </nav>
         </div>
         
-        {user ? (
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-4">
-              <div className="flex items-center gap-2 rounded-full bg-card px-3 py-1.5 border">
-                <StarIcon className="h-5 w-5 text-yellow-400" />
+        <div className="flex items-center gap-2 sm:gap-4">
+          {user && (
+            <div className="flex items-center gap-1 sm:gap-2 rounded-full bg-card p-1 border">
+              <div className="flex items-center gap-1 text-yellow-400">
+                <StarIcon className="h-5 w-5" />
                 <span className="font-semibold text-sm">{formatNumber(user.balance.stars)}</span>
               </div>
-              <div className="flex items-center gap-2 rounded-full bg-card px-3 py-1.5 border">
-                <DiamondIcon className="h-5 w-5 text-cyan-400" />
-                <span className="font-semibold text-sm">{formatNumber(user.balance.diamonds)}</span>
-              </div>
+              <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full bg-muted">
+                <Plus className="h-4 w-4" />
+              </Button>
+              <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full bg-green-500/20 text-green-400">
+                <span className="font-bold text-sm">D</span>
+              </Button>
             </div>
+          )}
 
-            <Link href="/profile">
-              <Avatar className="h-10 w-10 border-2 border-primary hover:border-accent transition-colors">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
-              </Avatar>
-            </Link>
-          </div>
-        ) : (
-          <div className="flex items-center gap-4">
-            <Skeleton className="h-8 w-24 rounded-full hidden sm:block" />
-            <Skeleton className="h-8 w-24 rounded-full hidden sm:block" />
-            <Skeleton className="h-10 w-10 rounded-full" />
-          </div>
-        )}
+          <Button variant="default" size="sm" className="hidden sm:flex">
+            <DiamondIcon className="mr-2 h-4 w-4" />
+            Connect wallet
+          </Button>
+
+          <Button size="icon" variant="ghost">
+            <MoreVertical className="h-5 w-5" />
+          </Button>
+          <Button size="icon" variant="ghost">
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
     </header>
   );

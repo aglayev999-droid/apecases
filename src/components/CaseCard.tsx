@@ -1,11 +1,12 @@
 'use client';
 
 import Image from 'next/image';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { StarIcon } from '@/components/icons/StarIcon';
 import type { Case } from '@/lib/types';
 import { cn } from '@/lib/utils';
+import { Badge } from './ui/badge';
 
 interface CaseCardProps {
   caseData: Case;
@@ -17,37 +18,42 @@ export function CaseCard({ caseData, onOpen }: CaseCardProps) {
     return new Intl.NumberFormat('en-US').format(price);
   };
 
+  const isFree = caseData.price === 0;
+
   return (
-    <Card className="flex flex-col group overflow-hidden border-2 border-transparent hover:border-primary transition-all duration-300">
-      <CardHeader className="p-0">
-        <div className="aspect-[4/3] relative overflow-hidden">
+    <Card className="flex flex-col group overflow-hidden bg-card border-none shadow-lg rounded-xl">
+      <CardContent className="p-0 relative">
+         <div className="aspect-square relative overflow-hidden">
           <Image
             src={caseData.image}
             alt={caseData.name}
             fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            sizes="(max-width: 768px) 50vw, 33vw"
             className="object-cover group-hover:scale-105 transition-transform duration-300"
             data-ai-hint={caseData.imageHint}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-          <CardTitle className="absolute bottom-4 left-4 text-2xl font-bold text-white">
-            {caseData.name}
-          </CardTitle>
+           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
         </div>
-      </CardHeader>
-      <CardContent className="flex-grow p-4">
-        {/* Can add a short description here if needed */}
       </CardContent>
-      <CardFooter className="p-4 pt-0">
-        <Button onClick={onOpen} className="w-full font-bold group" size="lg" variant="default">
-          <div className="flex items-center justify-center gap-2">
-            <span>Open for</span>
-            <div className="flex items-center gap-1.5">
-              <StarIcon className="h-5 w-5 text-yellow-400" />
-              <span>{formatPrice(caseData.price)}</span>
-            </div>
-          </div>
-        </Button>
+      
+      <CardFooter className="p-3 flex flex-col items-start">
+        <div className="w-full flex justify-between items-center mb-2">
+            <h3 className="font-headline font-bold text-base uppercase tracking-wider">{caseData.name}</h3>
+            <Badge variant="secondary" className="bg-muted/50 text-muted-foreground">#{caseData.id.split('-')[1].slice(0, 4)}</Badge>
+        </div>
+        
+        {isFree ? (
+           <div className="w-full text-center py-2 bg-muted rounded-lg text-sm font-mono">
+             01:40:23
+           </div>
+        ) : (
+            <Button onClick={onOpen} className="w-full font-bold group" size="lg" variant="default">
+                <div className="flex items-center justify-center gap-2">
+                    <span>{formatPrice(caseData.price)}</span>
+                    <StarIcon className="h-5 w-5 text-yellow-400" />
+                </div>
+            </Button>
+        )}
       </CardFooter>
     </Card>
   );

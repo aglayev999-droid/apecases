@@ -4,9 +4,23 @@ import { UserProvider } from '@/contexts/UserContext';
 import AppHeader from '@/components/layout/AppHeader';
 import BottomNav from '@/components/layout/BottomNav';
 import { Toaster } from "@/components/ui/toaster";
+import { Inter, Quantico } from 'next/font/google';
+import { cn } from '@/lib/utils';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+});
+
+const quantico = Quantico({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-quantico',
+});
+
 
 export const metadata: Metadata = {
-  title: 'Apex Case Battles',
+  title: '1CASE',
   description: 'Open cases and win big!',
 };
 
@@ -17,12 +31,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      </head>
-      <body className="font-body antialiased">
+      <body className={cn("font-body antialiased", inter.variable, quantico.variable)}>
         <UserProvider>
           <div className="flex flex-col min-h-screen">
             <AppHeader />
