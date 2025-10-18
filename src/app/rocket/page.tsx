@@ -54,23 +54,130 @@ export default function RocketPage() {
             position: 'absolute',
             bottom: '15%',
             left: '50%',
-            transform: `translateX(-50%)`,
+            transform: 'translateX(-50%)',
             transition: 'all 0.5s ease-in-out',
         };
-
+    
         if (gameState === 'playing') {
             rocketStyle.animation = 'bob 3s ease-in-out infinite';
+            const translateY = Math.min(multiplier - 1, 5) * 10;
+            rocketStyle.transform = `translateX(-50%) translateY(-${translateY}px)`;
         }
-
+    
         if (gameState === 'crashed') {
             rocketStyle.opacity = 0;
             rocketStyle.transform = 'translateX(-50%) scale(1.5)';
         }
 
+        const trailHeight = gameState === 'playing' ? `${(multiplier - 1) * 20}px` : '0px';
+
+    
         return (
             <div className="h-64 flex flex-col items-center justify-center relative w-full overflow-hidden">
+                <div className="absolute inset-0 z-0">
+                    <div className="star-field">
+                        <div className="star-sm"></div>
+                        <div className="star-md"></div>
+                        <div className="star-lg"></div>
+                        <div className="planet-1"></div>
+                        <div className="planet-2"></div>
+                        <div className="planet-3"></div>
+                    </div>
+                </div>
                  <style>
                     {`
+                        .star-field {
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            overflow: hidden;
+                        }
+
+                        .star-sm {
+                            position: absolute;
+                            width: 2px;
+                            height: 2px;
+                            background: white;
+                            border-radius: 50%;
+                            box-shadow: 100px 50px white, 200px 150px white, 300px 80px white, 400px 20px white, 50px 180px white;
+                            animation: stars-sm-anim 100s linear infinite;
+                        }
+
+                        .star-md {
+                            position: absolute;
+                            width: 3px;
+                            height: 3px;
+                            background: white;
+                            border-radius: 50%;
+                            box-shadow: 150px 100px white, 250px 30px white, 350px 120px white, 450px 90px white, 80px 10px white;
+                             animation: stars-md-anim 80s linear infinite;
+                        }
+
+                        .star-lg {
+                            position: absolute;
+                            width: 4px;
+                            height: 4px;
+                            background: white;
+                            border-radius: 50%;
+                            box-shadow: 120px 70px white, 220px 160px white, 320px 50px white, 420px 130px white, 20px 150px white;
+                            animation: stars-lg-anim 60s linear infinite;
+                        }
+
+                        @keyframes stars-sm-anim {
+                            from { transform: translateY(0px); }
+                            to { transform: translateY(-200px); }
+                        }
+                        @keyframes stars-md-anim {
+                            from { transform: translateY(0px); }
+                            to { transform: translateY(-300px); }
+                        }
+                        @keyframes stars-lg-anim {
+                            from { transform: translateY(0px); }
+                            to { transform: translateY(-400px); }
+                        }
+                        
+                        .planet-1, .planet-2, .planet-3 {
+                           position: absolute;
+                           border-radius: 50%;
+                           background: linear-gradient(135deg, hsl(var(--primary) / 0.5), hsl(var(--accent) / 0.5));
+                           animation: move-planet 20s linear infinite;
+                        }
+
+                        .planet-1 {
+                           width: 80px;
+                           height: 80px;
+                           left: 10%;
+                           top: 20%;
+                           animation-duration: 25s;
+                        }
+
+                        .planet-2 {
+                           width: 50px;
+                           height: 50px;
+                           left: 70%;
+                           top: 60%;
+                           animation-duration: 35s;
+                           animation-delay: -10s;
+                           background: linear-gradient(135deg, hsl(var(--chart-2) / 0.5), hsl(var(--chart-4) / 0.5));
+                        }
+                        
+                        .planet-3 {
+                            width: 20px;
+                            height: 20px;
+                            left: 40%;
+                            top: 80%;
+                            animation-duration: 45s;
+                            animation-delay: -20s;
+                        }
+
+                        @keyframes move-planet {
+                            0% { transform: translate(0, 0) scale(1); }
+                            50% { transform: translate(20px, -30px) scale(1.1); }
+                            100% { transform: translate(0, 0) scale(1); }
+                        }
+                        
                         @keyframes bob {
                             0% { transform: translate(-50%, 0); }
                             50% { transform: translate(-50%, -15px); }
@@ -80,29 +187,37 @@ export default function RocketPage() {
                 </style>
                 <div 
                     className={cn(
-                        "transition-all duration-300 ease-linear",
+                        "z-10 transition-all duration-300 ease-linear",
                          gameState === 'playing' ? 'opacity-100' : 'opacity-80',
                     )}
                      style={rocketStyle}
                 >
+                    <div
+                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-4 h-0 bg-gradient-to-t from-orange-400 via-yellow-300 to-transparent transition-all duration-100"
+                        style={{ height: trailHeight, filter: 'blur(5px)' }}
+                    ></div>
+                     <div
+                        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-0 bg-white transition-all duration-100"
+                        style={{ height: trailHeight, filter: 'blur(1px)' }}
+                    ></div>
                     <div className="relative w-24 h-24 sm:w-32 sm:h-32">
                          <Image src="https://i.ibb.co/93bWYZZf/3f7ad183-dda1-4dda-996c-69961a4fabdc-removebg-preview.png" alt="Rocket" width={128} height={128} />
                     </div>
                 </div>
 
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-20">
                     {gameState === 'crashed' ? (
                         <h1 className="text-7xl font-bold text-red-500 animate-in fade-in-0 zoom-in-75">
                            x{multiplier.toFixed(2)}
                         </h1>
                     ) : (
-                         <h1 className="text-7xl font-bold text-white">
+                         <h1 className="text-7xl font-bold text-white [text-shadow:0_0_15px_hsl(var(--primary))]">
                            x{multiplier.toFixed(2)}
                         </h1>
                     )}
                 </div>
                  {gameState === 'waiting' && (
-                     <div className="absolute top-10 text-center">
+                     <div className="absolute top-10 text-center z-20">
                         <p className="text-lg text-muted-foreground">Starting in...</p>
                         <p className="text-4xl font-bold">{countdown}</p>
                      </div>
@@ -136,7 +251,7 @@ export default function RocketPage() {
              buttonText = 'Waiting for next round';
              buttonClass = 'bg-gray-500';
              isButtonDisabled = true;
-        } else if (hasPlacedBet && gameState === 'crashed') {
+        } else if (hasPlacedBet && (gameState === 'crashed' || playerStatus?.status === 'lost')) {
             buttonText = 'Crashed';
             buttonClass = 'bg-red-500';
             isButtonDisabled = true;
@@ -178,6 +293,7 @@ export default function RocketPage() {
                 <Badge
                     key={i}
                     className={cn(
+                        "flex-shrink-0",
                         h >= 10 ? "bg-orange-500/20 text-orange-400" :
                         h >= 3 ? "bg-purple-500/20 text-purple-400" :
                         h >= 2 ? "bg-blue-500/20 text-blue-400" :
@@ -256,5 +372,5 @@ export default function RocketPage() {
 }
 
 const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
-    return <div className={cn("px-3 py-1 rounded-md text-sm font-bold flex-shrink-0", className)} {...props} />
+    return <div className={cn("px-3 py-1 rounded-md text-sm font-bold", className)} {...props} />
 }
