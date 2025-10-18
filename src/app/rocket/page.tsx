@@ -109,7 +109,7 @@ export default function RocketPage() {
         toast({ title: "Bet placed!", description: `You bet ${parsedBetAmount} stars.` });
     };
 
-    const handleCashOut = async () => {
+    const handleCashOut = () => {
         if (gameState !== 'playing' || playerStatus !== 'playing') return;
     
         const winnings = parsedBetAmount * multiplier;
@@ -138,7 +138,7 @@ export default function RocketPage() {
                      style={{ bottom: gameState === 'playing' ? `${rocketPosition}%` : '0' }}
                 >
                     <div className="relative w-48 h-48">
-                         <Image src="https://i.ibb.co/3zdVvSg/rocket.png" alt="Rocket" width={192} height={192} />
+                         <Image src="https://i.ibb.co/93bWYZZf/3f7ad183-dda1-4dda-996c-69961a4fabdc-removebg-preview.png" alt="Rocket" width={192} height={192} />
                     </div>
                 </div>
 
@@ -168,27 +168,27 @@ export default function RocketPage() {
         const canCashOut = gameState === 'playing' && playerStatus === 'playing';
 
         const handleButtonClick = () => {
-            if (canPlaceBet) {
-                handlePlaceBet();
-            } else if (canCashOut) {
+            if (canCashOut) {
                 handleCashOut();
+            } else if (canPlaceBet) {
+                handlePlaceBet();
             }
         };
         
         let buttonText = 'Place Bet';
         let buttonClass = 'bg-primary hover:bg-primary/90';
         let isButtonDisabled = true;
-
+        
         if (canCashOut) {
             buttonText = `Cash out ${Math.floor(parsedBetAmount * multiplier).toLocaleString()}`;
             buttonClass = 'bg-green-500 hover:bg-green-600';
             isButtonDisabled = false;
+        } else if (gameState === 'waiting' && hasPlacedBet) {
+            buttonText = 'Waiting for round';
+            isButtonDisabled = true;
         } else if (canPlaceBet) {
             buttonText = 'Place Bet';
             isButtonDisabled = false;
-        } else if (gameState === 'waiting' && playerStatus === 'playing') {
-            buttonText = 'Waiting for round';
-            isButtonDisabled = true;
         } else if (playerStatus === 'cashed_out' && cashedOutMultiplier) {
             const winnings = parsedBetAmount * cashedOutMultiplier;
             buttonText = `You won ${winnings.toFixed(0)}`;
@@ -198,10 +198,11 @@ export default function RocketPage() {
              buttonText = 'Crashed';
              buttonClass = 'bg-red-500';
              isButtonDisabled = true;
-        } else if (gameState === 'crashed') {
-            buttonText = 'Round Over';
+        } else if (gameState === 'crashed' || gameState === 'playing') {
+            buttonText = 'Round in Progress';
             isButtonDisabled = true;
         }
+
 
         return (
             <Card className="w-full max-w-md p-4">
