@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,6 +28,22 @@ export default function RocketPage() {
     } = useUser();
     const { toast } = useToast();
     const [betAmount, setBetAmount] = useState('25');
+    const audioRef = useRef<HTMLAudioElement>(null);
+    
+    useEffect(() => {
+        if (audioRef.current) {
+            audioRef.current.volume = 0.1; // Set a lower volume
+            audioRef.current.play().catch(error => {
+                // Autoplay was prevented.
+                console.log("Audio autoplay prevented by browser:", error);
+            });
+        }
+        return () => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+            }
+        }
+    }, []);
     
     const playerStatus = user ? getPlayerStatus(user.id) : undefined;
     const hasPlacedBet = !!playerStatus?.bet && playerStatus.bet > 0;
@@ -50,6 +66,7 @@ export default function RocketPage() {
     };
 
     const GameScreen = () => {
+        const isShaking = multiplier > 5;
         const rocketStyle: React.CSSProperties = {
             position: 'absolute',
             bottom: '15%',
@@ -59,7 +76,6 @@ export default function RocketPage() {
         };
     
         if (gameState === 'playing') {
-            rocketStyle.animation = 'bob 3s ease-in-out infinite';
             const translateY = Math.min(multiplier - 1, 5) * 10;
             rocketStyle.transform = `translateX(-50%) translateY(-${translateY}px)`;
         }
@@ -86,6 +102,19 @@ export default function RocketPage() {
                 </div>
                  <style>
                     {`
+                        @keyframes stars-sm-anim {
+                            from { transform: translateY(0px); }
+                            to { transform: translateY(-200px); }
+                        }
+                        @keyframes stars-md-anim {
+                            from { transform: translateY(0px); }
+                            to { transform: translateY(-300px); }
+                        }
+                        @keyframes stars-lg-anim {
+                            from { transform: translateY(0px); }
+                            to { transform: translateY(-400px); }
+                        }
+                        
                         .star-field {
                             position: absolute;
                             top: 0;
@@ -123,19 +152,6 @@ export default function RocketPage() {
                             border-radius: 50%;
                             box-shadow: 120px 70px white, 220px 160px white, 320px 50px white, 420px 130px white, 20px 150px white;
                             animation: stars-lg-anim 60s linear infinite;
-                        }
-
-                        @keyframes stars-sm-anim {
-                            from { transform: translateY(0px); }
-                            to { transform: translateY(-200px); }
-                        }
-                        @keyframes stars-md-anim {
-                            from { transform: translateY(0px); }
-                            to { transform: translateY(-300px); }
-                        }
-                        @keyframes stars-lg-anim {
-                            from { transform: translateY(0px); }
-                            to { transform: translateY(-400px); }
                         }
                         
                         .planet-1, .planet-2, .planet-3 {
@@ -180,15 +196,26 @@ export default function RocketPage() {
                         
                         @keyframes bob {
                             0% { transform: translate(-50%, 0); }
-                            50% { transform: translate(-50%, -15px); }
+                            50% { transform: translate(-50%, -5px); }
                             100% { transform: translate(-50%, 0); }
+                        }
+                        .rocket-bob {
+                             animation: bob 3s ease-in-out infinite;
+                        }
+                        @keyframes shake {
+                            0%, 100% { transform: scale(1) rotate(0); }
+                            25% { transform: scale(1.02) rotate(-1deg); }
+                            75% { transform: scale(0.98) rotate(1deg); }
+                        }
+                        .rocket-shake {
+                            animation: bob 3s ease-in-out infinite, shake 0.4s linear infinite;
                         }
                     `}
                 </style>
                 <div 
                     className={cn(
                         "z-10 transition-all duration-300 ease-linear",
-                         gameState === 'playing' ? 'opacity-100' : 'opacity-80',
+                         gameState === 'playing' ? (isShaking ? 'rocket-shake' : 'rocket-bob') : '',
                     )}
                      style={rocketStyle}
                 >
@@ -232,34 +259,42 @@ export default function RocketPage() {
         const canPlaceBet = gameState === 'waiting' && !hasPlacedBet && user && user.balance.stars >= parsedBetAmount && parsedBetAmount > 0;
         const canCashOut = gameState === 'playing' && playerStatus?.status === 'playing';
 
-        let buttonText = 'Waiting for round';
-        let buttonAction = () => {};
-        let buttonClass = 'bg-gray-500';
-        let isButtonDisabled = true;
+        let buttonText = 'Place Bet';
+        let buttonAction = handlePlaceBet;
+        let buttonClass = 'bg-primary hover:bg-primary/90';
+        let isButtonDisabled = false;
 
         if (canCashOut) {
             buttonText = `Cash out ${Math.floor((playerStatus?.bet || 0) * multiplier).toLocaleString()}`;
             buttonAction = handleCashOut;
             buttonClass = 'bg-green-500 hover:bg-green-600';
             isButtonDisabled = false;
-        } else if (playerStatus?.status === 'cashed_out' && playerStatus.cashedOutAt) {
-            const winnings = (playerStatus.bet || 0) * playerStatus.cashedOutAt;
-            buttonText = `You won ${winnings.toFixed(0)}`;
-            buttonClass = 'bg-green-500';
-            isButtonDisabled = true;
-        } else if (hasPlacedBet && gameState === 'waiting') {
-             buttonText = 'Waiting for next round';
-             buttonClass = 'bg-gray-500';
-             isButtonDisabled = true;
-        } else if (hasPlacedBet && (gameState === 'crashed' || playerStatus?.status === 'lost')) {
-            buttonText = 'Crashed';
-            buttonClass = 'bg-red-500';
-            isButtonDisabled = true;
-        } else if (canPlaceBet) {
-            buttonText = `Place Bet`;
-            buttonAction = handlePlaceBet;
-            buttonClass = 'bg-primary hover:bg-primary/90';
-            isButtonDisabled = false;
+        } else if (hasPlacedBet) {
+            if (gameState === 'waiting') {
+                buttonText = 'Waiting for round';
+                buttonClass = 'bg-gray-500';
+                isButtonDisabled = true;
+            } else if (playerStatus?.status === 'cashed_out' && playerStatus.cashedOutAt) {
+                const winnings = (playerStatus.bet || 0) * playerStatus.cashedOutAt;
+                buttonText = `You won ${winnings.toFixed(0)}`;
+                buttonClass = 'bg-green-500';
+                isButtonDisabled = true;
+            } else { // Crashed or lost
+                buttonText = 'Crashed';
+                buttonClass = 'bg-red-500';
+                isButtonDisabled = true;
+            }
+        } else { // Hasn't placed a bet
+             if (gameState !== 'waiting') {
+                buttonText = 'Waiting for next round';
+                isButtonDisabled = true;
+                buttonClass = 'bg-gray-500';
+             } else {
+                buttonText = 'Place Bet';
+                buttonAction = handlePlaceBet;
+                buttonClass = 'bg-primary hover:bg-primary/90';
+                isButtonDisabled = !(user && user.balance.stars >= parsedBetAmount && parsedBetAmount > 0);
+             }
         }
 
 
@@ -361,6 +396,7 @@ export default function RocketPage() {
 
     return (
         <div className="flex flex-col h-full">
+            <audio ref={audioRef} src="https://vgmsite.com/soundtracks/incubation-time-is-running-out/kkgwvwir/202%20-%20Ambient%204.mp3" loop />
             <History />
             <GameScreen />
             <div className="mt-4 w-full flex flex-col items-center flex-grow min-h-0">
@@ -374,3 +410,5 @@ export default function RocketPage() {
 const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
     return <div className={cn("px-3 py-1 rounded-md text-sm font-bold", className)} {...props} />
 }
+
+    
