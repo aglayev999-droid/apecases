@@ -47,29 +47,45 @@ export default function RocketPage() {
 
     const handleCashOut = () => {
         if (!user || gameState !== 'playing' || playerStatus?.status !== 'playing') return;
-        
         playerCashOut(user.id);
-        const winnings = (playerStatus.bet || 0) * multiplier;
-
-        toast({
-            title: "Cashed out!",
-            description: `You won ${winnings.toFixed(0)} stars at ${multiplier.toFixed(2)}x.`
-        });
     };
 
     const GameScreen = () => {
-        const rocketPosition = Math.min(multiplier / 10, 1) * 20;
+        // Simple bobbing animation, stays in place
+        const rocketPosition = 15; // fixed vertical position
+        const rocketStyle: React.CSSProperties = {
+            bottom: `${rocketPosition}%`,
+            left: '50%',
+            transform: `translateX(-50%)`,
+            transition: 'all 0.5s ease-in-out',
+        };
+
+        if (gameState === 'playing') {
+            rocketStyle.animation = 'bob 3s ease-in-out infinite';
+        }
+
+        if (gameState === 'crashed') {
+            rocketStyle.opacity = 0;
+            rocketStyle.transform = 'translateX(-50%) scale(1.5)';
+        }
 
         return (
             <div className="h-64 flex flex-col items-center justify-center relative w-full overflow-hidden">
+                 <style>
+                    {`
+                        @keyframes bob {
+                            0% { transform: translate(-50%, 0); }
+                            50% { transform: translate(-50%, -15px); }
+                            100% { transform: translate(-50%, 0); }
+                        }
+                    `}
+                </style>
                 <div 
                     className={cn(
-                        "absolute transition-all duration-100 ease-linear",
+                        "absolute transition-all duration-300 ease-linear",
                          gameState === 'playing' ? 'opacity-100' : 'opacity-80',
-                         gameState === 'crashed' && 'opacity-0 scale-150',
-                         'transform-gpu'
                     )}
-                     style={{ bottom: `${rocketPosition}%`, transform: `translateX(-50%)` , left: '50%'}}
+                     style={rocketStyle}
                 >
                     <div className="relative w-24 h-24 sm:w-32 sm:h-32">
                          <Image src="https://i.ibb.co/93bWYZZf/3f7ad183-dda1-4dda-996c-69961a4fabdc-removebg-preview.png" alt="Rocket" width={128} height={128} />
@@ -110,7 +126,7 @@ export default function RocketPage() {
             buttonText = `Cash out ${Math.floor((playerStatus?.bet || 0) * multiplier).toLocaleString()}`;
             buttonAction = handleCashOut;
             buttonClass = 'bg-green-500 hover:bg-green-600';
-            isButtonDisabled = false;
+            isButtonDisabled = false; // Make the button clickable
         } else if (canPlaceBet) {
             buttonText = `Place Bet`;
             buttonAction = handlePlaceBet;
@@ -121,17 +137,13 @@ export default function RocketPage() {
             buttonText = `You won ${winnings.toFixed(0)}`;
             buttonClass = 'bg-green-500';
             isButtonDisabled = true;
-        } else if (playerStatus?.status === 'lost') {
+        } else if (hasPlacedBet && gameState === 'crashed') {
             buttonText = 'Crashed';
             buttonClass = 'bg-red-500';
             isButtonDisabled = true;
-        } else if (hasPlacedBet && gameState === 'waiting') {
+        } else if (hasPlacedBet) {
             buttonText = 'Waiting for next round';
             buttonClass = 'bg-gray-500';
-            isButtonDisabled = true;
-        } else if(hasPlacedBet && gameState === 'crashed') {
-            buttonText = 'Crashed';
-            buttonClass = 'bg-red-500';
             isButtonDisabled = true;
         }
 
@@ -181,7 +193,7 @@ export default function RocketPage() {
         <div className="w-full max-w-md mt-4 space-y-2 flex-grow min-h-0">
             <h3 className="text-lg font-semibold px-2">{players.length} Players</h3>
              <Card className="h-full">
-                <ScrollArea className="h-[200px] md:h-full">
+                <ScrollArea className="h-[200px] md:h-auto md:max-h-[300px]">
                     <CardContent className="p-2 space-y-1">
                         {players.map(p => {
                             const isCurrentUser = user?.id === p.id;
