@@ -4,77 +4,91 @@ import Image from 'next/image';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import type { InventoryItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/contexts/UserContext';
+import { useTonWallet } from '@tonconnect/ui-react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 
 interface InventoryCardProps {
   item: InventoryItem;
 }
 
 const RARITY_PROPERTIES = {
-  Common: {
-    border: 'border-gray-600/50 hover:border-gray-500',
-    text: 'text-gray-400',
-    glow: 'hover:shadow-gray-500/30'
-  },
-  Uncommon: {
-    border: 'border-green-600/50 hover:border-green-500',
-    text: 'text-green-400',
-    glow: 'hover:shadow-green-500/40'
-  },
-  Rare: {
-    border: 'border-blue-600/50 hover:border-blue-500',
-    text: 'text-blue-400',
-    glow: 'hover:shadow-blue-500/50'
-  },
-  Epic: {
-    border: 'border-purple-600/50 hover:border-purple-500',
-    text: 'text-purple-400',
-    glow: 'hover:shadow-purple-500/60'
-  },
-  Legendary: {
-    border: 'border-orange-600/50 hover:border-orange-500',
-    text: 'text-orange-400',
-    glow: 'hover:shadow-orange-500/70'
-  },
-  NFT: {
-    border: 'border-purple-500/60 hover:border-purple-400',
-    text: 'text-purple-400',
-    glow: 'hover:shadow-purple-400/80'
-  },
+  Common: { border: 'border-gray-600/50', text: 'text-gray-400' },
+  Uncommon: { border: 'border-green-600/50', text: 'text-green-400' },
+  Rare: { border: 'border-blue-600/50', text: 'text-blue-400' },
+  Epic: { border: 'border-purple-600/50', text: 'text-purple-400' },
+  Legendary: { border: 'border-orange-600/50', text: 'text-orange-400' },
+  NFT: { border: 'border-purple-500/60', text: 'text-purple-400' },
 };
-
-
-const STATUS_BADGE_VARIANT = {
-  won: 'secondary',
-  exchanged: 'outline',
-  shipped: 'default',
-} as const;
 
 export function InventoryCard({ item }: InventoryCardProps) {
   const { toast } = useToast();
+  const { removeInventoryItem, updateBalance } = useUser();
+  const wallet = useTonWallet();
+  const firestore = useFirestore();
 
-  const handleSell = (details: string) => {
+  const handleSell = () => {
+    updateBalance(item.value, 0);
+    removeInventoryItem(item.inventoryId);
     toast({
       title: 'Item Sold!',
-      description: details,
+      description: `You sold ${item.name} for ${item.value} stars.`,
     });
-  }
+  };
 
-  const handleTransfer = (itemName: string) => {
-    toast({
-      title: `Transfer Request Sent`,
-      description: `${itemName} will be sent to @nullprime shortly.`,
-    });
-  }
+  const handleWithdraw = async () => {
+    if (!wallet) {
+      toast({
+        variant: 'destructive',
+        title: 'Wallet Not Connected',
+        description: 'Please connect your TON wallet to withdraw an NFT.',
+      });
+      return;
+    }
+    if (!firestore) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Could not connect to the database. Please try again later.',
+        });
+        return;
+    }
+
+    try {
+      const queueRef = collection(firestore, 'withdrawal_queue');
+      await addDoc(queueRef, {
+        user_wallet_address: wallet.account.address,
+        nft_id: item.id, // Assuming item.id is the Token ID
+        nft_contract_address: 'YOUR_NFT_CONTRACT_ADDRESS_HERE', // IMPORTANT: Replace with actual contract address
+        status: 'pending',
+        timestamp: serverTimestamp(),
+      });
+
+      removeInventoryItem(item.inventoryId);
+
+      toast({
+        title: 'Withdrawal Request Sent',
+        description: `${item.name} is being processed. It will be sent to your wallet shortly.`,
+      });
+    } catch (error) {
+      console.error("Error sending withdrawal request:", error);
+      toast({
+        variant: 'destructive',
+        title: 'Withdrawal Failed',
+        description: 'There was a problem sending your request. Please try again.',
+      });
+    }
+  };
+
+  const isNft = item.rarity === 'NFT';
 
   return (
     <Card className={cn(
-        "flex flex-col group overflow-hidden border-2 transition-all duration-300", 
-        RARITY_PROPERTIES[item.rarity].border,
-        `shadow-md shadow-black/20`,
-        RARITY_PROPERTIES[item.rarity].glow
+        "flex flex-col group overflow-hidden border-2 bg-card", 
+        RARITY_PROPERTIES[item.rarity].border
     )}>
       <CardHeader className="p-2 relative aspect-square">
         <Image
@@ -85,22 +99,29 @@ export function InventoryCard({ item }: InventoryCardProps) {
           className="object-contain p-2 group-hover:scale-105 transition-transform"
           data-ai-hint={item.imageHint}
         />
-        <Badge variant={STATUS_BADGE_VARIANT[item.status]} className="absolute top-2 right-2 capitalize">{item.status}</Badge>
       </CardHeader>
-      <CardContent className="p-2 pt-0 text-center flex-grow">
+      <CardContent className="p-2 pt-0 text-left flex-grow">
         <p className="text-sm font-semibold truncate">{item.name}</p>
-        <p className={cn("text-xs font-bold", RARITY_PROPERTIES[item.rarity].text)}>{item.rarity}</p>
+        {isNft ? (
+            <p className="text-xs text-muted-foreground truncate">ID: {item.inventoryId}</p>
+        ) : (
+            <p className={cn("text-xs font-bold", RARITY_PROPERTIES[item.rarity].text)}>{item.rarity}</p>
+        )}
       </CardContent>
-      <CardFooter className="p-2 flex flex-col gap-1">
-        {item.status === 'won' && item.rarity !== 'NFT' && (
-          <Button variant="secondary" size="sm" className="w-full" onClick={() => handleSell(`Simulating selling ${item.name} for ${item.value} stars.`)}>
+      <CardFooter className="p-2 flex flex-col gap-2">
+        {isNft ? (
+            <div className="w-full grid grid-cols-2 gap-2">
+                <Button variant="destructive" size="sm" onClick={handleSell}>
+                    Sell
+                </Button>
+                <Button variant="default" size="sm" onClick={handleWithdraw}>
+                    Withdraw
+                </Button>
+            </div>
+        ) : (
+          <Button variant="secondary" size="sm" className="w-full" onClick={handleSell}>
             Sell for {item.value} 
             <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
-          </Button>
-        )}
-        {item.status === 'won' && item.rarity === 'NFT' && (
-          <Button variant="default" size="sm" className="w-full bg-gradient-to-r from-primary to-accent text-primary-foreground" onClick={() => handleTransfer(item.name)}>
-            Transfer
           </Button>
         )}
       </CardFooter>

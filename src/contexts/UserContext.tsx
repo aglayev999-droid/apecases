@@ -9,6 +9,8 @@ interface UserContextType {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   updateBalance: (stars: number, diamonds: number) => void;
   addInventoryItem: (item: Item) => void;
+  removeInventoryItem: (inventoryId: string) => void;
+  removeInventoryItems: (inventoryIds: string[]) => void;
   updateSpending: (amount: number) => void;
   lastFreeCaseOpen: Date | null;
   setLastFreeCaseOpen: (date: Date) => void;
@@ -35,14 +37,6 @@ const generateCrashPoint = () => {
     return 10 + Math.random() * 20; // 5% chance for 10-30x
 };
 
-const mockPlayersData = [
-    { id: 'p2', name: 'Hector_1312', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' },
-    { id: 'p3', name: 'e_r_a_7_7_7', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' },
-    { id: 'p4', name: 'okoneews', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' },
-    { id: 'p5', name: 'Player5', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' },
-    { id: 'p6', name: 'Player6', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' },
-];
-
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(MOCK_USER);
   const [lastFreeCaseOpen, setLastFreeCaseOpenState] = useState<Date | null>(() => {
@@ -67,32 +61,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setCrashPoint(generateCrashPoint());
     setCountdown(10);
     
-    // Reset players for the new round, keeping the current user if they exist
     setPlayers(currentPlayers => {
         const playerMap = new Map<string, RocketPlayer>();
 
-        // Re-add human player if they exist, resetting their status for the new round
         const humanPlayer = currentPlayers.find(p => p.id === user?.id);
         if (humanPlayer) {
             playerMap.set(humanPlayer.id, { ...humanPlayer, bet: 0, status: 'waiting', cashedOutAt: null });
         }
-        
-        // Add some bots
-        const numBots = 2 + Math.floor(Math.random() * (mockPlayersData.length - 2));
-        const shuffledBots = mockPlayersData.sort(() => 0.5 - Math.random());
-        
-        shuffledBots.slice(0, numBots).forEach(p => {
-             if (!playerMap.has(p.id)) {
-                 playerMap.set(p.id, {
-                    id: p.id,
-                    name: p.name,
-                    avatar: p.avatar,
-                    bet: Math.floor(10 + Math.random() * 100),
-                    status: 'waiting',
-                    cashedOutAt: null,
-                });
-             }
-        });
         
         return Array.from(playerMap.values());
     });
@@ -106,7 +81,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             timer = setTimeout(() => setCountdown(prev => prev - 1), 1000);
         } else {
             setGameState('playing');
-             // Set status to 'playing' for everyone who has placed a bet
             setPlayers(currentPlayers => currentPlayers.map(p => 
                 p.bet > 0 ? { ...p, status: 'playing' } : p
             ));
@@ -119,13 +93,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
                 setMultiplier(crashPoint);
             } else {
                 setMultiplier(newMultiplier);
-                // Simulate bots cashing out
-                setPlayers(currentPlayers => currentPlayers.map(p => {
-                    if (p.id.startsWith('p') && p.status === 'playing' && Math.random() < 0.015) { // 1.5% chance each tick
-                         return { ...p, status: 'cashed_out', cashedOutAt: newMultiplier };
-                    }
-                    return p;
-                }));
             }
         }, 60);
     } else if (gameState === 'crashed') {
@@ -163,12 +130,33 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       if (!currentUser) return null;
       const newInventoryItem: InventoryItem = {
         ...item,
-        inventoryId: `inv-${Date.now()}-${Math.random()}`,
+        inventoryId: `inv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         status: 'won',
       };
       return {
         ...currentUser,
         inventory: [newInventoryItem, ...currentUser.inventory],
+      };
+    });
+  }, []);
+
+  const removeInventoryItem = useCallback((inventoryId: string) => {
+    setUser(currentUser => {
+      if (!currentUser) return null;
+      return {
+        ...currentUser,
+        inventory: currentUser.inventory.filter(item => item.inventoryId !== inventoryId),
+      };
+    });
+  }, []);
+  
+  const removeInventoryItems = useCallback((inventoryIds: string[]) => {
+    setUser(currentUser => {
+      if (!currentUser) return null;
+      const idSet = new Set(inventoryIds);
+      return {
+        ...currentUser,
+        inventory: currentUser.inventory.filter(item => !idSet.has(item.inventoryId)),
       };
     });
   }, []);
@@ -202,7 +190,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             return Array.from(playerMap.values());
         });
         
-        // Deduct balance
         return {
             ...currentUser,
             balance: { ...currentUser.balance, stars: currentUser.balance.stars - betAmount }
@@ -252,6 +239,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setUser, 
       updateBalance, 
       addInventoryItem, 
+      removeInventoryItem,
+      removeInventoryItems,
       updateSpending, 
       lastFreeCaseOpen, 
       setLastFreeCaseOpen,

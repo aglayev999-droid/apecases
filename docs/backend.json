@@ -248,6 +248,54 @@
           "description": "The conversion rate from 1 TON to STARS."
         }
       }
+    },
+    "WithdrawalQueue": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Withdrawal Queue",
+      "description": "Queue for processing NFT withdrawal requests by the auto-relayer.",
+      "type": "object",
+      "properties": {
+        "user_wallet_address": {
+          "type": "string",
+          "description": "The wallet address to deliver the NFT to."
+        },
+        "nft_id": {
+          "type": "string",
+          "description": "The Token ID of the won NFT."
+        },
+        "nft_contract_address": {
+          "type": "string",
+          "description": "The smart contract address of the NFT collection."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "processing", "completed", "failed"],
+          "description": "The current status of the withdrawal request."
+        },
+        "timestamp": {
+          "type": "number",
+          "description": "The Unix timestamp when the request was created."
+        },
+        "processed_by": {
+          "type": "string",
+          "description": "Identifier of the relayer worker that processed the request."
+        },
+        "tx_hash": {
+          "type": "string",
+          "description": "The blockchain transaction hash once the transfer is successful."
+        },
+        "error_message": {
+          "type": "string",
+          "description": "Stores any error message if the transaction fails."
+        }
+      },
+      "required": [
+        "user_wallet_address",
+        "nft_id",
+        "nft_contract_address",
+        "status",
+        "timestamp"
+      ]
     }
   },
   "auth": {
@@ -283,8 +331,10 @@
     "/settings/global": {
       "schema": { "$ref": "#/entities/Settings" },
       "description": "Stores global application settings like conversion rates."
+    },
+    "/withdrawal_queue/{requestId}": {
+      "schema": { "$ref": "#/entities/WithdrawalQueue" },
+      "description": "A queue of NFT withdrawal requests to be processed by an off-chain relayer service. This allows for secure and automated NFT transfers."
     }
   }
 }
-
-    
