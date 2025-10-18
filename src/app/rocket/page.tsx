@@ -77,77 +77,77 @@ export default function RocketPage() {
     const GameScreen = () => {
         const VERTICAL_THRESHOLD = 3; // Switch to vertical flight at 3x
         const gameContainerRef = useRef<HTMLDivElement>(null);
+        const [position, setPosition] = useState({ x: 20, y: 200, rotation: -45 });
+        const [trailPath, setTrailPath] = useState("");
+
+        useEffect(() => {
+            if (!gameContainerRef.current) return;
+
+            const containerWidth = gameContainerRef.current.offsetWidth;
+            const containerHeight = gameContainerRef.current.offsetHeight;
+            const startX = 20;
+            const startY = containerHeight - 50;
+
+            const getRocketPosition = () => {
+                 if (gameState === 'waiting' || gameState === 'crashed' || multiplier < 1.01) {
+                    return { x: startX, y: startY, rotation: -45 };
+                }
         
-        const getRocketPosition = () => {
-            if (!gameContainerRef.current) return { x: 0, y: 0, rotation: 45 };
-            
-            const containerWidth = gameContainerRef.current.offsetWidth;
-            const containerHeight = gameContainerRef.current.offsetHeight;
-    
-            const startX = 20;
-            const startY = containerHeight - 50;
-    
-            if (gameState === 'waiting' || gameState === 'crashed' || multiplier < 1.01) {
-                return { x: startX, y: startY, rotation: -45 };
+                const progress = multiplier - 1;
+                
+                let x, y, rotation;
+        
+                if (multiplier < VERTICAL_THRESHOLD) {
+                    // Diagonal flight towards the center
+                    const targetX = containerWidth / 2;
+                    const targetY = containerHeight / 2;
+                    const pathProgress = progress / (VERTICAL_THRESHOLD - 1);
+        
+                    x = startX + (targetX - startX) * pathProgress;
+                    y = startY - (startY - targetY) * pathProgress;
+                    rotation = -45;
+                } else {
+                    // Vertical flight upwards from the center
+                    const postThresholdProgress = multiplier - VERTICAL_THRESHOLD;
+                    const centerTargetX = containerWidth / 2;
+                    const centerTargetY = containerHeight / 2;
+        
+                    x = centerTargetX;
+                    y = centerTargetY - postThresholdProgress * 25; // Increase vertical speed
+                    rotation = 0;
+                }
+                return { x, y: y, rotation };
             }
-    
-            const progress = multiplier - 1;
-            
-            let x, y, rotation;
-    
-            if (multiplier < VERTICAL_THRESHOLD) {
-                // Diagonal flight towards the center
-                const targetX = containerWidth / 2;
-                const targetY = containerHeight / 2;
-                const pathProgress = progress / (VERTICAL_THRESHOLD - 1);
-    
-                x = startX + (targetX - startX) * pathProgress;
-                y = startY - (startY - targetY) * pathProgress;
-                rotation = -45;
-            } else {
-                // Vertical flight upwards from the center
-                const postThresholdProgress = multiplier - VERTICAL_THRESHOLD;
-                const centerTargetX = containerWidth / 2;
-                const centerTargetY = containerHeight / 2;
-    
-                x = centerTargetX;
-                y = centerTargetY - postThresholdProgress * 25; // Increase vertical speed
-                rotation = 0;
-            }
-    
-            return { x, y: y, rotation };
-        };
-    
-        const { x, y, rotation } = getRocketPosition();
 
-        // Generate SVG path for the trail
-        const getTrailPath = () => {
-            if (!gameContainerRef.current || multiplier < 1.02) return "";
-    
-            const containerWidth = gameContainerRef.current.offsetWidth;
-            const containerHeight = gameContainerRef.current.offsetHeight;
-            const startX = 20;
-            const startY = containerHeight - 50;
-            
-            let path = `M ${startX} ${startY}`;
+            const newPos = getRocketPosition();
+            setPosition(newPos);
 
-            if (multiplier < VERTICAL_THRESHOLD) {
-                 path += ` L ${x} ${y}`;
-            } else {
-                const centerX = containerWidth / 2;
-                const centerY = containerHeight / 2;
-                path += ` L ${centerX} ${centerY}`;
-                path += ` L ${x} ${y}`;
+            // Generate SVG path for the trail
+            const getTrailPath = () => {
+                if (multiplier < 1.02) return "";
+                
+                let path = `M ${startX} ${startY}`;
+
+                if (multiplier < VERTICAL_THRESHOLD) {
+                     path += ` L ${newPos.x} ${newPos.y}`;
+                } else {
+                    const centerX = containerWidth / 2;
+                    const centerY = containerHeight / 2;
+                    path += ` L ${centerX} ${centerY}`;
+                    path += ` L ${newPos.x} ${newPos.y}`;
+                }
+                return path;
             }
-            return path;
-        }
+            setTrailPath(getTrailPath());
+
+        }, [multiplier, gameState]);
 
     
         const rocketStyle: React.CSSProperties = {
             position: 'absolute',
-            left: `${x}px`,
-            top: `${y}px`,
-            transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+            transform: `translate(-50%, -50%) rotate(${position.rotation}deg)`,
             transition: 'all 0.1s linear',
             willChange: 'transform, left, top',
             opacity: gameState === 'crashed' ? 0 : 1,
@@ -185,9 +185,9 @@ export default function RocketPage() {
                         @keyframes move-planet { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(20px, -30px) scale(1.1); } 100% { transform: translate(0, 0) scale(1); } }
                         
                         @keyframes shake {
-                            0%, 100% { transform: translate(-50%, -50%) rotate(${rotation}deg) scale(1); }
-                            25% { transform: translate(-51%, -49%) rotate(${rotation-1}deg) scale(1.02); }
-                            75% { transform: translate(-49%, -51%) rotate(${rotation+1}deg) scale(0.98); }
+                            0%, 100% { transform: translate(-50%, -50%) rotate(${position.rotation}deg) scale(1); }
+                            25% { transform: translate(-51%, -49%) rotate(${position.rotation-1}deg) scale(1.02); }
+                            75% { transform: translate(-49%, -51%) rotate(${position.rotation+1}deg) scale(0.98); }
                         }
                         .rocket-shake { animation: shake 0.3s linear infinite; }
 
@@ -204,7 +204,7 @@ export default function RocketPage() {
                 <svg className="absolute inset-0 w-full h-full z-10">
                     <path
                         className="rocket-trail"
-                        d={getTrailPath()}
+                        d={trailPath}
                         stroke="hsl(var(--primary))"
                         strokeWidth="3"
                         fill="none"
