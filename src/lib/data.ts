@@ -3,6 +3,12 @@ import type { Item, Case, User, LeaderboardEntry } from './types';
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
 export const ALL_ITEMS: Item[] = [
+  { id: 'item-stars-5', name: '5 Stars', rarity: 'Common', image: 'https://i.ibb.co/WN2md4DV/stars.png', imageHint: 'stars currency', value: 5, description: 'A small amount of stars.' },
+  { id: 'item-stars-7', name: '7 Stars', rarity: 'Common', image: 'https://i.ibb.co/WN2md4DV/stars.png', imageHint: 'stars currency', value: 7, description: 'A small amount of stars.' },
+  { id: 'item-stars-10', name: '10 Stars', rarity: 'Uncommon', image: 'https://i.ibb.co/WN2md4DV/stars.png', imageHint: 'stars currency', value: 10, description: 'A handful of stars.' },
+  { id: 'item-stars-15', name: '15 Stars', rarity: 'Uncommon', image: 'https://i.ibb.co/WN2md4DV/stars.png', imageHint: 'stars currency', value: 15, description: 'A handful of stars.' },
+  { id: 'item-stars-20', name: '20 Stars', rarity: 'Rare', image: 'https://i.ibb.co/WN2md4DV/stars.png', imageHint: 'stars currency', value: 20, description: 'A good amount of stars.' },
+  { id: 'item-stars-50', name: '50 Stars', rarity: 'Epic', image: 'https://i.ibb.co/WN2md4DV/stars.png', imageHint: 'stars currency', value: 50, description: 'A large amount of stars.' },
   { id: 'item-sword-1', name: 'Cyberblade', rarity: 'Common', image: 'https://i.ibb.co/6gSBFxV/s1.jpg', imageHint: 'cyberpunk sword', value: 50, description: 'A standard issue energy-edged sword.' },
   { id: 'item-shield-1', name: 'Kinetic Barrier', rarity: 'Uncommon', image: 'https://i.ibb.co/JyW3PzM/s2.jpg', imageHint: 'energy shield', value: 150, description: 'A personal shield that hardens on impact.' },
   { id: 'item-helmet-1', name: 'Aegis Visor', rarity: 'Rare', image: 'https://i.ibb.co/d2C1r8S/s3.jpg', imageHint: 'glowing helmet', value: 500, description: 'Provides enhanced tactical data.' },
@@ -21,9 +27,12 @@ export const MOCK_CASES: Case[] = [
     imageHint: 'gift box gingerbread',
     freeCooldownSeconds: 86400, // 24 hours
     items: [
-      { itemId: 'item-armor-1', probability: 0.5 },
-      { itemId: 'item-boots-1', probability: 0.3 },
-      { itemId: 'item-nft-1', probability: 0.2 },
+      { itemId: 'item-stars-5', probability: 0.4 },
+      { itemId: 'item-stars-7', probability: 0.25 },
+      { itemId: 'item-stars-10', probability: 0.15 },
+      { itemId: 'item-stars-15', probability: 0.1 },
+      { itemId: 'item-stars-20', probability: 0.07 },
+      { itemId: 'item-stars-50', probability: 0.03 },
     ],
   },
   {

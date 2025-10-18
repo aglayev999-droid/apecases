@@ -167,7 +167,16 @@ export default function CasePage() {
         const timeoutId = setTimeout(() => {
           emblaApi.scrollTo(prizeIndexInReel, false);
           setIsSpinning(false);
-          addInventoryItem(prize);
+          
+          if (prize.id.startsWith('item-stars-')) {
+            updateBalance(prize.value, 0);
+            toast({
+                title: `You won ${prize.name}!`,
+                description: `Added ${prize.value} stars to your balance.`,
+            });
+          } else {
+            addInventoryItem(prize);
+          }
         }, spinTime);
         
         return () => clearTimeout(timeoutId);
@@ -187,6 +196,10 @@ export default function CasePage() {
     const handleGoToInventory = () => {
         router.push('/inventory');
     };
+    
+    const handleClaimStars = () => {
+        setWonItem(null);
+    }
 
     if (!caseData) {
         return (
@@ -238,6 +251,8 @@ export default function CasePage() {
     const WinScreen = () => {
         if (!wonItem || isSpinning) return null;
 
+        const isStars = wonItem.id.startsWith('item-stars-');
+
         return (
             <div className="text-center animate-in fade-in-50 space-y-4">
                  <div className="relative w-48 h-48 mx-auto">
@@ -247,15 +262,21 @@ export default function CasePage() {
                     <h3 className="text-xl font-bold">You won: <span className={cn(RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.name}</span></h3>
                     <p className={cn("font-semibold", RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.rarity}</p>
                 </div>
-                <div className="grid grid-cols-2 gap-4 pt-4">
-                    <Button variant="destructive" size="lg" onClick={handleSell}>
-                        Sell {wonItem.value}
-                        <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain ml-2" />
+                { isStars ? (
+                    <Button variant="default" size="lg" className="w-full" onClick={handleClaimStars}>
+                        Awesome!
                     </Button>
-                    <Button variant="default" size="lg" onClick={handleGoToInventory}>
-                        Go to inventory
-                    </Button>
-                </div>
+                ) : (
+                    <div className="grid grid-cols-2 gap-4 pt-4">
+                        <Button variant="destructive" size="lg" onClick={handleSell}>
+                            Sell {wonItem.value}
+                            <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain ml-2" />
+                        </Button>
+                        <Button variant="default" size="lg" onClick={handleGoToInventory}>
+                            Go to inventory
+                        </Button>
+                    </div>
+                )}
             </div>
         );
     };
