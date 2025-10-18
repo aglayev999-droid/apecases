@@ -69,10 +69,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     
     // Reset players for the new round, keeping the current user if they exist
     setPlayers(currentPlayers => {
-        const humanPlayer = currentPlayers.find(p => p.id === user?.id);
         const playerMap = new Map<string, RocketPlayer>();
 
         // Re-add human player if they exist, resetting their status for the new round
+        const humanPlayer = currentPlayers.find(p => p.id === user?.id);
         if (humanPlayer) {
             playerMap.set(humanPlayer.id, { ...humanPlayer, bet: 0, status: 'waiting', cashedOutAt: null });
         }
@@ -108,7 +108,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             setGameState('playing');
              // Set status to 'playing' for everyone who has placed a bet
             setPlayers(currentPlayers => currentPlayers.map(p => 
-                p.bet > 0 && p.status === 'waiting' ? { ...p, status: 'playing' } : p
+                p.bet > 0 ? { ...p, status: 'playing' } : p
             ));
         }
     } else if (gameState === 'playing') {
@@ -212,32 +212,34 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const playerCashOut = useCallback((userId: string) => {
     if (gameState !== 'playing' || !user) return;
-  
+
+    let playerToUpdate: RocketPlayer | undefined;
+    
     setPlayers(currentPlayers => {
-      const playerIndex = currentPlayers.findIndex(p => p.id === userId);
-      if (playerIndex === -1 || currentPlayers[playerIndex].status !== 'playing') {
-        return currentPlayers;
-      }
-  
-      const player = currentPlayers[playerIndex];
-      const winnings = player.bet * multiplier;
-  
-      // Update balance in the same state update as players
-      setUser(currentUser => {
-        if (!currentUser) return null;
-        return {
-          ...currentUser,
-          balance: {
-            ...currentUser.balance,
-            stars: currentUser.balance.stars + winnings,
-          },
-        };
-      });
-  
-      const newPlayers = [...currentPlayers];
-      newPlayers[playerIndex] = { ...player, status: 'cashed_out', cashedOutAt: multiplier };
-      return newPlayers;
+        const playerIndex = currentPlayers.findIndex(p => p.id === userId);
+        if (playerIndex === -1 || currentPlayers[playerIndex].status !== 'playing') {
+            return currentPlayers;
+        }
+
+        playerToUpdate = currentPlayers[playerIndex];
+        const newPlayers = [...currentPlayers];
+        newPlayers[playerIndex] = { ...playerToUpdate, status: 'cashed_out', cashedOutAt: multiplier };
+        return newPlayers;
     });
+
+    if (playerToUpdate) {
+        const winnings = playerToUpdate.bet * multiplier;
+        setUser(currentUser => {
+            if (!currentUser) return null;
+            return {
+                ...currentUser,
+                balance: {
+                    ...currentUser.balance,
+                    stars: currentUser.balance.stars + winnings,
+                },
+            };
+        });
+    }
   }, [gameState, multiplier, user, setUser]);
 
   const getPlayerStatus = useCallback((userId: string) => {
