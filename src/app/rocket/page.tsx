@@ -10,119 +10,47 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { HistoryIcon } from '@/components/icons/HistoryIcon';
 import { useToast } from '@/hooks/use-toast';
+import type { RocketPlayer } from '@/lib/types';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const MOCK_PLAYER_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
-type GameState = 'waiting' | 'playing' | 'crashed';
-type PlayerStatus = 'waiting' | 'playing' | 'cashed_out' | 'lost';
-
-const generateCrashPoint = () => {
-    const r = Math.random();
-    if (r < 0.5) return 1 + Math.random(); 
-    if (r < 0.8) return 2 + Math.random() * 2;
-    if (r < 0.95) return 4 + Math.random() * 6;
-    return 10 + Math.random() * 20;
-};
-
-const mockPlayers = [
-    { id: 'p2', name: 'Hector_1312', avatar: MOCK_PLAYER_AVATAR },
-    { id: 'p3', name: 'e_r_a_7_7_7', avatar: MOCK_PLAYER_AVATAR },
-    { id: 'p4', name: 'okoneews', avatar: MOCK_PLAYER_AVATAR },
-    { id: 'p5', name: 'Player5', avatar: MOCK_PLAYER_AVATAR },
-    { id: 'p6', name: 'Player6', avatar: MOCK_PLAYER_AVATAR },
-];
-
-
 export default function RocketPage() {
-    const { user, updateBalance } = useUser();
+    const { 
+        user, 
+        gameState, 
+        multiplier, 
+        history, 
+        players, 
+        countdown, 
+        playerBet, 
+        playerCashOut,
+        getPlayerStatus 
+    } = useUser();
     const { toast } = useToast();
-    const [gameState, setGameState] = useState<GameState>('waiting');
-    const [multiplier, setMultiplier] = useState(1.00);
-    const [crashPoint, setCrashPoint] = useState(1.00);
     const [betAmount, setBetAmount] = useState('25');
-    const [countdown, setCountdown] = useState(10);
-    const [history, setHistory] = useState<number[]>([]);
-    
-    const [players, setPlayers] = useState<any[]>([]);
-    
-    const [playerStatus, setPlayerStatus] = useState<PlayerStatus>('waiting');
-    const [cashedOutMultiplier, setCashedOutMultiplier] = useState<number | null>(null);
 
     const parsedBetAmount = parseInt(betAmount) || 0;
-    const hasPlacedBet = playerStatus !== 'waiting';
-
-    const resetGame = useCallback(() => {
-        setGameState('waiting');
-        setMultiplier(1.00);
-        setCrashPoint(generateCrashPoint());
-        setCountdown(10);
-        setPlayerStatus('waiting');
-        setCashedOutMultiplier(null);
-        
-        const numPlayers = 2 + Math.floor(Math.random() * (mockPlayers.length - 2));
-        const shuffled = mockPlayers.sort(() => 0.5 - Math.random());
-        setPlayers(shuffled.slice(0, numPlayers).map(p => ({
-            ...p,
-            bet: Math.floor(10 + Math.random() * 100),
-            cashedOutAt: null,
-        })));
-    }, []);
-    
-    useEffect(() => {
-      if (gameState === 'crashed') {
-        if (playerStatus === 'playing') {
-            setPlayerStatus('lost');
-        }
-        setHistory(prev => [crashPoint, ...prev.slice(0, 9)]);
-        const timer = setTimeout(resetGame, 3000);
-        return () => clearTimeout(timer);
-      }
-    }, [gameState, playerStatus, crashPoint, resetGame]);
-
-
-    useEffect(() => {
-        let timer: NodeJS.Timeout;
-
-        if (gameState === 'waiting') {
-            if (countdown > 0) {
-                timer = setTimeout(() => setCountdown(prev => prev - 1), 1000);
-            } else {
-                setGameState('playing');
-            }
-        } else if (gameState === 'playing') {
-            timer = setTimeout(() => {
-                const newMultiplier = multiplier + (0.01 + multiplier * 0.01);
-                if (newMultiplier >= crashPoint) {
-                    setGameState('crashed');
-                    setMultiplier(crashPoint);
-                } else {
-                    setMultiplier(newMultiplier);
-                }
-            }, 60);
-        }
-
-        return () => clearTimeout(timer);
-    }, [gameState, countdown, multiplier, crashPoint]);
+    const playerStatus = user ? getPlayerStatus(user.id) : undefined;
+    const hasPlacedBet = playerStatus?.status && playerStatus.status !== 'waiting';
 
     const handlePlaceBet = () => {
         if (!user || user.balance.stars < parsedBetAmount || parsedBetAmount <= 0) {
             toast({ variant: 'destructive', title: "Not enough stars", description: "You don't have enough stars to place this bet." });
             return;
         }
-        updateBalance(-parsedBetAmount, 0);
-        setPlayerStatus('playing');
-        toast({ title: "Bet placed!", description: `You bet ${parsedBetAmount} stars.` });
+        if (gameState === 'waiting') {
+            playerBet(user.id, parsedBetAmount, user.avatar, user.name);
+            toast({ title: "Bet placed!", description: `You bet ${parsedBetAmount} stars.` });
+        }
     };
 
     const handleCashOut = () => {
-        if (gameState !== 'playing' || playerStatus !== 'playing') return;
-    
-        const winnings = parsedBetAmount * multiplier;
-        updateBalance(winnings, 0);
+        if (!user || gameState !== 'playing' || playerStatus?.status !== 'playing') return;
         
-        setPlayerStatus('cashed_out');
-        setCashedOutMultiplier(multiplier);
-    
+        playerCashOut(user.id);
+        const winnings = (playerStatus.bet || 0) * multiplier;
+
         toast({
             title: "Cashed out!",
             description: `You won ${winnings.toFixed(0)} stars at ${multiplier.toFixed(2)}x.`
@@ -130,7 +58,7 @@ export default function RocketPage() {
     };
 
     const GameScreen = () => {
-        const rocketPosition = Math.min(multiplier/10, 1) * 20;
+        const rocketPosition = Math.min(multiplier / 10, 1) * 20;
 
         return (
             <div className="h-64 flex flex-col items-center justify-center relative w-full overflow-hidden">
@@ -170,43 +98,42 @@ export default function RocketPage() {
     };
 
     const BetControls = () => {
-        const canPlaceBet = gameState === 'waiting' && playerStatus === 'waiting' && user && user.balance.stars >= parsedBetAmount && parsedBetAmount > 0;
-        const canCashOut = gameState === 'playing' && playerStatus === 'playing';
+        const canPlaceBet = gameState === 'waiting' && !hasPlacedBet && user && user.balance.stars >= parsedBetAmount && parsedBetAmount > 0;
+        const canCashOut = gameState === 'playing' && playerStatus?.status === 'playing';
 
         let buttonText = 'Waiting for round';
+        let buttonAction = () => {};
         let buttonClass = 'bg-gray-500';
         let isButtonDisabled = true;
 
         if (canCashOut) {
-            buttonText = `Cash out ${Math.floor(parsedBetAmount * multiplier).toLocaleString()}`;
+            buttonText = `Cash out ${Math.floor((playerStatus?.bet || 0) * multiplier).toLocaleString()}`;
+            buttonAction = handleCashOut;
             buttonClass = 'bg-green-500 hover:bg-green-600';
             isButtonDisabled = false;
         } else if (canPlaceBet) {
             buttonText = `Place Bet`;
+            buttonAction = handlePlaceBet;
             buttonClass = 'bg-primary hover:bg-primary/90';
             isButtonDisabled = false;
-        } else if (playerStatus === 'cashed_out' && cashedOutMultiplier) {
-            const winnings = parsedBetAmount * cashedOutMultiplier;
+        } else if (playerStatus?.status === 'cashed_out' && playerStatus.cashedOutAt) {
+            const winnings = (playerStatus.bet || 0) * playerStatus.cashedOutAt;
             buttonText = `You won ${winnings.toFixed(0)}`;
             buttonClass = 'bg-green-500';
             isButtonDisabled = true;
-        } else if (playerStatus === 'lost') {
+        } else if (playerStatus?.status === 'lost') {
             buttonText = 'Crashed';
             buttonClass = 'bg-red-500';
             isButtonDisabled = true;
         } else if (hasPlacedBet && gameState === 'waiting') {
-            buttonText = 'Waiting for round';
+            buttonText = 'Waiting for next round';
             buttonClass = 'bg-gray-500';
             isButtonDisabled = true;
+        } else if(hasPlacedBet && gameState === 'crashed') {
+            buttonText = 'Crashed';
+            buttonClass = 'bg-red-500';
+            isButtonDisabled = true;
         }
-
-        const handleButtonClick = () => {
-            if (canCashOut) {
-                handleCashOut();
-            } else if (canPlaceBet) {
-                handlePlaceBet();
-            }
-        };
 
         return (
             <Card className="w-full max-w-md p-4">
@@ -221,7 +148,7 @@ export default function RocketPage() {
                     />
                 </div>
                  <Button 
-                    onClick={handleButtonClick}
+                    onClick={buttonAction}
                     disabled={isButtonDisabled}
                     className={cn( "w-full h-14 text-xl", buttonClass )}
                 >
@@ -252,68 +179,50 @@ export default function RocketPage() {
     
     const PlayerList = () => (
         <div className="w-full max-w-md mt-4 space-y-2 flex-grow min-h-0">
-            <h3 className="text-lg font-semibold px-2">{players.length + (hasPlacedBet ? 1 : 0)} Players</h3>
+            <h3 className="text-lg font-semibold px-2">{players.length} Players</h3>
              <Card className="h-full">
-                <ScrollArea className="h-full">
+                <ScrollArea className="h-[200px] md:h-full">
                     <CardContent className="p-2 space-y-1">
-                        {hasPlacedBet && user && (
-                             <div className={cn("flex items-center justify-between p-2 rounded-lg",
-                                playerStatus === 'cashed_out' ? 'bg-green-500/20' :
-                                playerStatus === 'lost' ? 'bg-red-500/20' :
-                                'bg-primary/10'
+                        {players.map(p => {
+                            const isCurrentUser = user?.id === p.id;
+                             return (
+                             <div key={p.id} className={cn("flex items-center justify-between p-2 rounded-lg",
+                                p.status === 'cashed_out' ? 'bg-green-500/20' :
+                                p.status === 'lost' ? 'bg-red-500/20' :
+                                isCurrentUser ? 'bg-primary/10' : ''
                              )}>
-                                <div className="flex items-center gap-3">
-                                    <Avatar className="h-8 w-8">
-                                        <AvatarImage src={MOCK_PLAYER_AVATAR} />
-                                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                                    </Avatar>
-                                    <span className="font-semibold">{user.name}</span>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center gap-1 text-muted-foreground">
-                                        <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="h-4 w-4 object-contain" />
-                                        <span>{parsedBetAmount.toLocaleString()}</span>
-                                    </div>
-                                    <div className="w-32 text-right">
-                                        {playerStatus === 'playing' && gameState === 'playing' && (
-                                            <span className="font-bold text-gray-400">{Math.floor(parsedBetAmount * multiplier).toLocaleString()}</span>
-                                        )}
-                                        {playerStatus === 'cashed_out' && cashedOutMultiplier && (
-                                             <div className="flex items-center justify-end gap-1 font-bold text-green-400">
-                                                <span>+{(parsedBetAmount * cashedOutMultiplier).toFixed(0)}</span>
-                                                <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="h-4 w-4 object-contain" />
-                                            </div>
-                                        )}
-                                        {playerStatus === 'lost' && (
-                                            <span className="font-bold text-red-500">Crashed</span>
-                                        )}
-                                         {playerStatus === 'playing' && gameState !== 'playing' && (
-                                            <span className="font-bold text-gray-500">-</span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        {players.map(p => (
-                             <div key={p.id} className="flex items-center justify-between p-2 rounded-lg">
                                 <div className="flex items-center gap-3">
                                     <Avatar className="h-8 w-8">
                                         <AvatarImage src={p.avatar} />
                                         <AvatarFallback>{p.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
-                                    <span className="font-medium text-sm text-muted-foreground">{p.name}</span>
+                                    <span className="font-semibold text-sm">{p.name}</span>
                                 </div>
-                                 <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-1 text-muted-foreground">
-                                         <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="h-4 w-4 object-contain" />
+                                        <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="h-4 w-4 object-contain" />
                                         <span>{p.bet.toLocaleString()}</span>
                                     </div>
-                                    <span className="font-bold text-gray-500 w-32 text-right">
-                                        {p.cashedOutAt ? `${p.cashedOutAt.toFixed(2)}x` : '-'}
-                                    </span>
+                                    <div className="w-32 text-right">
+                                        {p.status === 'playing' && gameState === 'playing' && isCurrentUser &&(
+                                            <span className="font-bold text-gray-400">{Math.floor(p.bet * multiplier).toLocaleString()}</span>
+                                        )}
+                                        {p.status === 'cashed_out' && p.cashedOutAt && (
+                                             <div className="flex items-center justify-end gap-1 font-bold text-green-400">
+                                                <span>+{(p.bet * p.cashedOutAt).toFixed(0)}</span>
+                                                <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="h-4 w-4 object-contain" />
+                                            </div>
+                                        )}
+                                        {p.status === 'lost' && (
+                                            <span className="font-bold text-red-500">Crashed</span>
+                                        )}
+                                         {(p.status === 'playing' || p.status === 'waiting') && gameState !== 'playing' && (
+                                            <span className="font-bold text-gray-500">-</span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        ))}
+                        )})}
                     </CardContent>
                 </ScrollArea>
             </Card>
@@ -321,10 +230,10 @@ export default function RocketPage() {
     );
 
     return (
-        <div className="flex flex-col h-[calc(100vh-14rem)] md:h-[calc(100vh-8rem)]">
+        <div className="flex flex-col h-full">
             <History />
             <GameScreen />
-            <div className="mt-auto w-full flex flex-col items-center flex-grow min-h-0">
+            <div className="mt-4 w-full flex flex-col items-center flex-grow min-h-0">
                 <BetControls />
                 <PlayerList />
             </div>
@@ -334,8 +243,4 @@ export default function RocketPage() {
 
 const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
     return <div className={cn("px-3 py-1 rounded-md text-sm font-bold flex-shrink-0", className)} {...props} />
-}
-
-const ScrollArea = ({ className, children }: React.HTMLAttributes<HTMLDivElement>) => {
-    return <div className={cn("overflow-y-auto", className)}>{children}</div>
 }

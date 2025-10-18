@@ -50,3 +50,16 @@ export interface LeaderboardEntry {
   };
   spent: number;
 }
+
+// Rocket Game Types
+export type RocketGameState = 'waiting' | 'playing' | 'crashed';
+export type RocketPlayerStatus = 'waiting' | 'playing' | 'cashed_out' | 'lost';
+
+export interface RocketPlayer {
+  id: string;
+  name: string;
+  avatar: string;
+  bet: number;
+  status: RocketPlayerStatus;
+  cashedOutAt: number | null;
+}
