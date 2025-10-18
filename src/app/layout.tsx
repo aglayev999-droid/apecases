@@ -32,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={cn("font-body antialiased", inter.variable, quantico.variable)}>
+      <body className={cn("font-body antialiased", inter.variable, quantico.variable)} suppressHydrationWarning>
         <TonConnectProvider>
           <UserProvider>
             <div className="flex flex-col min-h-screen">
