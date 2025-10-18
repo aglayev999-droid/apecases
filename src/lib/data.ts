@@ -1,3 +1,4 @@
+
 import type { Item, Case, User, LeaderboardEntry } from './types';
 
 export const ALL_ITEMS: Item[] = [
@@ -12,22 +13,21 @@ export const ALL_ITEMS: Item[] = [
 
 export const MOCK_CASES: Case[] = [
   {
-    id: 'case-common',
-    name: 'Standard Issue',
-    price: 100,
+    id: 'case-free-2',
+    name: 'Free box',
+    price: 0,
     image: 'https://picsum.photos/seed/case1/400/300',
-    imageHint: 'treasure chest',
+    imageHint: 'gift box gingerbread',
     items: [
-      { itemId: 'item-sword-1', probability: 0.7 },
-      { itemId: 'item-shield-1', probability: 0.2 },
-      { itemId: 'item-helmet-1', probability: 0.09 },
-      { itemId: 'item-nft-1', probability: 0.01 },
+      { itemId: 'item-armor-1', probability: 0.5 },
+      { itemId: 'item-boots-1', probability: 0.3 },
+      { itemId: 'item-nft-1', probability: 0.2 },
     ],
   },
   {
-    id: 'case-rare',
-    name: 'Operator\'s Cache',
-    price: 500,
+    id: 'case-floor-8',
+    name: 'FLOOR CASE',
+    price: 180,
     image: 'https://picsum.photos/seed/case2/400/300',
     imageHint: 'glowing chest',
     items: [
@@ -39,9 +39,9 @@ export const MOCK_CASES: Case[] = [
     ],
   },
   {
-    id: 'case-epic',
-    name: 'Assassin\'s Strongbox',
-    price: 2500,
+    id: 'case-labubu-10',
+    name: 'LABUBU CASE',
+    price: 240,
     image: 'https://picsum.photos/seed/case3/400/300',
     imageHint: 'epic treasure',
     items: [
@@ -53,15 +53,16 @@ export const MOCK_CASES: Case[] = [
     ],
   },
   {
-    id: 'case-legendary',
-    name: 'Warlord\'s Hoard',
-    price: 0,
+    id: 'case-snoop-7',
+    name: 'SNOOP DOG CASE',
+    price: 180,
     image: 'https://picsum.photos/seed/case4/400/300',
     imageHint: 'legendary artifact',
     items: [
-      { itemId: 'item-armor-1', probability: 0.5 },
-      { itemId: 'item-boots-1', probability: 0.3 },
-      { itemId: 'item-nft-1', probability: 0.2 },
+      { itemId: 'item-sword-1', probability: 0.7 },
+      { itemId: 'item-shield-1', probability: 0.2 },
+      { itemId: 'item-helmet-1', probability: 0.09 },
+      { itemId: 'item-nft-1', probability: 0.01 },
     ],
   },
 ];
