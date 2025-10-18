@@ -11,11 +11,12 @@ import { cn } from '@/lib/utils';
 import { RocketIcon } from '@/components/icons/RocketIcon';
 import { CoinsIcon } from '@/components/icons/CoinsIcon';
 import { HistoryIcon } from '@/components/icons/HistoryIcon';
+import { useToast } from '@/hooks/use-toast';
 
 const MOCK_PLAYER_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
 type GameState = 'waiting' | 'playing' | 'crashed';
-type PlayerStatus = 'playing' | 'cashed_out' | 'lost';
+type PlayerStatus = 'waiting' | 'playing' | 'cashed_out' | 'lost';
 
 const generateCrashPoint = () => {
     // Simple skewed distribution towards lower numbers
@@ -23,7 +24,7 @@ const generateCrashPoint = () => {
     if (r < 0.5) return 1 + Math.random(); // 50% chance for 1x-2x
     if (r < 0.8) return 2 + Math.random() * 2; // 30% chance for 2x-4x
     if (r < 0.95) return 4 + Math.random() * 6; // 15% chance for 4x-10x
-    return 10 + Math.random() * 10; // 5% chance for 10x-20x
+    return 10 + Math.random() * 20; // 5% chance for 10x-30x
 };
 
 const mockPlayers = [
@@ -37,6 +38,7 @@ const mockPlayers = [
 
 export default function RocketPage() {
     const { user, updateBalance } = useUser();
+    const { toast } = useToast();
     const [gameState, setGameState] = useState<GameState>('waiting');
     const [multiplier, setMultiplier] = useState(1.00);
     const [crashPoint, setCrashPoint] = useState(1.00);
@@ -45,19 +47,20 @@ export default function RocketPage() {
     const [history, setHistory] = useState<number[]>([]);
     
     const [players, setPlayers] = useState<any[]>([]);
-    const [hasPlacedBet, setHasPlacedBet] = useState(false);
-    const [playerStatus, setPlayerStatus] = useState<PlayerStatus>('playing');
+    
+    // Player specific state
+    const [playerStatus, setPlayerStatus] = useState<PlayerStatus>('waiting');
     const [cashedOutMultiplier, setCashedOutMultiplier] = useState<number | null>(null);
 
     const parsedBetAmount = parseInt(betAmount) || 0;
+    const hasPlacedBet = playerStatus === 'playing' || playerStatus === 'cashed_out' || playerStatus === 'lost';
 
     const resetGame = useCallback(() => {
         setGameState('waiting');
         setMultiplier(1.00);
         setCrashPoint(generateCrashPoint());
         setCountdown(10);
-        setHasPlacedBet(false);
-        setPlayerStatus('playing');
+        setPlayerStatus('waiting');
         setCashedOutMultiplier(null);
         
         // Simulate other players joining for the next round
@@ -86,11 +89,11 @@ export default function RocketPage() {
                 if (newMultiplier >= crashPoint) {
                     setGameState('crashed');
                     setMultiplier(crashPoint);
-                    if (hasPlacedBet && playerStatus === 'playing') {
+                    if (playerStatus === 'playing') {
                         setPlayerStatus('lost');
                     }
                     setHistory(prev => [crashPoint, ...prev.slice(0, 9)]);
-                    setTimeout(resetGame, 3000); // Wait 3s before starting new round
+                    setTimeout(resetGame, 3000);
                 } else {
                     setMultiplier(newMultiplier);
                 }
@@ -98,25 +101,26 @@ export default function RocketPage() {
         }
 
         return () => clearTimeout(timer);
-    }, [gameState, countdown, multiplier, crashPoint, resetGame, hasPlacedBet, playerStatus]);
+    }, [gameState, countdown, multiplier, crashPoint, resetGame, playerStatus]);
 
     const handlePlaceBet = () => {
         if (!user || user.balance.stars < parsedBetAmount || parsedBetAmount <= 0) {
-            // Add toast notification for insufficient funds
+            toast({ variant: 'destructive', title: "Not enough stars", description: "You don't have enough stars to place this bet." });
             return;
         }
         updateBalance(-parsedBetAmount, 0);
-        setHasPlacedBet(true);
         setPlayerStatus('playing');
+        toast({ title: "Bet placed!", description: `You bet ${parsedBetAmount} stars.` });
     };
 
     const handleCashOut = () => {
-        if (gameState !== 'playing' || playerStatus !== 'playing' || !hasPlacedBet) return;
+        if (gameState !== 'playing' || playerStatus !== 'playing') return;
         
         const winnings = parsedBetAmount * multiplier;
-        updateBalance(winnings, 0); // Correctly add winnings to balance
+        updateBalance(winnings, 0);
         setPlayerStatus('cashed_out');
         setCashedOutMultiplier(multiplier);
+        toast({ title: "Cashed out!", description: `You won ${winnings.toFixed(0)} stars at ${multiplier.toFixed(2)}x.` });
     };
 
     const GameScreen = () => {
@@ -159,12 +163,12 @@ export default function RocketPage() {
     };
 
     const BetControls = () => {
-        const canBet = gameState === 'waiting' && !hasPlacedBet && user && user.balance.stars >= parsedBetAmount && parsedBetAmount > 0;
+        const canBet = gameState === 'waiting' && playerStatus === 'waiting' && user && user.balance.stars >= parsedBetAmount && parsedBetAmount > 0;
 
         const handleButtonClick = () => {
             if (gameState === 'waiting') {
                 handlePlaceBet();
-            } else if (gameState === 'playing' && playerStatus === 'playing') {
+            } else if (gameState === 'playing') {
                 handleCashOut();
             }
         };
@@ -177,22 +181,33 @@ export default function RocketPage() {
 
         const getButtonText = () => {
             if (gameState === 'waiting') {
-                return hasPlacedBet ? 'Waiting for round' : 'Place Bet';
+                return playerStatus !== 'waiting' ? 'Waiting for round' : 'Place Bet';
             }
             if (gameState === 'playing') {
                 if (playerStatus === 'playing') {
                     return `Cash out ${Math.floor(parsedBetAmount * multiplier).toLocaleString()}`;
                 }
-                if (playerStatus === 'cashed_out') {
-                    return `Cashed Out at ${cashedOutMultiplier?.toFixed(2)}x`;
+                if (playerStatus === 'cashed_out' && cashedOutMultiplier) {
+                    const winnings = parsedBetAmount * cashedOutMultiplier;
+                    return `You won ${winnings.toFixed(0)}`;
                 }
             }
             if (gameState === 'crashed') {
                 if(playerStatus === 'lost') return 'Crashed';
-                if(playerStatus === 'cashed_out') return `Cashed Out at ${cashedOutMultiplier?.toFixed(2)}x`;
+                if(playerStatus === 'cashed_out' && cashedOutMultiplier) {
+                    const winnings = parsedBetAmount * cashedOutMultiplier;
+                    return `You won ${winnings.toFixed(0)}`;
+                }
             }
             return 'Round Over';
         }
+        
+        const getButtonClass = () => {
+            if (playerStatus === 'cashed_out') return 'bg-green-500 hover:bg-green-600';
+            if (playerStatus === 'lost') return 'bg-red-500 hover:bg-red-600';
+            if (gameState === 'playing' && playerStatus === 'playing') return 'bg-green-500 hover:bg-green-600';
+            return 'bg-primary hover:bg-primary/90';
+        };
 
         return (
             <Card className="w-full max-w-md p-4">
@@ -209,12 +224,7 @@ export default function RocketPage() {
                  <Button 
                     onClick={handleButtonClick}
                     disabled={isButtonDisabled()}
-                    className={cn(
-                        "w-full h-14 text-xl",
-                        gameState === 'playing' && playerStatus === 'playing' && 'bg-green-500 hover:bg-green-600',
-                        playerStatus === 'cashed_out' && 'bg-green-500 hover:bg-green-600',
-                        gameState === 'crashed' && playerStatus === 'lost' && 'bg-red-500 hover:bg-red-600'
-                    )}
+                    className={cn( "w-full h-14 text-xl", getButtonClass() )}
                 >
                     {getButtonText()}
                 </Button>
@@ -248,8 +258,8 @@ export default function RocketPage() {
                 <CardContent className="p-2 space-y-1">
                     {hasPlacedBet && user && (
                          <div className={cn("flex items-center justify-between p-2 rounded-lg",
-                            playerStatus === 'cashed_out' ? 'bg-green-500/10' :
-                            playerStatus === 'lost' ? 'bg-red-500/10' :
+                            playerStatus === 'cashed_out' ? 'bg-green-500/20' :
+                            playerStatus === 'lost' ? 'bg-red-500/20' :
                             'bg-primary/10'
                          )}>
                             <div className="flex items-center gap-3">
@@ -264,19 +274,20 @@ export default function RocketPage() {
                                     <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="h-4 w-4 object-contain" />
                                     <span>{parsedBetAmount.toLocaleString()}</span>
                                 </div>
-
-                                {playerStatus === 'playing' && gameState === 'playing' && (
-                                    <span className="font-bold text-gray-400 w-24 text-right">{Math.floor(parsedBetAmount * multiplier).toLocaleString()}</span>
-                                )}
-                                {playerStatus === 'cashed_out' && (
-                                     <div className="flex items-center gap-1 font-bold text-green-400 w-24 text-right">
-                                        <span>{Math.floor(parsedBetAmount * (cashedOutMultiplier || 1)).toLocaleString()}</span>
-                                        <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="h-4 w-4 object-contain" />
-                                    </div>
-                                )}
-                                {(playerStatus === 'lost' || (gameState === 'crashed' && playerStatus !== 'cashed_out')) && (
-                                    <span className="font-bold text-red-500 w-24 text-right">Crashed</span>
-                                )}
+                                <div className="w-32 text-right">
+                                    {playerStatus === 'playing' && gameState === 'playing' && (
+                                        <span className="font-bold text-gray-400">{Math.floor(parsedBetAmount * multiplier).toLocaleString()}</span>
+                                    )}
+                                    {playerStatus === 'cashed_out' && cashedOutMultiplier && (
+                                         <div className="flex items-center justify-end gap-1 font-bold text-green-400">
+                                            <span>+{(parsedBetAmount * cashedOutMultiplier).toFixed(0)}</span>
+                                            <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="h-4 w-4 object-contain" />
+                                        </div>
+                                    )}
+                                    {playerStatus === 'lost' && (
+                                        <span className="font-bold text-red-500">Crashed</span>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     )}
@@ -294,7 +305,7 @@ export default function RocketPage() {
                                      <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="h-4 w-4 object-contain" />
                                     <span>{p.bet.toLocaleString()}</span>
                                 </div>
-                                <span className="font-bold text-gray-500 w-24 text-right">
+                                <span className="font-bold text-gray-500 w-32 text-right">
                                     {p.cashedOutAt ? `${p.cashedOutAt.toFixed(2)}x` : '-'}
                                 </span>
                             </div>
@@ -320,5 +331,3 @@ export default function RocketPage() {
 const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
     return <div className={cn("px-3 py-1 rounded-md text-sm font-bold flex-shrink-0", className)} {...props} />
 }
-
-    
