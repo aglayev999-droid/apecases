@@ -44,7 +44,7 @@ export const MOCK_CASES: Case[] = [
     id: 'case-labubu-10',
     name: 'LABUBU CASE',
     price: 240,
-    image: 'https://i.ibb.co/gDFsYk2/photo-2024-07-29-19-14-11-2.jpg',
+    image: 'https://i.ibb.co/20Fh8RKz/labubu.png',
     imageHint: 'epic treasure',
     items: [
       { itemId: 'item-shield-1', probability: 0.3 },
