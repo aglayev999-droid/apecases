@@ -34,11 +34,11 @@ export default function BottomNav() {
                             isActive ? 'bg-primary shadow-lg' : 'bg-card border'
                         )}>
                             <div className="relative h-14 w-14">
-                                <Image
+                                <img
                                     src="https://i.ibb.co/ZpJBWrdY/626624c3-f89f-4f89-9d69-35d6ec78c83f-removebg-preview.png"
                                     alt="Cases"
-                                    fill
                                     className="object-contain p-1"
+                                    style={{ width: '100%', height: '100%' }}
                                 />
                             </div>
                         </div>
