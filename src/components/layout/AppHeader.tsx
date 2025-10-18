@@ -8,6 +8,8 @@ import Link from 'next/link';
 import { TonConnectButton } from '@tonconnect/ui-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
+const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
+
 export default function AppHeader() {
   const { user } = useUser();
 
@@ -23,7 +25,7 @@ export default function AppHeader() {
             <div className="flex items-center gap-2">
                <Link href="/profile">
                   <Avatar className="h-10 w-10 border-2 border-primary">
-                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarImage src={DEFAULT_AVATAR} alt={user.name} />
                       <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
                </Link>

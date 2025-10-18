@@ -15,6 +15,8 @@ import { useUser } from '@/contexts/UserContext';
 import { cn } from '@/lib/utils';
 import { Trophy } from 'lucide-react';
 
+const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
+
 export default function LeaderboardPage() {
   const { user } = useUser();
 
@@ -57,7 +59,7 @@ export default function LeaderboardPage() {
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Avatar>
-                      <AvatarImage src={entry.user.avatar} alt={entry.user.name} />
+                      <AvatarImage src={entry.user.name === user?.name ? DEFAULT_AVATAR : entry.user.avatar} alt={entry.user.name} />
                       <AvatarFallback>{entry.user.name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <span className="font-medium">{entry.user.name}</span>

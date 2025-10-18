@@ -4,11 +4,13 @@ import { useUser } from '@/contexts/UserContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { StarIcon } from '@/components/icons/StarIcon';
-import { DiamondIcon } from '@/components/icons/DiamondIcon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
+
 
 export default function ProfilePage() {
   const { user } = useUser();
@@ -44,7 +46,7 @@ export default function ProfilePage() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-center gap-6">
         <Avatar className="h-24 w-24 border-4 border-primary">
-          <AvatarImage src={user.avatar} alt={user.name} />
+          <AvatarImage src={DEFAULT_AVATAR} alt={user.name} />
           <AvatarFallback className="text-3xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div>
