@@ -1,6 +1,8 @@
 
 import type { Item, Case, User, LeaderboardEntry } from './types';
 
+const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
+
 export const ALL_ITEMS: Item[] = [
   { id: 'item-sword-1', name: 'Cyberblade', rarity: 'Common', image: 'https://picsum.photos/seed/item1/200/200', imageHint: 'cyberpunk sword', value: 50, description: 'A standard issue energy-edged sword.' },
   { id: 'item-shield-1', name: 'Kinetic Barrier', rarity: 'Uncommon', image: 'https://picsum.photos/seed/item2/200/200', imageHint: 'energy shield', value: 150, description: 'A personal shield that hardens on impact.' },
@@ -71,7 +73,7 @@ export const MOCK_USER: User = {
   id: 'user-123',
   telegramId: '987654321',
   name: 'Cipher',
-  avatar: 'https://picsum.photos/seed/user1/100/100',
+  avatar: DEFAULT_AVATAR,
   balance: {
     stars: 25000,
     diamonds: 0,
@@ -88,7 +90,7 @@ export const MOCK_USER: User = {
 export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { rank: 1, user: { name: 'Ghost', avatar: 'https://picsum.photos/seed/lead1/100/100' }, spent: 150000 },
   { rank: 2, user: { name: 'Viper', avatar: 'https://picsum.photos/seed/lead2/100/100' }, spent: 125000 },
-  { rank: 3, user: { name: 'Cipher', avatar: 'https://picsum.photos/seed/user1/100/100' }, spent: MOCK_USER.weeklySpending },
+  { rank: 3, user: { name: 'Cipher', avatar: DEFAULT_AVATAR }, spent: MOCK_USER.weeklySpending },
   { rank: 4, user: { name: 'Rogue', avatar: 'https://picsum.photos/seed/lead4/100/100' }, spent: 98000 },
   { rank: 5, user: { name: 'Spectre', avatar: 'https://picsum.photos/seed/lead5/100/100' }, spent: 76000 },
   { rank: 6, user: { name: 'Nomad', avatar: 'https://picsum.photos/seed/lead6/100/100' }, spent: 54000 },
