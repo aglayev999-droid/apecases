@@ -19,14 +19,39 @@ interface CaseOpeningModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const RARITY_COLORS = {
-  Common: 'text-gray-400 border-gray-600',
-  Uncommon: 'text-green-400 border-green-600',
-  Rare: 'text-blue-400 border-blue-600',
-  Epic: 'text-purple-400 border-purple-600',
-  Legendary: 'text-orange-400 border-orange-600',
-  NFT: 'bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 border-purple-500',
+const RARITY_PROPERTIES = {
+  Common: {
+    glow: 'shadow-gray-400/50',
+    border: 'border-gray-500',
+    text: 'text-gray-400',
+  },
+  Uncommon: {
+    glow: 'shadow-green-400/60',
+    border: 'border-green-500',
+    text: 'text-green-400',
+  },
+  Rare: {
+    glow: 'shadow-blue-400/70',
+    border: 'border-blue-500',
+    text: 'text-blue-400',
+  },
+  Epic: {
+    glow: 'shadow-purple-400/80',
+    border: 'border-purple-500',
+    text: 'text-purple-400',
+  },
+  Legendary: {
+    glow: 'shadow-orange-400/90',
+    border: 'border-orange-500',
+    text: 'text-orange-400',
+  },
+  NFT: {
+    glow: 'shadow-purple-400/90',
+    border: 'border-purple-400',
+    text: 'bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500',
+  },
 };
+
 
 const selectItem = (currentCase: Case): Item => {
   const rand = Math.random();
@@ -63,32 +88,30 @@ export function CaseOpeningModal({ caseData, isOpen, onOpenChange }: CaseOpening
     const prize = selectItem(caseData);
     const prizeIndexInReel = reelItems.findIndex(item => item.id === prize.id);
     
-    // Animate the carousel
     const targetIndex = prizeIndexInReel + ALL_ITEMS.length; // Target the middle set for a better loop feel
-    emblaApi.scrollTo(targetIndex, false);
+    const animationOptions = { duration: 5000, stopOnInteraction: false };
+
+    emblaApi.scrollTo(targetIndex, false, animationOptions);
     
-    const spinTime = 3000 + Math.random() * 1000;
-    
-    const startTime = Date.now();
-    const animate = () => {
-      const elapsedTime = Date.now() - startTime;
-      if (elapsedTime < spinTime) {
-        emblaApi.scrollNext();
-        requestAnimationFrame(animate);
-      } else {
-        emblaApi.scrollTo(targetIndex);
-        setTimeout(() => {
-          setIsSpinning(false);
-          setWonItem(prize);
-          addInventoryItem(prize);
-          toast({
-            title: `You won: ${prize.name}!`,
-            description: "It has been added to your inventory.",
-          });
-        }, 500); // Wait for carousel to settle
+    // This is a simplified client-side animation.
+    // A true "provably fair" system would have server-side logic driving the final result.
+    const spinTime = 4000 + Math.random() * 1000;
+
+    const timeoutId = setTimeout(() => {
+      // Force stop at the exact prize index
+      if(emblaApi.selectedScrollSnap() !== targetIndex) {
+         emblaApi.scrollTo(targetIndex, true); // Jump to correct item
       }
-    };
-    requestAnimationFrame(animate);
+      setIsSpinning(false);
+      setWonItem(prize);
+      addInventoryItem(prize);
+      toast({
+        title: `You won: ${prize.name}!`,
+        description: "It has been added to your inventory.",
+      });
+    }, spinTime);
+    
+    return () => clearTimeout(timeoutId);
 
   }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, toast, reelItems]);
 
@@ -100,37 +123,43 @@ export function CaseOpeningModal({ caseData, isOpen, onOpenChange }: CaseOpening
       emblaApi?.scrollTo(0, true);
     }, 300); // delay reset to allow for close animation
   };
-
+  
   if (!caseData) return null;
 
   const canAfford = user ? user.balance.stars >= caseData.price : false;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open ? handleClose() : onOpenChange(open)}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-card/80 backdrop-blur-sm border-border">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl">{caseData.name}</DialogTitle>
         </DialogHeader>
         
-        <div className="my-6">
+        <div className="my-6 h-48 flex items-center justify-center">
           {wonItem ? (
              <div className="flex flex-col items-center gap-4 animate-in fade-in-50 zoom-in-95">
-                <Card className={cn("p-4 border-2 w-48 h-48", RARITY_COLORS[wonItem.rarity])}>
+                <Card className={cn(
+                  "p-4 border-2 w-48 h-48 transition-all duration-300", 
+                  RARITY_PROPERTIES[wonItem.rarity].border,
+                  `shadow-[0_0_25px_-5px]`,
+                  RARITY_PROPERTIES[wonItem.rarity].glow
+                )}>
                   <CardContent className="p-0 aspect-square relative">
                      <Image src={wonItem.image} alt={wonItem.name} fill sizes="20vw" className="object-contain" data-ai-hint={wonItem.imageHint} />
                   </CardContent>
                 </Card>
-                <div className="text-center">
-                  <h3 className={cn("text-xl font-bold", RARITY_COLORS[wonItem.rarity])}>{wonItem.name}</h3>
-                  <p className={cn("font-semibold", RARITY_COLORS[wonItem.rarity])}>{wonItem.rarity}</p>
+                <div className="text-center mt-2">
+                  <h3 className={cn("text-xl font-bold", RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.name}</h3>
+                  <p className={cn("font-semibold", RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.rarity}</p>
                 </div>
              </div>
           ) : (
-            <div className="overflow-hidden" ref={emblaRef}>
+            <div className="overflow-hidden w-full relative" ref={emblaRef}>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1 h-full bg-primary/50 z-10 rounded-full" />
               <div className="flex">
                 {reelItems.map((item, index) => (
                   <div key={index} className="flex-[0_0_8rem] mx-2">
-                    <Card className={cn("p-2 border-2", RARITY_COLORS[item.rarity], isSpinning ? '' : 'opacity-30')}>
+                    <Card className={cn("p-2 border-2 bg-card/50", RARITY_PROPERTIES[item.rarity].border, isSpinning ? 'opacity-70' : 'opacity-30')}>
                       <div className="aspect-square relative">
                         <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" data-ai-hint={item.imageHint}/>
                       </div>
@@ -161,3 +190,5 @@ export function CaseOpeningModal({ caseData, isOpen, onOpenChange }: CaseOpening
     </Dialog>
   );
 }
+
+    

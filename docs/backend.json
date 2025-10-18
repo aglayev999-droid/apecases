@@ -218,6 +218,36 @@
         "rarity",
         "value"
       ]
+    },
+    "Transaction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Transaction",
+      "description": "Represents a financial transaction within the app.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique ID of the transaction." },
+        "userId": { "type": "string", "description": "User associated with the transaction." },
+        "type": { "type": "string", "enum": ["deposit", "withdrawal", "case_purchase", "item_sale"] },
+        "amount": { "type": "number", "description": "Transaction amount." },
+        "currency": { "type": "string", "enum": ["TON", "STARS"] },
+        "tonTxHash": { "type": "string", "description": "TON transaction hash for deposits." },
+        "status": { "type": "string", "enum": ["pending", "completed", "failed"] },
+        "isProcessed": { "type": "boolean", "description": "Flag to prevent double processing." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "type", "amount", "currency", "status", "createdAt"]
+    },
+    "Settings": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Settings",
+      "description": "Global settings for the application.",
+      "type": "object",
+      "properties": {
+        "tonToStarRate": {
+          "type": "number",
+          "description": "The conversion rate from 1 TON to STARS."
+        }
+      }
     }
   },
   "auth": {
@@ -227,34 +257,34 @@
   },
   "firestore": {
     "/users/{userId}": {
-      "schema": {
-        "$ref": "#/entities/User"
-      },
+      "schema": { "$ref": "#/entities/User" },
       "description": "Stores user data, including telegram ID, username, stars balance, and referral information. The 'userId' is the Firebase Auth UID."
     },
     "/cases/{caseId}": {
-      "schema": {
-        "$ref": "#/entities/Case"
-      },
+      "schema": { "$ref": "#/entities/Case" },
       "description": "Stores details about each case, including its price, contents, and probabilities."
     },
     "/nft_inventory/{nftId}": {
-      "schema": {
-        "$ref": "#/entities/NFTInventory"
-      },
+      "schema": { "$ref": "#/entities/NFTInventory" },
       "description": "Tracks all real TON NFTs owned by the bot, managing their availability and ownership status."
     },
     "/users/{userId}/inventory/{inventoryId}": {
-      "schema": {
-        "$ref": "#/entities/Inventory"
-      },
+      "schema": { "$ref": "#/entities/Inventory" },
       "description": "A subcollection for each user, storing the items they have won. This ensures data privacy and easy querying."
     },
     "/items/{itemId}": {
-      "schema": {
-        "$ref": "#/entities/Item"
-      },
+      "schema": { "$ref": "#/entities/Item" },
       "description": "A global collection of all possible items that can be won from cases."
+    },
+    "/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/Transaction" },
+      "description": "Stores all financial transactions for auditing and to prevent duplicates."
+    },
+    "/settings/global": {
+      "schema": { "$ref": "#/entities/Settings" },
+      "description": "Stores global application settings like conversion rates."
     }
   }
 }
+
+    
