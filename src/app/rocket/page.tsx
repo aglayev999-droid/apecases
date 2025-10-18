@@ -75,16 +75,16 @@ export default function RocketPage() {
     };
 
     const GameScreen = () => {
-        const VERTICAL_THRESHOLD = 3; // Switch to vertical flight at 3x
+        const VERTICAL_THRESHOLD = 3;
         const gameContainerRef = useRef<HTMLDivElement>(null);
         const [position, setPosition] = useState({ x: 20, y: 200, rotation: -45 });
         const [trailPath, setTrailPath] = useState("");
 
         useEffect(() => {
             if (!gameContainerRef.current) return;
+
             const containerWidth = gameContainerRef.current.offsetWidth;
             const containerHeight = gameContainerRef.current.offsetHeight;
-            
             const startX = 20;
             const startY = containerHeight - 50;
 
@@ -94,10 +94,10 @@ export default function RocketPage() {
                 }
 
                 const progress = multiplier - 1;
-                
-                let x, y, rotation;
                 const centerTargetX = containerWidth / 2;
                 const centerTargetY = containerHeight / 2;
+                
+                let x, y, rotation;
 
                 if (multiplier < VERTICAL_THRESHOLD) {
                     const pathProgress = progress / (VERTICAL_THRESHOLD - 1);
@@ -135,7 +135,6 @@ export default function RocketPage() {
 
         }, [multiplier, gameState]);
 
-    
         const rocketStyle: React.CSSProperties = {
             position: 'absolute',
             left: `${position.x}px`,
@@ -178,11 +177,15 @@ export default function RocketPage() {
                         @keyframes move-planet { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(20px, -30px) scale(1.1); } 100% { transform: translate(0, 0) scale(1); } }
                         
                         @keyframes shake {
-                            0%, 100% { transform: scale(1); }
-                            25% { transform: scale(1.02) rotate(-0.5deg); }
-                            75% { transform: scale(0.98) rotate(0.5deg); }
+                            0% { transform: translate(-50%, -50%) rotate(${position.rotation}deg) scale(1); }
+                            25% { transform: translate(-50%, -50%) rotate(${position.rotation - 0.5}deg) scale(1.02); }
+                            50% { transform: translate(-50%, -50%) rotate(${position.rotation}deg) scale(1); }
+                            75% { transform: translate(-50%, -50%) rotate(${position.rotation + 0.5}deg) scale(0.98); }
+                            100% { transform: translate(-50%, -50%) rotate(${position.rotation}deg) scale(1); }
                         }
-                        .rocket-shake { animation: shake 0.3s linear infinite; }
+                        .rocket-shake {
+                            animation: shake 0.3s linear infinite;
+                        }
 
                         @keyframes trail-draw { to { stroke-dashoffset: 0; } }
                         .rocket-trail {
@@ -208,7 +211,7 @@ export default function RocketPage() {
 
                 {/* Rocket Image */}
                 <div 
-                    className={cn("z-20", gameState === 'playing' ? 'rocket-shake' : '')}
+                    className={cn("z-20", { 'rocket-shake': gameState === 'playing' })}
                      style={rocketStyle}
                 >
                     <div className="relative w-20 h-20 sm:w-24 sm:h-24">
