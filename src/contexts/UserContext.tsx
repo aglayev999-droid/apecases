@@ -27,11 +27,12 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 const generateCrashPoint = () => {
+    // Provably fair-ish
     const r = Math.random();
-    if (r < 0.5) return 1 + Math.random(); 
-    if (r < 0.8) return 2 + Math.random() * 2;
-    if (r < 0.95) return 4 + Math.random() * 6;
-    return 10 + Math.random() * 20;
+    if (r < 0.5) return 1 + Math.random(); // 50% chance for 1-2x
+    if (r < 0.8) return 2 + Math.random() * 2; // 30% chance for 2-4x
+    if (r < 0.95) return 4 + Math.random() * 6; // 15% chance for 4-10x
+    return 10 + Math.random() * 20; // 5% chance for 10-30x
 };
 
 const mockPlayersData = [
@@ -66,27 +67,39 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setCrashPoint(generateCrashPoint());
     setCountdown(10);
 
-    // Reset players for the new round
-    setPlayers(currentPlayers => currentPlayers.map(p => ({ ...p, status: 'waiting', cashedOutAt: null })));
+    // Reset all players for the new round, keeping their info but resetting status
+    const resetPlayers = (currentPlayers: RocketPlayer[]) => currentPlayers.map(p => ({ 
+        ...p, 
+        status: 'waiting', 
+        cashedOutAt: null 
+    }));
     
-    // Simulate other players joining
-    const numPlayers = 2 + Math.floor(Math.random() * (mockPlayersData.length - 2));
-    const shuffled = mockPlayersData.sort(() => 0.5 - Math.random());
-    const botPlayers = shuffled.slice(0, numPlayers).map(p => ({
-        id: p.id,
-        name: p.name,
-        avatar: p.avatar,
-        bet: Math.floor(10 + Math.random() * 100),
-        status: 'playing',
-        cashedOutAt: null,
-    } as RocketPlayer));
+    // Simulate other players joining/placing bets
+    const manageBotPlayers = (currentPlayers: RocketPlayer[]) => {
+      const humanPlayers = currentPlayers.filter(p => !p.id.startsWith('p'));
+      const numPlayers = 2 + Math.floor(Math.random() * (mockPlayersData.length - 2));
+      const shuffled = mockPlayersData.sort(() => 0.5 - Math.random());
+      const botPlayers = shuffled.slice(0, numPlayers).map(p => ({
+          id: p.id,
+          name: p.name,
+          avatar: p.avatar,
+          bet: Math.floor(10 + Math.random() * 100),
+          status: 'playing', // Bots are ready to play
+          cashedOutAt: null,
+      } as RocketPlayer));
+      
+      // Use a Map to ensure unique players by ID
+      const playerMap = new Map<string, RocketPlayer>();
+      humanPlayers.forEach(p => playerMap.set(p.id, { ...p, status: 'waiting', cashedOutAt: null }));
+      botPlayers.forEach(p => playerMap.set(p.id, p));
+      
+      return Array.from(playerMap.values());
+    };
 
-    // Keep human players, add new bots
-    setPlayers(currentPlayers => {
-        const humanPlayers = currentPlayers.filter(p => !p.id.startsWith('p'));
-        return [...humanPlayers, ...botPlayers];
+    setPlayers(prevPlayers => {
+        const reseted = resetPlayers(prevPlayers);
+        return manageBotPlayers(reseted);
     });
-
 
   }, []);
 
@@ -98,6 +111,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             timer = setTimeout(() => setCountdown(prev => prev - 1), 1000);
         } else {
             setGameState('playing');
+             // Set status to 'playing' for everyone who is 'waiting'
+            setPlayers(currentPlayers => currentPlayers.map(p => 
+                p.status === 'waiting' ? { ...p, status: 'playing' } : p
+            ));
         }
     } else if (gameState === 'playing') {
         timer = setTimeout(() => {
@@ -177,15 +194,21 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setUser(currentUser => {
         if (!currentUser || currentUser.balance.stars < betAmount) return currentUser;
 
-        const playerIndex = players.findIndex(p => p.id === userId);
-        
-        if (playerIndex > -1) {
-            // Player already in list, update bet
-            setPlayers(currentPlayers => currentPlayers.map(p => p.id === userId ? {...p, bet: betAmount, status: 'playing'} : p));
-        } else {
-            // Add new player
-            setPlayers(currentPlayers => [...currentPlayers, { id: userId, name, avatar, bet: betAmount, status: 'playing', cashedOutAt: null }]);
-        }
+        setPlayers(currentPlayers => {
+            const playerIndex = currentPlayers.findIndex(p => p.id === userId);
+            let newPlayers;
+
+            if (playerIndex > -1) {
+                // Player already in list, update bet and status
+                newPlayers = currentPlayers.map(p => 
+                    p.id === userId ? {...p, bet: betAmount, status: 'waiting'} : p
+                );
+            } else {
+                // Add new player
+                newPlayers = [...currentPlayers, { id: userId, name, avatar, bet: betAmount, status: 'waiting', cashedOutAt: null }];
+            }
+            return newPlayers;
+        });
         
         // Deduct balance
         return {
@@ -193,7 +216,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             balance: { ...currentUser.balance, stars: currentUser.balance.stars - betAmount }
         };
     });
-  }, [gameState, players]);
+  }, [gameState]);
 
   const playerCashOut = useCallback((userId: string) => {
       if (gameState !== 'playing') return;
