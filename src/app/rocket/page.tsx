@@ -114,13 +114,9 @@ export default function RocketPage() {
     
         const winnings = parsedBetAmount * multiplier;
         updateBalance(winnings, 0);
-    
-        // Use Promise.all to ensure state updates are batched if possible,
-        // but more importantly, it makes the logic clearer.
-        await Promise.all([
-            Promise.resolve(setPlayerStatus('cashed_out')),
-            Promise.resolve(setCashedOutMultiplier(multiplier))
-        ]);
+        
+        setPlayerStatus('cashed_out');
+        setCashedOutMultiplier(multiplier);
     
         toast({
             title: "Cashed out!",
@@ -168,11 +164,11 @@ export default function RocketPage() {
     };
 
     const BetControls = () => {
-        const canBet = gameState === 'waiting' && playerStatus === 'waiting' && user && user.balance.stars >= parsedBetAmount && parsedBetAmount > 0;
+        const canPlaceBet = gameState === 'waiting' && playerStatus === 'waiting' && user && user.balance.stars >= parsedBetAmount && parsedBetAmount > 0;
         const canCashOut = gameState === 'playing' && playerStatus === 'playing';
 
         const handleButtonClick = () => {
-            if (canBet) {
+            if (canPlaceBet) {
                 handlePlaceBet();
             } else if (canCashOut) {
                 handleCashOut();
@@ -183,39 +179,29 @@ export default function RocketPage() {
         let buttonClass = 'bg-primary hover:bg-primary/90';
         let isButtonDisabled = true;
 
-        if (gameState === 'waiting') {
-            if (playerStatus === 'waiting') {
-                buttonText = 'Place Bet';
-                isButtonDisabled = !canBet;
-            } else {
-                buttonText = 'Waiting for round';
-                isButtonDisabled = true;
-            }
-        } else if (gameState === 'playing') {
-            if (playerStatus === 'playing') {
-                buttonText = `Cash out ${Math.floor(parsedBetAmount * multiplier).toLocaleString()}`;
-                buttonClass = 'bg-green-500 hover:bg-green-600';
-                isButtonDisabled = false;
-            } else if (playerStatus === 'cashed_out' && cashedOutMultiplier) {
-                const winnings = parsedBetAmount * cashedOutMultiplier;
-                buttonText = `You won ${winnings.toFixed(0)}`;
-                buttonClass = 'bg-green-500';
-                isButtonDisabled = true;
-            }
+        if (canCashOut) {
+            buttonText = `Cash out ${Math.floor(parsedBetAmount * multiplier).toLocaleString()}`;
+            buttonClass = 'bg-green-500 hover:bg-green-600';
+            isButtonDisabled = false;
+        } else if (canPlaceBet) {
+            buttonText = 'Place Bet';
+            isButtonDisabled = false;
+        } else if (gameState === 'waiting' && playerStatus === 'playing') {
+            buttonText = 'Waiting for round';
+            isButtonDisabled = true;
+        } else if (playerStatus === 'cashed_out' && cashedOutMultiplier) {
+            const winnings = parsedBetAmount * cashedOutMultiplier;
+            buttonText = `You won ${winnings.toFixed(0)}`;
+            buttonClass = 'bg-green-500';
+            isButtonDisabled = true;
+        } else if (playerStatus === 'lost') {
+             buttonText = 'Crashed';
+             buttonClass = 'bg-red-500';
+             isButtonDisabled = true;
         } else if (gameState === 'crashed') {
-            if (playerStatus === 'lost') {
-                buttonText = 'Crashed';
-                buttonClass = 'bg-red-500';
-            } else if (playerStatus === 'cashed_out' && cashedOutMultiplier) {
-                const winnings = parsedBetAmount * cashedOutMultiplier;
-                buttonText = `You won ${winnings.toFixed(0)}`;
-                buttonClass = 'bg-green-500';
-            } else {
-                 buttonText = 'Round Over';
-            }
+            buttonText = 'Round Over';
             isButtonDisabled = true;
         }
-
 
         return (
             <Card className="w-full max-w-md p-4">
