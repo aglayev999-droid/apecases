@@ -69,13 +69,6 @@ export default function ProfilePage() {
               </div>
               <span className="text-xl font-mono font-bold">{formatNumber(user.balance.stars)}</span>
             </div>
-            <div className="flex items-center justify-between p-4 rounded-lg bg-card-foreground/5">
-              <div className="flex items-center gap-3">
-                <DiamondIcon className="h-8 w-8 text-cyan-400" />
-                <span className="text-lg font-bold">Diamonds</span>
-              </div>
-              <span className="text-xl font-mono font-bold">{formatNumber(user.balance.diamonds)}</span>
-            </div>
           </CardContent>
         </Card>
         <Card>

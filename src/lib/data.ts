@@ -55,7 +55,7 @@ export const MOCK_CASES: Case[] = [
   {
     id: 'case-legendary',
     name: 'Warlord\'s Hoard',
-    price: 10000,
+    price: 0,
     image: 'https://picsum.photos/seed/case4/400/300',
     imageHint: 'legendary artifact',
     items: [
@@ -73,19 +73,15 @@ export const MOCK_USER: User = {
   avatar: 'https://picsum.photos/seed/user1/100/100',
   balance: {
     stars: 25000,
-    diamonds: 1500,
+    diamonds: 0,
   },
-  inventory: [
-    { ...ALL_ITEMS[0], inventoryId: 'inv-1', status: 'won' },
-    { ...ALL_ITEMS[1], inventoryId: 'inv-2', status: 'shipped' },
-    { ...ALL_ITEMS[2], inventoryId: 'inv-3', status: 'exchanged' },
-  ],
+  inventory: [],
   referrals: {
-    count: 12,
-    commissionEarned: 4200,
+    count: 0,
+    commissionEarned: 0,
     code: 'CIPHER-ALPHA',
   },
-  weeklySpending: 12500,
+  weeklySpending: 0,
 };
 
 export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
