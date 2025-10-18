@@ -67,6 +67,8 @@ export function InventoryCard({ item }: InventoryCardProps) {
         timestamp: serverTimestamp(),
       });
 
+      // Optimistically remove from inventory, or wait for backend confirmation
+      // For now, we remove it immediately.
       removeInventoryItem(item.inventoryId);
 
       toast({

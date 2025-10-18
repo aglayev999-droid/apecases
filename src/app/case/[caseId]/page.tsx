@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import useEmblaCarousel from 'embla-carousel-react';
-import { ChevronLeft, Trash2, X } from 'lucide-react';
+import { ChevronLeft, Trash2, X, Gift } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,7 +15,6 @@ import type { Case, Item } from '@/lib/types';
 import { ALL_ITEMS, MOCK_CASES } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { DiamondIcon } from '@/components/icons/DiamondIcon';
 
 const RARITY_PROPERTIES = {
     Common: {
@@ -77,7 +76,7 @@ export default function CasePage() {
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
     const { user, updateBalance, addInventoryItem, updateSpending, setLastFreeCaseOpen, lastFreeCaseOpen } = useUser();
     const { toast } = useToast();
-    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
+    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center', duration: 50 });
     const [reelItems, setReelItems] = useState<Item[]>([]);
 
     const caseData = useMemo(() => MOCK_CASES.find(c => c.id === caseId), [caseId]);
@@ -152,32 +151,31 @@ export default function CasePage() {
         }
         
         const spinTime = isFast ? 1000 : 4000 + Math.random() * 1000;
-        
+
         emblaApi.scrollTo(prizeIndexInReel, false);
-        const transitionEndHandler = () => {
-          emblaApi.off('transitionEnd', transitionEndHandler);
-          setIsSpinning(false);
-          setIsWinModalOpen(true);
-          
-          if (prize.id.startsWith('item-stars-')) {
-            updateBalance(prize.value, 0);
-            toast({
-                title: `You won ${prize.name}!`,
-                description: `Added ${prize.value} stars to your balance.`,
-            });
-          } else {
-            addInventoryItem(prize);
-          }
+        
+        const onSpinEnd = () => {
+            setIsSpinning(false);
+            if (prize) { // Make sure prize is set before opening modal
+                setWonItem(prize);
+                setIsWinModalOpen(true);
+                
+                if (prize.id.startsWith('item-stars-')) {
+                    updateBalance(prize.value, 0);
+                    toast({
+                        title: `You won ${prize.name}!`,
+                        description: `Added ${prize.value} stars to your balance.`,
+                    });
+                } else {
+                    addInventoryItem(prize);
+                }
+            }
         };
 
-        emblaApi.on('transitionEnd', transitionEndHandler);
-
+        // Use a timeout to simulate the spin duration
         setTimeout(() => {
-          // Fallback in case transitionEnd doesn't fire
-          if (emblaApi) {
-            transitionEndHandler();
-          }
-        }, spinTime + 500);
+            onSpinEnd();
+        }, spinTime);
 
 
     }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, toast, reelItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
@@ -227,7 +225,7 @@ export default function CasePage() {
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="item-1" className="border-none">
             <AccordionTrigger className="justify-center gap-2 text-muted-foreground hover:no-underline">
-                <DiamondIcon className="h-5 w-5 text-primary"/>
+                <Gift className="h-5 w-5 text-primary"/>
                 <span className="font-semibold">Gifts Inside</span>
             </AccordionTrigger>
             <AccordionContent>
@@ -328,7 +326,7 @@ export default function CasePage() {
 
             {/* Win Modal */}
             <Dialog open={isWinModalOpen} onOpenChange={setIsWinModalOpen}>
-                <DialogContent className="sm:max-w-[425px] p-0 border-0 bg-transparent shadow-none">
+                <DialogContent className="sm:max-w-[425px] p-0 border-0 bg-transparent shadow-none" onInteractOutside={(e) => e.preventDefault()}>
                      {wonItem && (
                         <div className="text-center space-y-4 p-6 bg-card rounded-lg relative">
                              <DialogTitle className="sr-only">You Won!</DialogTitle>
