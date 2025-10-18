@@ -67,7 +67,7 @@ export default function LeaderboardPage() {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2 font-semibold">
-                    <Image src="https://i.ibb.co/gMdH1VZN/stars.png" alt="stars" width={20} height={20} className="h-5 w-5" />
+                    <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain" />
                     {formatNumber(entry.spent)}
                   </div>
                 </TableCell>

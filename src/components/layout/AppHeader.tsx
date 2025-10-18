@@ -31,7 +31,7 @@ export default function AppHeader() {
                </Link>
                <div className="flex items-center gap-1 rounded-full bg-card p-1 border">
                 <div className="flex items-center gap-1 text-yellow-400 pl-2">
-                  <Image src="https://i.ibb.co/gMdH1VZN/stars.png" alt="stars" width={20} height={20} className="h-5 w-5" />
+                  <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain" />
                   <span className="font-semibold text-sm">{formatNumber(user.balance.stars)}</span>
                 </div>
                 <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full bg-green-500">

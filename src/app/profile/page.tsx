@@ -72,7 +72,7 @@ export default function ProfilePage() {
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between p-4 rounded-lg bg-card-foreground/5">
               <div className="flex items-center gap-3">
-                <Image src="https://i.ibb.co/gMdH1VZN/stars.png" alt="stars" width={32} height={32} className="h-8 w-8" />
+                <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={32} height={32} className="h-8 w-8 object-contain" />
                 <span className="text-lg font-bold">Stars</span>
               </div>
               <span className="text-xl font-mono font-bold">{formatNumber(user.balance.stars)}</span>
@@ -93,7 +93,7 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Commission Earned</span>
               <div className="flex items-center gap-2 font-bold text-lg text-primary">
-                <Image src="https://i.ibb.co/gMdH1VZN/stars.png" alt="stars" width={20} height={20} className="h-5 w-5" />
+                <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain" />
                 {formatNumber(user.referrals.commissionEarned)}
               </div>
             </div>

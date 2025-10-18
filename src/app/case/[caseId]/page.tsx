@@ -260,7 +260,7 @@ export default function CasePage() {
                        <div className="flex flex-col">
                             <div className="flex items-center justify-center gap-2">
                                 <span>{isFree ? 'Spin' : `Spin ${caseData.price}`}</span>
-                                {!isFree && <Image src="https://i.ibb.co/gMdH1VZN/stars.png" alt="stars" width={24} height={24} className="h-6 w-6" />}
+                                {!isFree && <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />}
                             </div>
                              <span className="text-xs font-normal text-primary-foreground/70">(Double-click for a quick spin)</span>
                        </div>
