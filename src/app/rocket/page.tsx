@@ -28,22 +28,29 @@ export default function RocketPage() {
     } = useUser();
     const { toast } = useToast();
     const [betAmount, setBetAmount] = useState('25');
-    const audioRef = useRef<HTMLAudioElement>(null);
+    const musicRef = useRef<HTMLAudioElement>(null);
+    const crashSfxRef = useRef<HTMLAudioElement>(null);
     
     useEffect(() => {
-        if (audioRef.current) {
-            audioRef.current.volume = 0.1; // Set a lower volume
-            audioRef.current.play().catch(error => {
-                // Autoplay was prevented.
+        if (musicRef.current) {
+            musicRef.current.volume = 0.1; 
+            musicRef.current.play().catch(error => {
                 console.log("Audio autoplay prevented by browser:", error);
             });
         }
         return () => {
-            if (audioRef.current) {
-                audioRef.current.pause();
+            if (musicRef.current) {
+                musicRef.current.pause();
             }
         }
     }, []);
+
+    useEffect(() => {
+        if (gameState === 'crashed' && crashSfxRef.current) {
+            crashSfxRef.current.volume = 0.2;
+            crashSfxRef.current.play().catch(e => console.log("Crash SFX autoplay error", e));
+        }
+    }, [gameState]);
     
     const playerStatus = user ? getPlayerStatus(user.id) : undefined;
     const hasPlacedBet = !!playerStatus?.bet && playerStatus.bet > 0;
@@ -228,7 +235,7 @@ export default function RocketPage() {
                         style={{ height: trailHeight, filter: 'blur(1px)' }}
                     ></div>
                     <div className="relative w-24 h-24 sm:w-32 sm:h-32">
-                         <Image src="https://i.ibb.co/93bWYZZf/3f7ad183-dda1-4dda-996c-69961a4fabdc-removebg-preview.png" alt="Rocket" width={128} height={128} />
+                         <Image src="https://i.ibb.co/ZJp22hB/rocket-1.png" alt="Rocket" width={128} height={128} />
                     </div>
                 </div>
 
@@ -256,7 +263,6 @@ export default function RocketPage() {
     const BetControls = () => {
         const parsedBetAmount = parseInt(betAmount) || 0;
         
-        const canPlaceBet = gameState === 'waiting' && !hasPlacedBet && user && user.balance.stars >= parsedBetAmount && parsedBetAmount > 0;
         const canCashOut = gameState === 'playing' && playerStatus?.status === 'playing';
 
         let buttonText = 'Place Bet';
@@ -396,7 +402,8 @@ export default function RocketPage() {
 
     return (
         <div className="flex flex-col h-full">
-            <audio ref={audioRef} src="https://vgmsite.com/soundtracks/incubation-time-is-running-out/kkgwvwir/202%20-%20Ambient%204.mp3" loop />
+            <audio ref={musicRef} src="https://cdn.pixabay.com/download/audio/2023/05/27/audio_8b248dfb22.mp3" loop />
+            <audio ref={crashSfxRef} src="https://cdn.pixabay.com/download/audio/2022/03/10/audio_b6238b0b87.mp3" />
             <History />
             <GameScreen />
             <div className="mt-4 w-full flex flex-col items-center flex-grow min-h-0">
@@ -411,4 +418,4 @@ const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
     return <div className={cn("px-3 py-1 rounded-md text-sm font-bold", className)} {...props} />
 }
 
-    
+      
