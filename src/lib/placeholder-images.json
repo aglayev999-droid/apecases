@@ -1,3 +1,76 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "user-avatar-1",
+      "description": "User avatar 1",
+      "imageUrl": "https://images.unsplash.com/photo-1636041241625-42c19b151401?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxjb29sJTIwYXZhdGFyfGVufDB8fHx8MTc2MDc3MTYwNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cool avatar"
+    },
+    {
+      "id": "case-common",
+      "description": "A common loot case",
+      "imageUrl": "https://images.unsplash.com/photo-1573744442594-f1e8ae2fd926?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx0cmVhc3VyZSUyMGNoZXN0fGVufDB8fHx8MTc2MDczNTM1NXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "treasure chest"
+    },
+    {
+      "id": "case-rare",
+      "description": "A rare loot case",
+      "imageUrl": "https://images.unsplash.com/photo-1532200846567-1bd8bd5b23aa?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxnbG93aW5nJTIwY2hlc3R8ZW58MHx8fHwxNzYwNzc1ODU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "glowing chest"
+    },
+    {
+      "id": "case-epic",
+      "description": "An epic loot case",
+      "imageUrl": "https://images.unsplash.com/photo-1545409347-2eaffd7a42c5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxlcGljJTIwdHJlYXN1cmV8ZW58MHx8fHwxNzYwNzc1ODU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "epic treasure"
+    },
+    {
+      "id": "case-legendary",
+      "description": "A legendary loot case",
+      "imageUrl": "https://images.unsplash.com/photo-1688479294305-145dcf081313?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxsZWdlbmRhcnklMjBhcnRpZmFjdHxlbnwwfHx8fDE3NjA3NzU4NTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "legendary artifact"
+    },
+    {
+      "id": "item-sword-1",
+      "description": "A common sword",
+      "imageUrl": "https://images.unsplash.com/photo-1677570990661-949e5083670f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Y3liZXJwdW5rJTIwc3dvcmR8ZW58MHx8fHwxNzYwNzc1ODU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cyberpunk sword"
+    },
+    {
+      "id": "item-shield-1",
+      "description": "An uncommon shield",
+      "imageUrl": "https://images.unsplash.com/photo-1680779116047-8e8e700ae01a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxlbmVyZ3klMjBzaGllbGR8ZW58MHx8fHwxNzYwNzQyNTE4fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "energy shield"
+    },
+    {
+      "id": "item-helmet-1",
+      "description": "A rare helmet",
+      "imageUrl": "https://images.unsplash.com/photo-1729882928614-57b710a4493c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxnbG93aW5nJTIwaGVsbWV0fGVufDB8fHx8MTc2MDc3NTg1N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "glowing helmet"
+    },
+    {
+      "id": "item-armor-1",
+      "description": "An epic piece of armor",
+      "imageUrl": "https://images.unsplash.com/photo-1718453909001-ba0201603860?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxmdXR1cmlzdGljJTIwYXJtb3J8ZW58MHx8fHwxNzYwNzM3NTYyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "futuristic armor"
+    },
+    {
+      "id": "item-boots-1",
+      "description": "Legendary boots",
+      "imageUrl": "https://images.unsplash.com/photo-1667314615087-bf98608542a1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxnbG93aW5nJTIwYm9vdHN8ZW58MHx8fHwxNzYwNzc1ODU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "glowing boots"
+    },
+    {
+      "id": "item-nft-1",
+      "description": "A unique NFT artifact",
+      "imageUrl": "https://images.unsplash.com/photo-1616958396539-418437c2e1f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxjcnlwdG8lMjBhcnR8ZW58MHx8fHwxNzYwNzc1ODU3fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "crypto art"
+    },
+    {
+      "id": "item-gloves-1",
+      "description": "Rare gloves",
+      "imageUrl": "https://images.unsplash.com/photo-1636124883996-fedf726177b9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwb3dlciUyMGdsb3Zlc3xlbnwwfHx8fDE3NjA3NzU4NTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "power gloves"
+    }
+  ]
 }
