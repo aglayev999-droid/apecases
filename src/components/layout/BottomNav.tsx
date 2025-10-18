@@ -2,15 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Box, User as UserIcon, TrendingUp, Trophy } from 'lucide-react';
+import { Box, User as UserIcon, Store, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { HomeIcon } from '@radix-ui/react-icons';
+
 
 const navItems = [
   { href: '/inventory', label: 'Inventory', icon: Box },
   { href: '/profile', label: 'Profile', icon: UserIcon },
-  { href: '/', label: 'Cases', icon: HomeIcon },
-  { href: '/leaderboard', label: 'Rating', icon: Trophy },
+  { href: '/', label: 'Cases', icon: Store },
+  { href: '/leaderboard', label: 'Rating', icon: BarChart3 },
 ];
 
 export default function BottomNav() {

@@ -6,15 +6,18 @@ import { DiamondIcon } from '@/components/icons/DiamondIcon';
 import { Button } from '@/components/ui/button';
 import { MoreVertical, Plus, X } from 'lucide-react';
 import Link from 'next/link';
+import { TonConnectButton } from '@tonconnect/ui-react';
 
 export default function AppHeader() {
   const { user } = useUser();
 
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat('en-US', {
+    // Format to 2 decimal places, but remove trailing .00
+    const formatted = new Intl.NumberFormat('en-US', {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(num);
+    return formatted.endsWith('.00') ? formatted.slice(0, -3) : formatted;
   };
 
   return (
@@ -33,8 +36,8 @@ export default function AppHeader() {
                 <StarIcon className="h-5 w-5" />
                 <span className="font-semibold text-sm">{formatNumber(user.balance.stars)}</span>
               </div>
-              <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full bg-muted">
-                <Plus className="h-4 w-4" />
+              <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full bg-primary">
+                <Plus className="h-4 w-4 text-primary-foreground" />
               </Button>
               <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full bg-green-500/20 text-green-400">
                 <span className="font-bold text-sm">D</span>
@@ -42,17 +45,16 @@ export default function AppHeader() {
             </div>
           )}
 
-          <Button variant="default" size="sm" className="hidden sm:flex">
-            <DiamondIcon className="mr-2 h-4 w-4" />
-            Connect wallet
-          </Button>
+          <TonConnectButton />
 
-          <Button size="icon" variant="ghost">
-            <MoreVertical className="h-5 w-5" />
-          </Button>
-          <Button size="icon" variant="ghost">
-            <X className="h-5 w-5" />
-          </Button>
+          <div className='flex items-center'>
+            <Button size="icon" variant="ghost">
+                <MoreVertical className="h-5 w-5" />
+            </Button>
+            <Button size="icon" variant="ghost">
+                <X className="h-5 w-5" />
+            </Button>
+          </div>
         </div>
       </div>
     </header>

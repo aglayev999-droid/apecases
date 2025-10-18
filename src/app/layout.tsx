@@ -6,6 +6,7 @@ import BottomNav from '@/components/layout/BottomNav';
 import { Toaster } from "@/components/ui/toaster";
 import { Inter, Quantico } from 'next/font/google';
 import { cn } from '@/lib/utils';
+import { TonConnectProvider } from '@/contexts/TonConnectProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -32,16 +33,18 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={cn("font-body antialiased", inter.variable, quantico.variable)}>
-        <UserProvider>
-          <div className="flex flex-col min-h-screen">
-            <AppHeader />
-            <main className="flex-grow container mx-auto px-4 pt-8 pb-28 md:pb-8">
-              {children}
-            </main>
-            <BottomNav />
-          </div>
-          <Toaster />
-        </UserProvider>
+        <TonConnectProvider>
+          <UserProvider>
+            <div className="flex flex-col min-h-screen">
+              <AppHeader />
+              <main className="flex-grow container mx-auto px-4 pt-8 pb-28 md:pb-8">
+                {children}
+              </main>
+              <BottomNav />
+            </div>
+            <Toaster />
+          </UserProvider>
+        </TonConnectProvider>
       </body>
     </html>
   );
