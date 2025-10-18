@@ -49,7 +49,10 @@ export default function ProfilePage() {
         </Avatar>
         <div>
           <h1 className="text-4xl font-bold tracking-tighter">{user.name}</h1>
-          <p className="text-muted-foreground">Telegram ID: {user.telegramId}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <a href="https://t.me/apexcasebot" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">@apexcasebot</a>
+            <p className="text-muted-foreground">ID: {user.telegramId}</p>
+          </div>
         </div>
       </div>
 
