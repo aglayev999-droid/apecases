@@ -1,4 +1,6 @@
-import type { Item, Case, User, LeaderboardEntry } from './types';
+import { Item, Case, User, LeaderboardEntry, CaseBattle } from './types';
+import { Timestamp } from 'firebase/firestore';
+
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
@@ -79,7 +81,8 @@ export const MOCK_CASES: Case[] = [
         { itemId: 'item-diamond', probability: 0.3 },
         { itemId: 'item-ring', probability: 0.15 },
         { itemId: 'item-desk-calendar-random', probability: 0.1 },
-        { itemId: 'item-candy-cane', probability: 0.05 },
+        { itemId: 'item-candy-cane', probability: 0.04 },
+        { id: 'item-nft-cat-1', probability: 0.01 },
       ],
     },
     {
@@ -111,6 +114,29 @@ export const MOCK_CASES: Case[] = [
       ],
     },
 ];
+
+export const MOCK_BATTLES: CaseBattle[] = [
+  {
+    id: 'battle-1',
+    status: 'active',
+    players: [
+      { userId: 'bot-1', name: 'Ghost', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg', items: [], totalValue: 180 },
+      { userId: 'bot-2', name: 'Viper', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg', items: [], totalValue: 180 },
+    ],
+    cases: ['case-floor-8'],
+    createdAt: Timestamp.now(),
+  },
+  {
+    id: 'battle-2',
+    status: 'waiting',
+    players: [
+      { userId: 'bot-3', name: 'Cipher', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg', items: [], totalValue: 420 },
+    ],
+    cases: ['case-snoop-7', 'case-labubu-10'],
+    createdAt: Timestamp.now(),
+  },
+];
+
 
 export const MOCK_USER: User | null = null;
 

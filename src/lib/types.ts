@@ -74,8 +74,10 @@ export interface RocketPlayer {
 // Case Battle Types
 export interface BattlePlayer {
     userId: string;
-    items: InventoryItem[];
+    items: string[]; // array of inventory item IDs
     totalValue: number;
+    avatar: string;
+    name: string;
 }
 
 export interface CaseBattle {
