@@ -209,7 +209,7 @@ export default function RocketPage() {
                     </div>
                 ) : gameState === 'waiting' ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center z-30 text-center text-white">
-                        <Image src="https://i.ibb.co/ZpJBWrdY/626624c3-f89f-4f89-9d69-35d6ec78c83f-removebg-preview.png" width={80} height={80} alt="1case logo" className="mb-4 h-20 w-20"/>
+                        <Image src="https://i.ibb.co/XZHF0G6/776f01cf-fb67-4fb6-aaab-beaa022d0f0a-removebg-preview.png" width={80} height={80} alt="1case logo" className="mb-4 h-20 w-20"/>
                         <p className="text-lg uppercase tracking-widest text-muted-foreground">Ожидание следующего раунда</p>
                         <p className="text-8xl font-bold">{countdown}</p>
                      </div>
@@ -392,6 +392,7 @@ const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
 }
 
     
+
 
 
 
