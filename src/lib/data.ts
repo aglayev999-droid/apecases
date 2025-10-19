@@ -20,7 +20,7 @@ export const ALL_ITEMS: Item[] = [
 
   // Rare
   { id: 'item-desk-calendar-random', name: 'Desk Calendar (Random)', rarity: 'Rare', image: 'https://i.ibb.co/bRrhpVKL/9ac8f934df67fea7-removebg-preview.png', imageHint: 'desk calendar birthday', value: 318, description: 'A desk calendar with a random date.' },
-  { id: 'item-lol-pop-random', name: 'Lol Pop (Random)', rarity: 'Rare', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'swirl lollipop', value: 360, description: 'A sweet and colorful lollipop.' },
+  { id: 'item-candy-cane', name: 'Candy Cane', rarity: 'Rare', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'candy cane', value: 360, description: 'A sweet and festive candy cane.' },
 
   // Epic
   { id: 'item-tama-gadget', name: 'Tama Gadget (Random)', rarity: 'Epic', image: 'https://i.ibb.co/Xf6HPpYc/tama.png', imageHint: 'tamagotchi virtual pet', value: 480, description: 'A nostalgic virtual pet gadget.' },
@@ -76,7 +76,7 @@ export const MOCK_CASES: Case[] = [
         { itemId: 'item-diamond', probability: 0.3 },
         { itemId: 'item-ring', probability: 0.15 },
         { itemId: 'item-desk-calendar-random', probability: 0.1 },
-        { itemId: 'item-lol-pop-random', probability: 0.05 },
+        { itemId: 'item-candy-cane', probability: 0.05 },
       ],
     },
     {
@@ -87,7 +87,7 @@ export const MOCK_CASES: Case[] = [
       imageHint: 'purple snoop dogg case',
       items: [
         { itemId: 'item-desk-calendar-random', probability: 0.4 },
-        { itemId: 'item-lol-pop-random', probability: 0.3 },
+        { itemId: 'item-candy-cane', probability: 0.3 },
         { itemId: 'item-tama-gadget', probability: 0.2 },
         { itemId: 'item-witch-hat', probability: 0.08 },
         { itemId: 'item-nft-ape-1', probability: 0.02 },
