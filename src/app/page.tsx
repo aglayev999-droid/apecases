@@ -18,7 +18,7 @@ const RARITY_PROPERTIES = {
     Common: { border: 'border-gray-500/50' },
     Uncommon: { border: 'border-green-500/50' },
     Rare: { border: 'border-blue-500/50' },
-    Epic: { border: 'border-purple-500/50' },
+    Epic: { border: 'border-purple-500/ ৫০' },
     Legendary: { border: 'border-orange-500/50' },
     NFT: { border: 'border-purple-400/50' },
 };
@@ -37,6 +37,13 @@ const LiveDrops = () => {
     const [liveDrops, setLiveDrops] = useState<Item[]>([]);
     const firestore = useFirestore();
 
+    const filteredItems = useMemo(() => {
+        return allItems.filter(item => 
+            !item.id.startsWith('item-stars-') &&
+            (item.rarity === 'Uncommon' || item.rarity === 'Rare')
+        );
+    }, [allItems]);
+
     useEffect(() => {
         const fetchItems = async () => {
             if (firestore) {
@@ -52,14 +59,14 @@ const LiveDrops = () => {
     }, [firestore]);
     
     useEffect(() => {
-        if (allItems.length === 0) return;
+        if (filteredItems.length === 0) return;
 
-        const initialDrops = Array.from({ length: 10 }, () => allItems[Math.floor(Math.random() * allItems.length)]);
+        const initialDrops = Array.from({ length: 10 }, () => filteredItems[Math.floor(Math.random() * filteredItems.length)]);
         setLiveDrops(initialDrops);
 
         const interval = setInterval(() => {
             setLiveDrops(prevDrops => {
-                const newItem = allItems[Math.floor(Math.random() * allItems.length)];
+                const newItem = filteredItems[Math.floor(Math.random() * filteredItems.length)];
                 const newDrops = [newItem, ...prevDrops];
                 if (newDrops.length > 15) {
                     newDrops.pop();
@@ -69,13 +76,17 @@ const LiveDrops = () => {
         }, 3000);
 
         return () => clearInterval(interval);
-    }, [allItems]);
+    }, [filteredItems]);
+
+    if (filteredItems.length === 0) {
+        return null; // Don't render if there are no items to show
+    }
 
     return (
         <div className="mb-8">
             <div className="flex items-center gap-2 mb-3">
-                <Gift className="text-yellow-400 h-6 w-6"/>
-                <h2 className="text-lg font-bold text-yellow-400 uppercase tracking-wider">LIVE DROPS</h2>
+                <Gift className="text-green-400 h-6 w-6"/>
+                <h2 className="text-lg font-bold text-green-400 uppercase tracking-wider">LIVE DROPS</h2>
             </div>
             <div className="relative">
                 <div className="absolute left-0 top-0 h-full w-8 z-10 bg-gradient-to-r from-background to-transparent" />
