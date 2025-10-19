@@ -235,12 +235,15 @@ export default function CasePage() {
         }
     }
 
+    const totalWonValue = useMemo(() => {
+        return wonItems.reduce((sum, item) => sum + item.value, 0);
+    }, [wonItems]);
+
     const handleSellAllWon = () => {
-        const totalValue = wonItems.reduce((sum, item) => item.value, 0);
-        updateBalance(totalValue);
+        updateBalance(totalWonValue);
         showAlert({
             title: `Sold ${wonItems.length} items!`,
-            description: `You got ${totalValue} stars.`,
+            description: `You got ${totalWonValue} stars.`,
         });
         handleModalOpenChange(false);
     };
@@ -259,7 +262,6 @@ export default function CasePage() {
         }
     }
     
-    const totalWonValue = wonItems.reduce((sum, item) => item.value, 0);
     const displayedMultiplier = isFree ? 1 : spinMultiplier;
 
     return (
@@ -301,7 +303,7 @@ export default function CasePage() {
                 </div>
 
                 <div className="mt-auto pt-8">
-                    <Button onClick={() => handleSpin(false)} onDoubleClick={() => handleSpin(true)} disabled={isSpinning || !canAfford} className="w-full h-16 text-xl" size="lg">
+                    <Button onMouseDown={() => handleSpin(false)} onDoubleClick={() => handleSpin(true)} disabled={isSpinning || !canAfford} className="w-full h-16 text-xl" size="lg">
                        <div className="flex flex-col">
                             <div className="flex items-center justify-center gap-2">
                                 <span>{isFree ? 'Spin' : `Spin x${spinMultiplier} for ${totalCost}`}</span>
@@ -341,7 +343,7 @@ export default function CasePage() {
                            <button onClick={() => handleModalOpenChange(false)} className="absolute right-2 top-2 p-1 rounded-full bg-background/50 hover:bg-background/80"><X className="h-4 w-4" /></button>
                             <DialogTitle className="text-2xl font-bold">You Won {wonItems.length} Item{wonItems.length > 1 ? 's' : ''}!</DialogTitle>
                             <ScrollArea className="max-h-64 pr-4">
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                <div className="grid grid-cols-3 gap-2">
                                     {wonItems.map((item, index) => (
                                         <Card key={index} className={cn("p-2", RARITY_PROPERTIES[item.rarity].border)}>
                                             <div className="aspect-square relative"><Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain" data-ai-hint={item.imageHint} /></div>
