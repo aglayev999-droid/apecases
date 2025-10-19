@@ -20,8 +20,76 @@ export const ALL_ITEMS: Item[] = [
   { id: 'item-nft-10348', name: 'Hex Pot', rarity: 'NFT', image: 'https://i.ibb.co/C2t4X1g/hex-pot.png', imageHint: 'hexagon pot', value: 500, description: 'A mysterious hexagonal artifact radiating energy.', animationUrl: 'https://player.vimeo.com/video/1128573918?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1' },
 ];
 
-// MOCK_CASES and MOCK_USER are deprecated and will be fetched from Firestore
-export const MOCK_CASES: Case[] = [];
+export const MOCK_CASES: Case[] = [
+    {
+      id: 'case-common-1',
+      name: 'Standard Issue',
+      price: 100,
+      image: 'https://i.ibb.co/mHk9PWB/case1-1.png',
+      imageHint: 'metal crate',
+      items: [
+        { itemId: 'item-stars-5', probability: 0.4 },
+        { itemId: 'item-stars-7', probability: 0.3 },
+        { itemId: 'item-sword-1', probability: 0.2 },
+        { itemId: 'item-shield-1', probability: 0.1 },
+      ],
+    },
+    {
+      id: 'case-rare-2',
+      name: 'Armory Crate',
+      price: 500,
+      image: 'https://i.ibb.co/q0QB0gN/case2-1.png',
+      imageHint: 'glowing crate',
+      items: [
+        { itemId: 'item-stars-10', probability: 0.3 },
+        { itemId: 'item-stars-15', probability: 0.25 },
+        { itemId: 'item-shield-1', probability: 0.2 },
+        { itemId: 'item-helmet-1', probability: 0.15 },
+        { itemId: 'item-gloves-1', probability: 0.1 },
+      ],
+    },
+    {
+      id: 'case-epic-3',
+      name: 'War chest',
+      price: 2500,
+      image: 'https://i.ibb.co/pwnX1t4/case3-1.png',
+      imageHint: 'sci-fi chest',
+      items: [
+        { itemId: 'item-stars-20', probability: 0.3 },
+        { itemId: 'item-helmet-1', probability: 0.25 },
+        { itemId: 'item-armor-1', probability: 0.2 },
+        { itemId: 'item-boots-1', probability: 0.15 },
+        { itemId: 'item-nft-1', probability: 0.1 },
+      ],
+    },
+    {
+      id: 'case-free-4',
+      name: 'Daily Drop',
+      price: 0,
+      image: 'https://i.ibb.co/D8NqYhS/case4-1.png',
+      imageHint: 'supply drop',
+      items: [
+        { itemId: 'item-stars-5', probability: 0.7 },
+        { itemId: 'item-sword-1', probability: 0.3 },
+      ],
+      freeCooldownSeconds: 86400, // 24 hours
+    },
+    {
+      id: 'case-labubu-5',
+      name: 'LABUBU CASE',
+      price: 300,
+      image: 'https://i.ibb.co/v4SsYct/case5.png',
+      imageHint: 'labubu',
+      items: [
+        { itemId: 'item-stars-5', probability: 0.4 },
+        { itemId: 'item-stars-7', probability: 0.28 },
+        { itemId: 'item-nft-10348', probability: 0.02 },
+        { itemId: 'item-sword-1', probability: 0.2 },
+        { itemId: 'item-shield-1', probability: 0.1 },
+      ],
+    },
+];
+
 export const MOCK_USER: User | null = null;
 
 

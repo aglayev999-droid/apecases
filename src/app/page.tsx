@@ -7,6 +7,7 @@ import type { Case } from '@/lib/types';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import { Skeleton } from '@/components/ui/skeleton';
+import { MOCK_CASES } from '@/lib/data';
 
 export default function Home() {
   const router = useRouter();
@@ -38,11 +39,13 @@ export default function Home() {
     )
   }
 
+  const displayCases = cases && cases.length > 0 ? cases : MOCK_CASES;
+
   return (
     <div className="space-y-8">
        <h1 className="text-2xl font-bold mb-4">Cases</h1>
       <div className="grid grid-cols-2 gap-4">
-        {cases?.map((caseData) => (
+        {displayCases.map((caseData) => (
           <CaseCard key={caseData.id} caseData={caseData} onOpen={() => handleCaseSelect(caseData)} />
         ))}
       </div>
