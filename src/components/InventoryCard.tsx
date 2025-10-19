@@ -130,8 +130,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
         {isNft ? (
             <div className="w-full grid grid-cols-2 gap-2">
                 <Button variant="destructive" size="sm" onClick={handleSell}>
-                    Sell for {item.value}
-                    <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
+                    Sell
                 </Button>
                 <Button variant="default" size="sm" onClick={handleWithdraw}>
                     Withdraw
