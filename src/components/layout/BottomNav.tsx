@@ -32,16 +32,14 @@ export default function BottomNav() {
       <div className="container mx-auto max-w-md px-2">
         <div className="grid h-20 grid-cols-7 items-center">
           {navItems.map((item, index) => {
-            // Check for active state. For the main button, it's only active if the path is exactly '/'.
-            // For others, we check if the path starts with the href, unless the href is just '/'.
-            const isActive = item.href === '/' ? pathname === item.href : pathname.startsWith(item.href);
+            const isActive = item.href === '/' ? pathname === item.href : pathname.startsWith(item.href) && item.href.length > 1;
 
             if (item.isMain) {
               return (
                 <Link key={item.href} href={item.href} className={cn("flex flex-col items-center justify-center -mt-6", getGridPosition(index))}>
                   <div className={cn(
                     'rounded-full p-2 transition-all transform',
-                    isActive ? 'bg-primary shadow-lg' : 'bg-card border'
+                    pathname === '/' ? 'bg-primary shadow-lg' : 'bg-card border'
                   )}>
                     <div className="relative h-14 w-14">
                       <img
