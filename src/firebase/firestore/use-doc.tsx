@@ -1,6 +1,6 @@
 'use client';
     
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   DocumentReference,
   onSnapshot,
@@ -53,6 +53,9 @@ export function useDoc<T = any>(
   const [data, setData] = useState<StateDataType>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
+  
+  // Memoize onCreate to prevent re-triggering useEffect
+  const onCreate = options?.onCreate;
 
   useEffect(() => {
     if (!memoizedDocRef) {
@@ -71,11 +74,11 @@ export function useDoc<T = any>(
         if (snapshot.exists()) {
           setData({ ...(snapshot.data() as T), id: snapshot.id });
         } else {
-            if (options?.onCreate) {
+            if (onCreate) {
                 try {
                     // @ts-ignore
                     const user = { uid: memoizedDocRef.id };
-                    const newData = await options.onCreate(user as FirebaseUser);
+                    const newData = await onCreate(user as FirebaseUser);
                     setData({ ...newData, id: snapshot.id });
                 } catch (e) {
                      setError(new Error('Failed to create new document.'));
@@ -103,7 +106,7 @@ export function useDoc<T = any>(
     );
 
     return () => unsubscribe();
-  }, [memoizedDocRef, options]);
+  }, [memoizedDocRef, onCreate]);
 
   return { data, isLoading, error };
 }

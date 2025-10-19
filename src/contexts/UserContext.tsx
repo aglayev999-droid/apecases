@@ -47,8 +47,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     [firestore, firebaseUser]
   );
   
+  const handleCreateUser = useCallback((firebaseUser: FirebaseUser) => {
+      if (!firestore) {
+          throw new Error("Firestore not available");
+      }
+      return createNewUserDocument(firestore, firebaseUser);
+  }, [firestore]);
+  
   const { data: user, isLoading: isUserDocLoading } = useDoc<User>(userDocRef, {
-      onCreate: (firebaseUser) => createNewUserDocument(firestore, firebaseUser)
+      onCreate: handleCreateUser
   });
 
   const inventoryColRef = useMemoFirebase(() =>
