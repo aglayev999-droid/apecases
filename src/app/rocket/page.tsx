@@ -126,11 +126,11 @@ export default function RocketPage() {
             left: `${position.x}px`,
             top: `${position.y}px`,
             transform: `translate(-50%, -50%) rotate(${position.rotation}deg)`,
-            transition: 'all 0.1s linear',
+            transition: 'none',
             willChange: 'transform, left, top',
             opacity: gameState === 'crashed' ? 0 : 1,
-            width: '120px', // Increased size
-            height: '120px' // Increased size
+            width: '120px',
+            height: '120px'
         };
     
         return (
@@ -394,3 +394,4 @@ const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
 }
 
     
+

@@ -87,14 +87,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         }
     } else if (gameState === 'playing') {
         timer = setTimeout(() => {
-            const newMultiplier = multiplier + (0.01 + multiplier * 0.01);
+            const newMultiplier = multiplier + (0.01 + multiplier * 0.005);
             if (newMultiplier >= crashPoint) {
                 setGameState('crashed');
                 setMultiplier(crashPoint);
             } else {
                 setMultiplier(newMultiplier);
             }
-        }, 60);
+        }, 100);
     } else if (gameState === 'crashed') {
         setHistory(prev => [crashPoint, ...prev.slice(0, 9)]);
         setPlayers(currentPlayers => currentPlayers.map(p => p.status === 'playing' ? {...p, status: 'lost' } : p));
