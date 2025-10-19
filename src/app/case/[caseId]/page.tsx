@@ -193,11 +193,12 @@ export default function CasePage() {
         let newReelItems = [];
         const reelLength = 100;
         for (let i = 0; i < reelLength; i++) {
-            newReelItems.push(caseItems[Math.floor(Math.random() * caseItems.length)]);
+            const randomItem = caseItems[Math.floor(Math.random() * caseItems.length)];
+            newReelItems.push(randomItem);
         }
 
         // 3. Deterministically place the TRUE prize at a specific target index.
-        const targetIndex = 75;
+        const targetIndex = 75; // A position far enough along for a good spin animation.
         newReelItems[targetIndex] = logicalPrize;
         
         // 4. Set the new reel for rendering.
@@ -206,12 +207,13 @@ export default function CasePage() {
         // This is a short timeout to allow React to render the new reel before we start the animation.
         setTimeout(() => {
             if (emblaApi) {
-                emblaApi.reInit();
-                const engine = emblaApi.internalEngine();
-                const scrollSnaps = emblaApi.scrollSnapList();
+                const spinTime = isFast ? 1000 : 5000;
                 
-                // Animate the scroll to the pre-determined target index.
-                emblaApi.scrollTo(targetIndex); 
+                // Manually control the animation via the API
+                const engine = emblaApi.internalEngine();
+                engine.scrollBody.duration = spinTime; // Set animation duration
+                emblaApi.reInit(); // Re-initialize with new items
+                emblaApi.scrollTo(targetIndex); // Animate the scroll to the pre-determined target index. 
 
                 // Schedule the 'spin end' logic.
                 setTimeout(() => {
@@ -225,7 +227,7 @@ export default function CasePage() {
                     } else {
                         addInventoryItem(logicalPrize);
                     }
-                }, 5500); // Add a small buffer after animation ends
+                }, spinTime + 500); // Add a small buffer after animation ends
             }
         }, 100);
 
@@ -324,7 +326,7 @@ export default function CasePage() {
                     </div>
                     
                     <div className="overflow-hidden w-full" ref={emblaRef}>
-                        <div className="flex" style={isSpinning ? { transition: 'transform 5s ease-out' } : {}}>
+                        <div className="flex">
                             {reelItems.length > 0 ? reelItems.map((item, index) => (
                                 <div key={index} className="flex-[0_0_9rem] mx-2">
                                     <Card className={cn(
