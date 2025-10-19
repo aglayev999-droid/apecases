@@ -1,118 +1,399 @@
-'use client';
-
-import React from 'react';
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Clock, Star, Users } from 'lucide-react';
-import { CoinsIcon } from '@/components/icons/CoinsIcon';
-
-const giveaways = [
-    {
-        id: 1,
-        isPremium: true,
-        title: '50 Gifts',
-        participants: 338,
-        channels: 1,
-        timeleft: '6d 10h',
-        images: [
-            'https://placehold.co/100x100/A9A388/FFFFFF?text=Item1',
-            'https://placehold.co/100x100/F5C396/FFFFFF?text=Item2',
-            'https://placehold.co/100x100/C4E3D8/FFFFFF?text=Item3'
-        ],
-        imageHints: ['blue candle', 'orange candle', 'snow globe']
-    },
-    {
-        id: 2,
-        isPremium: true,
-        isVolume: true,
-        title: '50 Gifts',
-        participants: 2400,
-        channels: 2,
-        timeleft: '11h 3m',
-        images: [
-            'https://placehold.co/100x100/F5D76E/FFFFFF?text=ItemA',
-            'https://placehold.co/100x100/E8E8E8/FFFFFF?text=ItemB',
-            'https://placehold.co/100x100/E08283/FFFFFF?text=ItemC'
-        ],
-        imageHints: ['gold hand', 'silver ring', 'red egg']
-    }
-];
-
-export default function GiveawaysPage() {
-    const formatParticipants = (num: number) => {
-        if (num >= 1000) {
-            return (num / 1000).toFixed(1) + 'K';
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the Apex Case Battles app.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "telegramId": {
+          "type": "string",
+          "description": "The user's Telegram ID, used for authentication."
+        },
+        "username": {
+          "type": "string",
+          "description": "The user's username."
+        },
+        "starsBalance": {
+          "type": "number",
+          "description": "The user's Stars balance."
+        },
+        "referralCode": {
+          "type": "string",
+          "description": "The user's unique referral code."
+        },
+        "invitedById": {
+          "type": "string",
+          "description": "Reference to the User who invited this user."
+        },
+        "referralsCount": {
+          "type": "number",
+          "description": "The number of users this user has referred."
+        },
+        "spinsCountWeekly": {
+          "type": "number",
+          "description": "The number of spins the user has used this week."
+        },
+        "starsSpentWeekly": {
+          "type": "number",
+          "description": "The number of Stars the user has spent this week."
         }
-        return num;
-    };
-
-    return (
-        <div className="w-full">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-bold">Giveaways</h1>
-                <div className="flex items-center gap-4 text-muted-foreground font-semibold">
-                    <button className="hover:text-foreground">Create</button>
-                    <button className="hover:text-foreground">History</button>
-                </div>
-            </div>
-
-            {/* Tabs */}
-            <Tabs defaultValue="explore" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-card border">
-                    <TabsTrigger value="explore">Explore</TabsTrigger>
-                    <TabsTrigger value="joined">Joined</TabsTrigger>
-                </TabsList>
-                <TabsContent value="explore">
-                    <div className="space-y-4 mt-6">
-                        {giveaways.map((giveaway) => (
-                            <Card key={giveaway.id} className="p-4 rounded-xl border-2">
-                                <div className="grid grid-cols-3 gap-2 mb-4">
-                                    {giveaway.images.map((src, index) => (
-                                         <div key={index} className="aspect-square bg-muted rounded-lg overflow-hidden relative">
-                                            <Image 
-                                                src={src} 
-                                                alt={`Giveaway item ${index + 1}`} 
-                                                fill
-                                                sizes="30vw"
-                                                className="object-cover"
-                                                data-ai-hint={giveaway.imageHints[index]}
-                                            />
-                                         </div>
-                                    ))}
-                                </div>
-                                
-                                <div className="space-y-2">
-                                    <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
-                                        {giveaway.isPremium && <span className="flex items-center gap-1 text-purple-400"><Star className="w-4 h-4 fill-purple-400" /> PREMIUM</span>}
-                                        {giveaway.isVolume && <span className="flex items-center gap-1 text-green-400"><CoinsIcon className="w-4 h-4" /> VOLUME</span>}
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <h2 className="text-xl font-bold">{giveaway.title}</h2>
-                                        <div className="flex items-center gap-2 text-sm bg-muted text-muted-foreground font-semibold px-3 py-1 rounded-md">
-                                            <Clock className="w-4 h-4" />
-                                            <span>{giveaway.timeleft}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                        <Users className="w-4 h-4" />
-                                        <span>{formatParticipants(giveaway.participants)} participants</span>
-                                        <span>&middot;</span>
-                                        <span>{giveaway.channels} channel{giveaway.channels > 1 && 's'}</span>
-                                    </div>
-                                </div>
-                            </Card>
-                        ))}
-                    </div>
-                </TabsContent>
-                <TabsContent value="joined">
-                    <div className="text-center py-16 text-muted-foreground">
-                        <p>You haven&apos;t joined any giveaways yet.</p>
-                    </div>
-                </TabsContent>
-            </Tabs>
-        </div>
-    );
+      },
+      "required": [
+        "id",
+        "telegramId",
+        "username",
+        "starsBalance",
+        "referralCode"
+      ]
+    },
+    "Case": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Case",
+      "type": "object",
+      "description": "Represents a case that users can open.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Case entity."
+        },
+        "nameEn": {
+          "type": "string",
+          "description": "The English name of the case."
+        },
+        "priceStars": {
+          "type": "number",
+          "description": "The price of the case in Stars."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "The URL of the case's image."
+        },
+        "isFree": {
+          "type": "boolean",
+          "description": "Whether the case is free to open."
+        },
+        "freeCooldownSeconds": {
+          "type": "number",
+          "description": "The cooldown time in seconds before a free case can be opened again."
+        },
+        "items": {
+          "type": "array",
+          "description": "Array of items contained in this case with their probabilities.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "itemId": {
+                "type": "string"
+              },
+              "probability": {
+                "type": "number"
+              }
+            }
+          }
+        }
+      },
+      "required": [
+        "id",
+        "nameEn",
+        "priceStars",
+        "imageUrl"
+      ]
+    },
+    "NFTInventory": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "NFTInventory",
+      "type": "object",
+      "description": "Represents the inventory of real TON NFTs owned by the bot.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the NFTInventory entity (nft_id)."
+        },
+        "collectionAddress": {
+          "type": "string",
+          "description": "The address of the NFT collection."
+        },
+        "caseId": {
+          "type": "string",
+          "description": "Reference to the Case this NFT can be won from."
+        },
+        "currentOwnerId": {
+          "type": "string",
+          "description": "Reference to the User or Bot that currently owns the NFT."
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the NFT (available, won, transferred).",
+          "enum": ["available", "won", "transferred"]
+        }
+      },
+      "required": [
+        "id",
+        "collectionAddress",
+        "status"
+      ]
+    },
+    "Inventory": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Inventory",
+      "type": "object",
+      "description": "Represents a list of items (including NFTs) won by users.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Inventory entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who won the item."
+        },
+        "itemId": {
+          "type": "string",
+          "description": "Reference to the Item won."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of item (e.g., NFT, in-game item)."
+        },
+        "status": {
+          "type": "string",
+          "description": "The status of the item (won, exchanged, shipped).",
+          "enum": ["won", "exchanged", "shipped"]
+        },
+        "wonAt": {
+          "type": "string",
+          "description": "The timestamp when the item was won.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "itemId",
+        "type",
+        "status",
+        "wonAt"
+      ]
+    },
+    "Item": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Item",
+      "type": "object",
+      "description": "Represents a generic item that can be won in the game (including NFTs).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Item entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the item."
+        },
+        "description": {
+          "type": "string",
+          "description": "The description of the item (can be generated by AI)."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "The URL of the item's image."
+        },
+        "rarity": {
+          "type": "string",
+          "enum": ["Common", "Uncommon", "Rare", "Epic", "Legendary", "NFT"]
+        },
+        "value": {
+          "type": "number",
+          "description": "Value of the item in Stars."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "imageUrl",
+        "rarity",
+        "value"
+      ]
+    },
+    "Transaction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Transaction",
+      "description": "Represents a financial transaction within the app.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique ID of the transaction." },
+        "userId": { "type": "string", "description": "User associated with the transaction." },
+        "type": { "type": "string", "enum": ["deposit", "withdrawal", "case_purchase", "item_sale"] },
+        "amount": { "type": "number", "description": "Transaction amount." },
+        "currency": { "type": "string", "enum": ["TON", "STARS"] },
+        "tonTxHash": { "type": "string", "description": "TON transaction hash for deposits." },
+        "status": { "type": "string", "enum": ["pending", "completed", "failed"] },
+        "isProcessed": { "type": "boolean", "description": "Flag to prevent double processing." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "userId", "type", "amount", "currency", "status", "createdAt"]
+    },
+    "Settings": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Settings",
+      "description": "Global settings for the application.",
+      "type": "object",
+      "properties": {
+        "tonToStarRate": {
+          "type": "number",
+          "description": "The conversion rate from 1 TON to STARS."
+        }
+      }
+    },
+    "WithdrawalQueue": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Withdrawal Queue",
+      "description": "Queue for processing NFT withdrawal requests by the auto-relayer.",
+      "type": "object",
+      "properties": {
+        "user_wallet_address": {
+          "type": "string",
+          "description": "The wallet address to deliver the NFT to."
+        },
+        "nft_id": {
+          "type": "string",
+          "description": "The Token ID of the won NFT."
+        },
+        "nft_contract_address": {
+          "type": "string",
+          "description": "The smart contract address of the NFT collection."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "processing", "completed", "failed"],
+          "description": "The current status of the withdrawal request."
+        },
+        "timestamp": {
+          "type": "number",
+          "description": "The Unix timestamp when the request was created."
+        },
+        "processed_by": {
+          "type": "string",
+          "description": "Identifier of the relayer worker that processed the request."
+        },
+        "tx_hash": {
+          "type": "string",
+          "description": "The blockchain transaction hash once the transfer is successful."
+        },
+        "error_message": {
+          "type": "string",
+          "description": "Stores any error message if the transaction fails."
+        }
+      },
+      "required": [
+        "user_wallet_address",
+        "nft_id",
+        "nft_contract_address",
+        "status",
+        "timestamp"
+      ]
+    },
+    "Upgrade": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Upgrade",
+        "description": "Represents an item upgrade attempt by a user.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string", "description": "Unique identifier for the upgrade event." },
+            "userId": { "type": "string", "description": "The user who performed the upgrade." },
+            "sourceItems": {
+                "type": "array",
+                "description": "An array of inventory item IDs that were used for the upgrade.",
+                "items": { "type": "string" }
+            },
+            "targetItem": { "type": "string", "description": "The ID of the item the user was trying to get." },
+            "chance": { "type": "number", "description": "The success probability of the upgrade." },
+            "outcome": { "type": "string", "enum": ["success", "failure"], "description": "The result of the upgrade." },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "userId", "sourceItems", "targetItem", "chance", "outcome", "createdAt"]
+    },
+    "CaseBattle": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Case Battle",
+      "description": "Represents a case battle between two or more players.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the battle." },
+        "status": { "type": "string", "enum": ["waiting", "active", "finished", "cancelled"], "description": "The current status of the battle." },
+        "players": {
+          "type": "array",
+          "description": "Players participating in the battle.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "userId": { "type": "string" },
+              "items": { "type": "array", "items": { "$ref": "#/entities/Inventory" } },
+              "totalValue": { "type": "number" }
+            }
+          }
+        },
+        "cases": {
+          "type": "array",
+          "description": "Array of case IDs included in the battle.",
+          "items": { "type": "string" }
+        },
+        "winnerId": { "type": "string", "description": "The ID of the winning user." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "finishedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "status", "players", "cases", "createdAt"]
+    }
+  },
+  "auth": {
+    "providers": [
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user data, including telegram ID, username, stars balance, and referral information. The 'userId' is the Firebase Auth UID."
+    },
+    "/cases/{caseId}": {
+      "schema": { "$ref": "#/entities/Case" },
+      "description": "Stores details about each case, including its price, contents, and probabilities."
+    },
+    "/nft_inventory/{nftId}": {
+      "schema": { "$ref": "#/entities/NFTInventory" },
+      "description": "Tracks all real TON NFTs owned by the bot, managing their availability and ownership status."
+    },
+    "/users/{userId}/inventory/{inventoryId}": {
+      "schema": { "$ref": "#/entities/Inventory" },
+      "description": "A subcollection for each user, storing the items they have won. This ensures data privacy and easy querying."
+    },
+    "/items/{itemId}": {
+      "schema": { "$ref": "#/entities/Item" },
+      "description": "A global collection of all possible items that can be won from cases."
+    },
+    "/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/Transaction" },
+      "description": "Stores all financial transactions for auditing and to prevent duplicates."
+    },
+    "/settings/global": {
+      "schema": { "$ref": "#/entities/Settings" },
+      "description": "Stores global application settings like conversion rates."
+    },
+    "/withdrawal_queue/{requestId}": {
+      "schema": { "$ref": "#/entities/WithdrawalQueue" },
+      "description": "A queue of NFT withdrawal requests to be processed by an off-chain relayer service. This allows for secure and automated NFT transfers."
+    },
+    "/upgrades/{upgradeId}": {
+        "schema": { "$ref": "#/entities/Upgrade" },
+        "description": "Logs all upgrade attempts for analytics and history."
+    },
+    "/battles/{battleId}": {
+        "schema": { "$ref": "#/entities/CaseBattle" },
+        "description": "Stores information about each case battle event."
+    }
+  }
 }

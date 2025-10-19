@@ -70,3 +70,20 @@ export interface RocketPlayer {
   status: RocketPlayerStatus;
   cashedOutAt: number | null;
 }
+
+// Case Battle Types
+export interface BattlePlayer {
+    userId: string;
+    items: InventoryItem[];
+    totalValue: number;
+}
+
+export interface CaseBattle {
+    id: string;
+    status: 'waiting' | 'active' | 'finished' | 'cancelled';
+    players: BattlePlayer[];
+    cases: string[]; // Array of case IDs
+    winnerId?: string;
+    createdAt: Timestamp;
+    finishedAt?: Timestamp;
+}

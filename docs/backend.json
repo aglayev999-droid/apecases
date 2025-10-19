@@ -316,6 +316,37 @@
             "createdAt": { "type": "string", "format": "date-time" }
         },
         "required": ["id", "userId", "sourceItems", "targetItem", "chance", "outcome", "createdAt"]
+    },
+    "CaseBattle": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Case Battle",
+      "description": "Represents a case battle between two or more players.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the battle." },
+        "status": { "type": "string", "enum": ["waiting", "active", "finished", "cancelled"], "description": "The current status of the battle." },
+        "players": {
+          "type": "array",
+          "description": "Players participating in the battle.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "userId": { "type": "string" },
+              "items": { "type": "array", "items": { "$ref": "#/entities/Inventory" } },
+              "totalValue": { "type": "number" }
+            }
+          }
+        },
+        "cases": {
+          "type": "array",
+          "description": "Array of case IDs included in the battle.",
+          "items": { "type": "string" }
+        },
+        "winnerId": { "type": "string", "description": "The ID of the winning user." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "finishedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "status", "players", "cases", "createdAt"]
     }
   },
   "auth": {
@@ -359,6 +390,10 @@
     "/upgrades/{upgradeId}": {
         "schema": { "$ref": "#/entities/Upgrade" },
         "description": "Logs all upgrade attempts for analytics and history."
+    },
+    "/battles/{battleId}": {
+        "schema": { "$ref": "#/entities/CaseBattle" },
+        "description": "Stores information about each case battle event."
     }
   }
 }

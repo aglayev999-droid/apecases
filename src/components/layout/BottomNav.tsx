@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Box, User as UserIcon, BarChart3, Rocket, Gift } from 'lucide-react';
+import { Box, User as UserIcon, BarChart3, Rocket, Swords } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DiamondIcon } from '@/components/icons/DiamondIcon';
 
 const navItems = [
   { href: '/inventory', label: 'Inventory', icon: Box },
   { href: '/profile', label: 'Profile', icon: UserIcon },
-  { href: '/giveaways', label: 'Giveaways', icon: Gift },
+  { href: '/battles', label: 'Battles', icon: Swords },
   { href: '/', label: 'Cases', icon: Box, isMain: true },
   { href: '/rocket', label: 'Rocket', icon: Rocket, isBeta: true },
   { href: '/upgrade', label: 'Upgrade', icon: DiamondIcon, isBeta: true },
