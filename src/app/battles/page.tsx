@@ -8,7 +8,7 @@ import Image from 'next/image';
 import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
 import { collection } from 'firebase/firestore';
 import type { CaseBattle } from '@/lib/types';
-import { MOCK_BATTLES, MOCK_CASES } from '@/lib/data';
+import { MOCK_CASES } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 
@@ -72,8 +72,6 @@ export default function BattlesPage() {
     )
   }
 
-  const displayBattles = battles && battles.length > 0 ? battles : MOCK_BATTLES;
-
   return (
     <div className="w-full space-y-6">
       {/* Header */}
@@ -86,52 +84,53 @@ export default function BattlesPage() {
 
       {/* Battles List */}
       <div className="space-y-4">
-        {displayBattles.map((battle) => {
-          const totalValue = battle.players.reduce((sum, player) => sum + player.totalValue, 0);
-          return (
-            <Card key={battle.id} className="overflow-hidden">
-                <CardContent className="p-4">
-                <div className="flex flex-col sm:flex-row gap-4">
-                    {/* Cases */}
-                    <div className="flex -space-x-8">
-                    {battle.cases.map((caseId, index) => {
-                        const caseInfo = getCaseById(caseId);
-                        if (!caseInfo) return null;
-                        return (
-                             <div key={index} className="relative w-24 h-24 border-2 border-primary/50 rounded-lg bg-card-foreground/5 p-1">
-                               <Image src={caseInfo.image} alt={caseInfo.name} fill sizes="20vw" className="object-contain" />
-                            </div>
-                        )
-                    })}
-                    </div>
+        {battles && battles.length > 0 ? (
+          battles.map((battle) => {
+            const totalValue = battle.players.reduce((sum, player) => sum + player.totalValue, 0);
+            return (
+              <Card key={battle.id} className="overflow-hidden">
+                  <CardContent className="p-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                      {/* Cases */}
+                      <div className="flex -space-x-8">
+                      {battle.cases.map((caseId, index) => {
+                          const caseInfo = getCaseById(caseId);
+                          if (!caseInfo) return null;
+                          return (
+                               <div key={index} className="relative w-24 h-24 border-2 border-primary/50 rounded-lg bg-card-foreground/5 p-1">
+                                 <Image src={caseInfo.image} alt={caseInfo.name} fill sizes="20vw" className="object-contain" />
+                              </div>
+                          )
+                      })}
+                      </div>
 
-                    {/* Battle Info */}
-                    <div className="flex-grow space-y-2">
-                    <div className="flex justify-between items-start">
-                        <div>
-                        <p className="text-sm text-muted-foreground">Total Value</p>
-                        <div className="flex items-center gap-2 font-bold text-lg">
-                            <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain" />
-                            <span>{totalValue.toLocaleString()}</span>
-                        </div>
-                        </div>
-                        {battle.status === 'waiting' ? (
-                            <Button variant="secondary" size="sm" onClick={handleComingSoon}>Join</Button>
-                        ) : (
-                            <Button variant="outline" size="sm" onClick={handleComingSoon}>View</Button>
-                        )}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
-                        <Users className="h-4 w-4" />
-                        <span>{battle.players.length} / 2 Players</span>
-                    </div>
-                    </div>
-                </div>
-                </CardContent>
-            </Card>
-          )
-        })}
-         {displayBattles.length === 0 && (
+                      {/* Battle Info */}
+                      <div className="flex-grow space-y-2">
+                      <div className="flex justify-between items-start">
+                          <div>
+                          <p className="text-sm text-muted-foreground">Total Value</p>
+                          <div className="flex items-center gap-2 font-bold text-lg">
+                              <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain" />
+                              <span>{totalValue.toLocaleString()}</span>
+                          </div>
+                          </div>
+                          {battle.status === 'waiting' ? (
+                              <Button variant="secondary" size="sm" onClick={handleComingSoon}>Join</Button>
+                          ) : (
+                              <Button variant="outline" size="sm" onClick={handleComingSoon}>View</Button>
+                          )}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
+                          <Users className="h-4 w-4" />
+                          <span>{battle.players.length} / 2 Players</span>
+                      </div>
+                      </div>
+                  </div>
+                  </CardContent>
+              </Card>
+            )
+          })
+        ) : (
             <div className="text-center py-10 text-muted-foreground flex flex-col items-center gap-4">
                 <ShieldAlert className="w-16 h-16 text-primary/50" />
                 <p className="text-lg">No active battles right now.</p>
@@ -139,7 +138,7 @@ export default function BattlesPage() {
                     <Swords className="mr-2 h-4 w-4" /> Create the First Battle!
                 </Button>
             </div>
-         )}
+        )}
       </div>
     </div>
   );
