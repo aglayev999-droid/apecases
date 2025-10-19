@@ -132,7 +132,8 @@ export default function CasePage() {
                 setCaseData(caseResult);
                 const currentCaseItems = caseResult.items
                     .map(i => itemsList.find(item => item.id === i.itemId))
-                    .filter((item): item is Item => !!item);
+                    .filter((item): item is Item => !!item)
+                    .sort((a,b) => a.value - b.value);
                 setCaseItems(currentCaseItems);
             }
         };
@@ -298,10 +299,15 @@ export default function CasePage() {
                     {caseItems.map(item => {
                         if (!item) return null;
                         return (
-                            <Card key={item.id} className={cn("p-2 border-2", RARITY_PROPERTIES[item.rarity].border)}>
+                             <Card key={item.id} className={cn("p-2 border-2 text-center", RARITY_PROPERTIES[item.rarity].border)}>
                                 <div className="aspect-square relative">
                                     <Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain p-2" data-ai-hint={item.imageHint}/>
                                 </div>
+                                 <p className="text-xs font-bold truncate mt-1">{item.name}</p>
+                                 <div className="flex items-center justify-center gap-1 text-xs font-bold text-amber-400">
+                                    <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12} className="h-3 w-3 object-contain" />
+                                    {item.value}
+                                 </div>
                             </Card>
                         )
                     })}
@@ -398,12 +404,7 @@ export default function CasePage() {
                      {wonItem && (
                         <div className="text-center space-y-4 p-6 bg-card rounded-lg relative">
                              <DialogTitle className="sr-only">You Won!</DialogTitle>
-                             <DialogClose asChild>
-                                <button onClick={closeModal} className="absolute top-2 right-2 p-1 rounded-full bg-background/50 hover:bg-background">
-                                    <X className="h-5 w-5 text-muted-foreground" />
-                                </button>
-                            </DialogClose>
-
+                            
                             <div className="relative w-48 h-48 mx-auto">
                                 <Image src={wonItem.image} alt={wonItem.name} fill sizes="50vw" className="object-contain" data-ai-hint={wonItem.imageHint} />
                             </div>
@@ -434,3 +435,5 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
