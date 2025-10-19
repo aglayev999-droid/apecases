@@ -10,15 +10,15 @@ import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { HistoryIcon } from '@/components/icons/HistoryIcon';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
-import type { RocketPlayer } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Volume2, VolumeX } from 'lucide-react';
 import { RocketIcon } from '@/components/icons/RocketIcon';
+import { useRocket } from '@/contexts/RocketContext';
 
 
 export default function RocketPage() {
+    const { user } = useUser();
     const { 
-        user, 
         gameState, 
         multiplier, 
         history, 
@@ -27,7 +27,7 @@ export default function RocketPage() {
         playerBet, 
         playerCashOut,
         getPlayerStatus 
-    } = useUser();
+    } = useRocket();
     const { showAlert } = useAlertDialog();
     const [betAmount, setBetAmount] = useState('25');
     const musicRef = useRef<HTMLAudioElement>(null);
@@ -90,16 +90,17 @@ export default function RocketPage() {
             
             const getRocketPosition = () => {
                 if (gameState === 'waiting' || gameState === 'crashed') {
-                    return { x: startX, y: startY, rotation: 0 };
+                    return { x: startX, y: startY, rotation: -45 };
                 }
 
                 // Ensure progress stays between 0 and 1, even with high multipliers
-                const progress = Math.min((multiplier - 1) / 4, 1); // Capped at 5x for positioning
+                const progress = Math.min((multiplier - 1) / 9, 1); // Capped at 10x for positioning
                 
                 const x = startX + (containerWidth - startX - 80) * progress; // Leave some margin on the right
-                const y = startY - (startY * 0.2) * progress; // Slight upward movement
+                const y = startY - (startY * 0.8) * progress; // Steeper upward movement
+                const rotation = -45 + (15 * progress); // Rotate from -45 to -30 degrees
                 
-                return { x, y, rotation: 0 };
+                return { x, y, rotation: rotation };
             };
             
             const newPos = getRocketPosition();
@@ -109,8 +110,7 @@ export default function RocketPage() {
                 if (!trailPath) {
                     setTrailPath(`M ${startX} ${startY} L ${newPos.x} ${newPos.y}`);
                 } else {
-                     const newPathSegment = ` L ${newPos.x} ${newPos.y}`;
-                     setTrailPath(prev => prev + newPathSegment);
+                     setTrailPath(prev => prev + ` L ${newPos.x} ${newPos.y}`);
                 }
             } else {
                  setTrailPath(`M ${startX} ${startY}`);
@@ -389,17 +389,3 @@ export default function RocketPage() {
 const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
     return <div className={cn("px-3 py-1 rounded-md text-sm font-bold", className)} {...props} />
 }
-
-    
-
-
-
-
-
-
-
-    
-
-    
-
-
