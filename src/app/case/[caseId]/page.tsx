@@ -69,10 +69,10 @@ const Reel = ({ items, onSpinEnd, isFast }: { items: Item[], onSpinEnd: (prize: 
             
             emblaApi.scrollTo(targetIndex);
 
-            await new Promise(resolve => setTimeout(resolve, spinTime));
-            if (container) container.style.transition = '';
-
-            onSpinEnd(items[targetIndex]);
+            setTimeout(() => {
+                 if (container) container.style.transition = '';
+                 onSpinEnd(items[targetIndex]);
+            }, spinTime);
         };
 
         spin();
@@ -178,7 +178,7 @@ export default function CasePage() {
         setIsSpinning(true);
         setIsFastSpin(isFast);
         wonItemsRef.current = [];
-        setWonItems([]); 
+        
         if (isFree) setLastFreeCaseOpen(new Date());
 
         const prizes: Item[] = [];
@@ -204,31 +204,28 @@ export default function CasePage() {
 
         setReels(newReels);
 
-    }, [caseData, user, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning, spinMultiplier]);
+    }, [caseData, user, updateBalance, updateSpending, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning, spinMultiplier]);
     
     const onSpinEnd = useCallback((prize: Item) => {
+        wonItemsRef.current.push(prize);
+
         const numSpins = caseData?.price === 0 ? 1 : spinMultiplier;
-        
-        if (wonItemsRef.current.length < numSpins) {
-           wonItemsRef.current.push(prize);
-        }
         
         if (wonItemsRef.current.length === numSpins) {
             setWonItems(wonItemsRef.current);
-            setTimeout(() => {
-                setIsWinModalOpen(true);
-                
-                wonItemsRef.current.forEach(p => {
-                    if (p.id.startsWith('item-stars-')) {
-                        updateBalance(p.value);
-                    } else {
-                        addInventoryItem(p);
-                    }
-                });
+            setIsWinModalOpen(true);
+            
+            // Award items only after animation is complete and modal is shown
+            wonItemsRef.current.forEach(p => {
+                if (p.id.startsWith('item-stars-')) {
+                    updateBalance(p.value);
+                } else {
+                    addInventoryItem(p);
+                }
+            });
 
-                setIsSpinning(false);
-                setReels([]);
-            }, 500);
+            setIsSpinning(false);
+            setReels([]);
         }
     }, [spinMultiplier, addInventoryItem, updateBalance, caseData]);
 
@@ -243,7 +240,12 @@ export default function CasePage() {
     }
 
     const totalWonValue = useMemo(() => {
-        return wonItems.reduce((sum, item) => sum + item.value, 0);
+        return wonItems.reduce((sum, item) => {
+             if (item.id.startsWith('item-stars-')) {
+                return sum; // Don't include stars value in sell price
+            }
+            return sum + item.value
+        }, 0);
     }, [wonItems]);
 
     const handleSellAllWon = () => {
@@ -360,7 +362,7 @@ export default function CasePage() {
                                 </div>
                             </ScrollArea>
                             <div className="grid grid-cols-2 gap-4 pt-4">
-                                <Button variant="destructive" size="lg" onClick={handleSellAllWon}>
+                                <Button variant="destructive" size="lg" onClick={handleSellAllWon} disabled={totalWonValue === 0}>
                                     Sell All for {totalWonValue}
                                     <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain ml-2" />
                                 </Button>
