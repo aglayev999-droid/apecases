@@ -52,6 +52,7 @@ const RARITY_PROPERTIES = {
 };
 
 const selectItem = (currentCase: Case, allItems: Item[]): Item | undefined => {
+    // This function must run only on the client where Math.random is safe
     if (typeof window === 'undefined') {
         const fallbackItemId = currentCase.items[0].itemId;
         return allItems.find(i => i.id === fallbackItemId);
@@ -61,21 +62,13 @@ const selectItem = (currentCase: Case, allItems: Item[]): Item | undefined => {
     for (const { itemId, probability } of currentCase.items) {
         cumulativeProbability += probability;
         if (rand < cumulativeProbability) {
-            return allItems.find(i => i.id === itemId);
+            const foundItem = allItems.find(i => i.id === itemId);
+            if (foundItem) return foundItem;
         }
     }
     // Fallback to a random item from the case if something goes wrong
     const fallbackItemId = currentCase.items[Math.floor(Math.random() * currentCase.items.length)].itemId;
     return allItems.find(i => i.id === fallbackItemId);
-};
-
-const shuffleArray = (array: any[]) => {
-    if (typeof window === 'undefined') return array;
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
 };
 
 export default function CasePage() {
@@ -123,7 +116,6 @@ export default function CasePage() {
             if (caseSnap.exists()) {
                 caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
             } else {
-                // Fallback to mock data if case not found in Firestore
                 const mockCase = MOCK_CASES.find(c => c.id === caseId);
                 if (mockCase) {
                     caseResult = mockCase;
@@ -146,9 +138,13 @@ export default function CasePage() {
     
     useEffect(() => {
         if (caseItems.length === 0) return;
-        const extendedItems = [...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems];
-        setReelItems(shuffleArray(extendedItems));
-        
+        // Create a long reel for the initial view
+        const initialReelLength = 100;
+        let initialReel = [];
+        for(let i=0; i<initialReelLength; i++) {
+             initialReel.push(caseItems[Math.floor(Math.random() * caseItems.length)]);
+        }
+        setReelItems(initialReel);
     }, [caseItems]);
     
     const handleSpin = useCallback((isFast: boolean = false) => {
@@ -181,7 +177,7 @@ export default function CasePage() {
             setLastFreeCaseOpen(new Date());
         }
 
-        // 1. Select the logical prize first, based on probability. This is the TRUE prize.
+        // 1. Select the logical prize first. This is the TRUE prize.
         const logicalPrize = selectItem(caseData, allItems);
         if (!logicalPrize) {
             console.error("Could not select a prize. Aborting spin.");
@@ -189,31 +185,36 @@ export default function CasePage() {
             return;
         }
 
-        // 2. Create a new, freshly shuffled reel for this spin.
-        let newReelItems = [];
+        // 2. Create a new, freshly shuffled reel for this specific spin.
         const reelLength = 100;
+        let newReelItems = [];
         for (let i = 0; i < reelLength; i++) {
             const randomItem = caseItems[Math.floor(Math.random() * caseItems.length)];
             newReelItems.push(randomItem);
         }
 
-        // 3. Deterministically place the TRUE prize at a specific target index.
-        const targetIndex = 75; // A position far enough along for a good spin animation.
+        // 3. Deterministically place the TRUE prize at a specific target index (e.g., 75% through the reel).
+        const targetIndex = 75;
         newReelItems[targetIndex] = logicalPrize;
         
-        // 4. Set the new reel for rendering.
+        // 4. Set the new reel for rendering and re-initialize the carousel.
         setReelItems(newReelItems);
-        
-        // This is a short timeout to allow React to render the new reel before we start the animation.
+
         setTimeout(() => {
             if (emblaApi) {
-                const spinTime = isFast ? 1000 : 5000;
+                emblaApi.reInit(); // VERY IMPORTANT: Re-initialize Embla with new items
                 
-                // Manually control the animation via the API
+                const spinTime = isFast ? 1000 : 5000;
                 const engine = emblaApi.internalEngine();
-                engine.scrollBody.duration = spinTime; // Set animation duration
-                emblaApi.reInit(); // Re-initialize with new items
-                emblaApi.scrollTo(targetIndex); // Animate the scroll to the pre-determined target index. 
+                
+                // Manually control the animation using the internal engine
+                engine.scrollBody.duration = spinTime;
+                
+                // Go to a non-animated "start" position to ensure there's enough room to spin forward
+                emblaApi.scrollTo(0, true); 
+                
+                // Animate the scroll to the pre-determined target index.
+                emblaApi.scrollTo(targetIndex, false); // `false` here uses the duration we set
 
                 // Schedule the 'spin end' logic.
                 setTimeout(() => {
@@ -229,7 +230,7 @@ export default function CasePage() {
                     }
                 }, spinTime + 500); // Add a small buffer after animation ends
             }
-        }, 100);
+        }, 100); // A small delay to allow React to render the new reel.
 
     }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
 
@@ -423,3 +424,5 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
