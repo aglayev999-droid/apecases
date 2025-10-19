@@ -8,16 +8,38 @@ import { TonConnectButton } from '@tonconnect/ui-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Image from 'next/image';
 import { Skeleton } from '../ui/skeleton';
+import { useState, useEffect } from 'react';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
 export default function AppHeader() {
   const { user, isUserLoading } = useUser();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const formatNumber = (num: number) => {
     if (num === undefined || num === null) return '...';
     return new Intl.NumberFormat('en-US').format(num);
   };
+  
+  if (!mounted) {
+    return (
+        <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-sm">
+            <div className="container mx-auto flex h-16 items-center justify-between px-4">
+                <div className="flex items-center gap-2">
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <Skeleton className="h-8 w-24 rounded-full" />
+                </div>
+                 <div className="flex items-center gap-2 sm:gap-4">
+                    <Skeleton className="h-8 w-28 rounded-full" />
+                 </div>
+            </div>
+        </header>
+    )
+  }
 
   return (
     <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-sm">
