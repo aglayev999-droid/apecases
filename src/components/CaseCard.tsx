@@ -50,7 +50,7 @@ export function CaseCard({ caseData, onOpen }: CaseCardProps) {
   const canOpenFreeCase = isFree && cooldownTime <= 0;
 
   return (
-    <Card className="flex flex-col group overflow-hidden bg-gray-800 shadow-lg rounded-xl p-3 relative">
+    <Card className="flex flex-col group overflow-hidden bg-card shadow-lg rounded-xl p-3 relative text-white border-2 border-card">
       <CardContent className="p-0 relative mb-2">
          <div className="aspect-square relative overflow-hidden rounded-lg">
           <Image
@@ -64,26 +64,26 @@ export function CaseCard({ caseData, onOpen }: CaseCardProps) {
         </div>
       </CardContent>
       
-      <CardFooter className="p-0 flex flex-col items-start mt-auto">
-        <div className="flex justify-between items-center w-full mb-2">
-          <h3 className="font-semibold text-sm uppercase text-gray-200 truncate">{caseData.name}</h3>
-          {caseIdNumber && <span className="text-xs text-gray-500 font-semibold">#{caseIdNumber}</span>}
+      <CardFooter className="p-0 flex flex-col items-start mt-auto space-y-2">
+        <div className="flex justify-between items-center w-full">
+          <h3 className="font-semibold text-sm uppercase truncate">{caseData.name}</h3>
+          {caseIdNumber && <span className="text-xs text-muted-foreground font-semibold">#{caseIdNumber}</span>}
         </div>
         
         {isFree ? (
            <>
             {canOpenFreeCase ? (
-              <Button onClick={onOpen} variant="default" className="w-full font-bold">
-                Open for Free
+              <Button onClick={onOpen} variant="default" className="w-full font-bold h-auto py-2.5 bg-blue-600 hover:bg-blue-700 text-base">
+                Open
               </Button>
             ) : (
-              <div className="w-full text-center py-2 bg-gray-700 rounded-xl text-sm font-mono text-yellow-400 tracking-wider">
+              <div className="w-full text-center py-2.5 text-sm font-mono text-gray-400 tracking-wider">
                 {formatDuration(cooldownTime)}
               </div>
             )}
            </>
         ) : (
-            <Button onClick={onOpen} variant="default" className="w-full font-bold group text-white py-2 rounded-xl text-md" size="lg">
+            <Button onClick={onOpen} variant="default" className="w-full font-bold h-auto py-2.5 bg-blue-600 hover:bg-blue-700 text-base" size="lg">
                 <div className="flex items-center justify-center gap-1">
                     <span>{formatPrice(caseData.price)}</span>
                     <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain" />

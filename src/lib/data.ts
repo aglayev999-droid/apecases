@@ -22,24 +22,23 @@ export const ALL_ITEMS: Item[] = [
 
 export const MOCK_CASES: Case[] = [
     {
-      id: 'case-common-1',
-      name: 'Standard Issue',
-      price: 100,
-      image: 'https://i.ibb.co/mHk9PWB/case1-1.png',
-      imageHint: 'metal crate',
+      id: 'case-free-2',
+      name: 'FREE BOX',
+      price: 0,
+      image: 'https://i.ibb.co/RgxJTb9/image.png',
+      imageHint: 'red apex case',
       items: [
-        { itemId: 'item-stars-5', probability: 0.4 },
-        { itemId: 'item-stars-7', probability: 0.3 },
-        { itemId: 'item-sword-1', probability: 0.2 },
-        { itemId: 'item-shield-1', probability: 0.1 },
+        { itemId: 'item-stars-5', probability: 0.7 },
+        { itemId: 'item-sword-1', probability: 0.3 },
       ],
+      freeCooldownSeconds: 86400, // 24 hours
     },
     {
-      id: 'case-rare-2',
-      name: 'Armory Crate',
-      price: 500,
-      image: 'https://i.ibb.co/q0QB0gN/case2-1.png',
-      imageHint: 'glowing crate',
+      id: 'case-floor-8',
+      name: 'FLOOR CASE',
+      price: 180,
+      image: 'https://i.ibb.co/gDFsW3z/image.png',
+      imageHint: 'blue apex case',
       items: [
         { itemId: 'item-stars-10', probability: 0.3 },
         { itemId: 'item-stars-15', probability: 0.25 },
@@ -48,44 +47,32 @@ export const MOCK_CASES: Case[] = [
         { itemId: 'item-gloves-1', probability: 0.1 },
       ],
     },
-    {
-      id: 'case-epic-3',
-      name: 'War chest',
-      price: 2500,
-      image: 'https://i.ibb.co/pwnX1t4/case3-1.png',
-      imageHint: 'sci-fi chest',
-      items: [
-        { itemId: 'item-stars-20', probability: 0.3 },
-        { itemId: 'item-helmet-1', probability: 0.25 },
-        { itemId: 'item-armor-1', probability: 0.2 },
-        { itemId: 'item-boots-1', probability: 0.15 },
-        { itemId: 'item-nft-1', probability: 0.1 },
-      ],
-    },
-    {
-      id: 'case-free-4',
-      name: 'Daily Drop',
-      price: 0,
-      image: 'https://i.ibb.co/D8NqYhS/case4-1.png',
-      imageHint: 'supply drop',
-      items: [
-        { itemId: 'item-stars-5', probability: 0.7 },
-        { itemId: 'item-sword-1', probability: 0.3 },
-      ],
-      freeCooldownSeconds: 86400, // 24 hours
-    },
-    {
-      id: 'case-labubu-5',
+     {
+      id: 'case-labubu-10',
       name: 'LABUBU CASE',
-      price: 300,
-      image: 'https://i.ibb.co/v4SsYct/case5.png',
-      imageHint: 'labubu',
+      price: 240,
+      image: 'https://i.ibb.co/Q8Wbrp3/image.png',
+      imageHint: 'green labubu case',
       items: [
         { itemId: 'item-stars-5', probability: 0.4 },
         { itemId: 'item-stars-7', probability: 0.28 },
         { itemId: 'item-nft-10348', probability: 0.02 },
         { itemId: 'item-sword-1', probability: 0.2 },
         { itemId: 'item-shield-1', probability: 0.1 },
+      ],
+    },
+    {
+      id: 'case-snoop-7',
+      name: 'SNOOP DOGG CASE',
+      price: 180,
+      image: 'https://i.ibb.co/cQhBv5W/image.png',
+      imageHint: 'purple snoop dogg case',
+      items: [
+        { itemId: 'item-stars-20', probability: 0.3 },
+        { itemId: 'item-helmet-1', probability: 0.25 },
+        { itemId: 'item-armor-1', probability: 0.2 },
+        { itemId: 'item-boots-1', probability: 0.15 },
+        { itemId: 'item-nft-1', probability: 0.1 },
       ],
     },
 ];
