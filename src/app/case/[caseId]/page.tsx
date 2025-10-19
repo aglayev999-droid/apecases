@@ -52,6 +52,10 @@ const RARITY_PROPERTIES = {
 };
 
 const selectItem = (currentCase: Case, allItems: Item[]): Item | undefined => {
+    if (typeof window === 'undefined') {
+        const fallbackItemId = currentCase.items[0].itemId;
+        return allItems.find(i => i.id === fallbackItemId);
+    }
     const rand = Math.random();
     let cumulativeProbability = 0;
     for (const { itemId, probability } of currentCase.items) {
@@ -198,77 +202,65 @@ export default function CasePage() {
             setLastFreeCaseOpen(new Date());
         }
 
-        // --- BUG FIX LOGIC ---
-        // 1. Generate the logical prize first
+        // --- NEW BUG FIX LOGIC ---
+        // 1. Select the logical prize first, based on probability. This is the TRUE prize.
         const logicalPrize = selectItem(caseData, allItems);
         if (!logicalPrize) {
-            console.error("Could not select a prize.");
+            console.error("Could not select a prize. Aborting spin.");
             setIsSpinning(false);
             return;
         }
 
-        // 2. Create a new shuffled reel.
-        const newReelItems = shuffleArray([...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems]);
-
-        // 3. Find a specific, deterministic index for the prize to land on.
-        // We'll aim for somewhere in the middle-to-end of the reel for a better visual.
-        let prizeIndexInReel = -1;
-        const preferredStartIndex = Math.floor(newReelItems.length / 2);
-
-        for (let i = preferredStartIndex; i < newReelItems.length; i++) {
-            if (newReelItems[i]?.id === logicalPrize.id) {
-                prizeIndexInReel = i;
-                break;
-            }
+        // 2. Create a new, freshly shuffled reel for this spin.
+        // We create a long reel (e.g., 100 items) to ensure a smooth visual spin.
+        let newReelItems = [];
+        for (let i = 0; i < 100; i++) {
+            newReelItems.push(caseItems[Math.floor(Math.random() * caseItems.length)]);
         }
+
+        // 3. Deterministically place the TRUE prize at a specific target index.
+        // This index should be far enough along the reel to allow for a nice spinning animation.
+        // Let's use index 75 as our landing spot.
+        const targetIndex = 75;
+        newReelItems[targetIndex] = logicalPrize;
         
-        // If not found in the latter half, find the first occurrence.
-        if (prizeIndexInReel === -1) {
-          prizeIndexInReel = newReelItems.findIndex(item => item?.id === logicalPrize.id);
-        }
-
-        // If still not found (should be impossible but as a fallback), add it and use that index.
-         if (prizeIndexInReel === -1) {
-            console.error("Prize item not found in reel items array. Adding it.");
-            newReelItems.push(logicalPrize);
-            prizeIndexInReel = newReelItems.length - 1;
-        }
-        
-        // 4. Set the new reel for rendering
+        // 4. Set the new reel for rendering.
         setReelItems(newReelItems);
         
         const spinTime = isFast ? 1000 : 5000;
 
-        // Give React time to re-render the shuffled reel before scrolling
+        // 5. Use a short timeout to allow React to render the new reel before we start the animation.
         setTimeout(() => {
             if (emblaApi) {
+                // Re-initialize the carousel with the new items and options.
+                emblaApi.reInit();
+                
                 const container = emblaApi.containerNode();
                 if(container) {
-                    container.style.transition = `transform ${spinTime / 1000}s ease-out`;
+                    // Make sure the transition is set for the animation
+                    container.style.transition = `transform ${spinTime / 1000}s cubic-bezier(0.25, 0.1, 0.25, 1)`;
                 }
-                // Re-initialize to make sure the carousel knows about the new items
-                emblaApi.reInit();
-                // 5. Scroll to the PRE-DETERMINED index.
-                emblaApi.scrollTo(prizeIndexInReel, false);
+
+                // 6. Animate the scroll to the PRE-DETERMINED target index.
+                emblaApi.scrollTo(targetIndex, false); 
             }
         }, 100);
 
-        
-        const onSpinEnd = () => {
+        // 7. Schedule the 'spin end' logic.
+        setTimeout(() => {
             setIsSpinning(false);
-            // 6. The prize is already the correct one determined at the start.
+            // 8. The prize to show is the `logicalPrize` we decided on at the very beginning.
+            // This is now guaranteed to match what the animation landed on.
             setWonItem(logicalPrize);
             setIsWinModalOpen(true);
             
+            // 9. Update user balance or inventory.
             if (logicalPrize.id.startsWith('item-stars-')) {
                 updateBalance(logicalPrize.value);
             } else {
                 addInventoryItem(logicalPrize);
             }
-        };
-
-        setTimeout(onSpinEnd, spinTime + 200);
-
+        }, spinTime + 500); // Add a small buffer after animation ends
 
     }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
 
