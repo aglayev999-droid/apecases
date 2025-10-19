@@ -4,17 +4,17 @@ const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce3004
 
 // ALL_ITEMS will now be fetched from Firestore, but we can keep it here as a fallback or for reference
 export const ALL_ITEMS: Item[] = [
-  { id: 'item-gift', name: 'Gift', rarity: 'Common', image: 'https://i.ibb.co/6yV2TfF/Gift-2.png', imageHint: 'red gift box', value: 25, description: 'A small, mysterious gift.' },
-  { id: 'item-champagne', name: 'Champagne', rarity: 'Common', image: 'https://i.ibb.co/pnvXf8H/Champagne.png', imageHint: 'champagne bottle', value: 50, description: 'A bottle of celebratory champagne.' },
-  { id: 'item-cup', name: 'Cup', rarity: 'Uncommon', image: 'https://i.ibb.co/V9y3dtr/Cup.png', imageHint: 'golden trophy cup', value: 100, description: 'A shiny golden cup.' },
-  { id: 'item-diamond', name: 'Diamond', rarity: 'Uncommon', image: 'https://i.ibb.co/18rTz4g/Diamond.png', imageHint: 'blue diamond gem', value: 100, description: 'A sparkling diamond.' },
-  { id: 'item-ring', name: 'Ring', rarity: 'Uncommon', image: 'https://i.ibb.co/gDF34V8/Ring.png', imageHint: 'silver diamond ring', value: 100, description: 'A beautiful silver ring.' },
-  { id: 'item-desk-calendar-random', name: 'Desk Calendar (Random)', rarity: 'Rare', image: 'https://i.ibb.co/4Z5n50S/Desk-Calendar-Random.png', imageHint: 'desk calendar birthday', value: 318, description: 'A desk calendar with a random date.' },
-  { id: 'item-lol-pop-random', name: 'Lol Pop (Random)', rarity: 'Rare', image: 'https://i.ibb.co/YyY2Sbr/Lol-Pop-Random.png', imageHint: 'swirl lollipop', value: 360, description: 'A sweet and colorful lollipop.' },
-  { id: 'item-tama-gadget', name: 'Tama Gadget (Random)', rarity: 'Epic', image: 'https://i.ibb.co/ZJp5qM4/Tama-Gadget-Random.png', imageHint: 'tamagotchi virtual pet', value: 480, description: 'A nostalgic virtual pet gadget.' },
-  { id: 'item-witch-hat', name: 'Witch Hat (Random)', rarity: 'Legendary', image: 'https://i.ibb.co/K2rHZpM/Witch-Hat-Random.png', imageHint: 'purple witch hat', value: 700, description: 'A magical witch hat.' },
-  { id: 'item-spy-agaric', name: 'Spy Agaric (Random)', rarity: 'Legendary', image: 'https://i.ibb.co/183xYfS/Spy-Agaric-Random.png', imageHint: 'green mushroom', value: 800, description: 'A mysterious and watchful mushroom.' },
-  { id: 'item-evil-eye', name: 'Evil Eye (Random)', rarity: 'Legendary', image: 'https://i.ibb.co/y4Lz3Qk/Evil-Eye-Random.png', imageHint: 'eyeball art', value: 846, description: 'A powerful and protective evil eye charm.' },
+  { id: 'item-gift', name: 'Gift', rarity: 'Common', image: 'https://i.ibb.co/WvnMSb5J/000-1.png', imageHint: 'red gift box', value: 25, description: 'A small, mysterious gift.' },
+  { id: 'item-champagne', name: 'Champagne', rarity: 'Common', image: 'https://i.ibb.co/m54YJrg8/shampain.png', imageHint: 'champagne bottle', value: 50, description: 'A bottle of celebratory champagne.' },
+  { id: 'item-cup', name: 'Cup', rarity: 'Uncommon', image: 'https://i.ibb.co/gFL7K15Z/kubok.png', imageHint: 'golden trophy cup', value: 100, description: 'A shiny golden cup.' },
+  { id: 'item-diamond', name: 'Diamond', rarity: 'Uncommon', image: 'https://i.ibb.co/RGtr2rCb/diamond.png', imageHint: 'blue diamond gem', value: 100, description: 'A sparkling diamond.' },
+  { id: 'item-ring', name: 'Ring', rarity: 'Uncommon', image: 'https://i.ibb.co/hxy5rG61/ring.png', imageHint: 'silver diamond ring', value: 100, description: 'A beautiful silver ring.' },
+  { id: 'item-desk-calendar-random', name: 'Desk Calendar (Random)', rarity: 'Rare', image: 'https://i.ibb.co/bRrhpVKL/9ac8f934df67fea7-removebg-preview.png', imageHint: 'desk calendar birthday', value: 318, description: 'A desk calendar with a random date.' },
+  { id: 'item-lol-pop-random', name: 'Lol Pop (Random)', rarity: 'Rare', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'swirl lollipop', value: 360, description: 'A sweet and colorful lollipop.' },
+  { id: 'item-tama-gadget', name: 'Tama Gadget (Random)', rarity: 'Epic', image: 'https://i.ibb.co/Xf6HPpYc/tama.png', imageHint: 'tamagotchi virtual pet', value: 480, description: 'A nostalgic virtual pet gadget.' },
+  { id: 'item-witch-hat', name: 'Witch Hat (Random)', rarity: 'Legendary', image: 'https://i.ibb.co/nMHVqgnM/witch.png', imageHint: 'purple witch hat', value: 700, description: 'A magical witch hat.' },
+  { id: 'item-spy-agaric', name: 'Spy Agaric (Random)', rarity: 'Legendary', image: 'https://i.ibb.co/sXXQnrY/spy.png', imageHint: 'green mushroom', value: 800, description: 'A mysterious and watchful mushroom.' },
+  { id: 'item-evil-eye', name: 'Evil Eye (Random)', rarity: 'Legendary', image: 'https://i.ibb.co/yvsRNdc/evil.png', imageHint: 'eyeball art', value: 846, description: 'A powerful and protective evil eye charm.' },
 ];
 
 export const MOCK_CASES: Case[] = [
