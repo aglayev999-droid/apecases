@@ -6,6 +6,7 @@ import { useAuth as useFirebaseAuth, useFirestore, useDoc, useCollection, addDoc
 import { doc, collection, writeBatch, serverTimestamp, increment, setDoc } from 'firebase/firestore';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { Auth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 // Define the Telegram user structure on the window object
 declare global {
@@ -110,6 +111,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const savedDate = localStorage.getItem('lastFreeCaseOpen');
     return savedDate ? new Date(savedDate) : null;
   });
+
+  const [isAppLoading, setIsAppLoading] = useState(true);
   
   useEffect(() => {
     // Make sure Telegram WebApp is ready
@@ -121,6 +124,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       initiateAnonymousSignIn(auth);
     }
   }, [isAuthLoading, firebaseUser, auth]);
+  
+  useEffect(() => {
+    if (!isAuthLoading && !isUserDocLoading) {
+      const timer = setTimeout(() => {
+        setIsAppLoading(false);
+      }, 2000); // Keep loading screen for at least 2 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [isAuthLoading, isUserDocLoading]);
 
 
   const setLastFreeCaseOpen = (date: Date) => {
@@ -171,6 +183,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     batch.update(userDocRef, { weeklySpending: increment(amount) });
     batch.commit().catch(e => console.error("Failed to update spending:", e));
   }, [firestore, userDocRef]);
+
+  if (isAppLoading) {
+    return <LoadingScreen />;
+  }
 
   return (
     <UserContext.Provider value={{ 
