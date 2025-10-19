@@ -147,7 +147,7 @@ export default function CasePage() {
         setReelItems(initialReel);
     }, [caseItems]);
     
-    const handleSpin = useCallback((isFast: boolean = false) => {
+     const handleSpin = useCallback((isFast: boolean = false) => {
         if (isSpinning || !caseData || !user || !emblaApi || caseItems.length === 0 || allItems.length === 0) return;
         
         const isFree = caseData.price === 0;
@@ -202,12 +202,12 @@ export default function CasePage() {
 
         setTimeout(() => {
             if (emblaApi) {
+                // Re-initialize Embla to recognize the new slides
                 emblaApi.reInit();
                 
-                const spinTime = isFast ? 1000 : 5000;
+                // Get the internal engine to control animation duration
                 const engine = emblaApi.internalEngine();
-                
-                // Manually control the animation using the internal engine
+                const spinTime = isFast ? 1000 : 5000;
                 engine.scrollBody.duration = spinTime;
                 
                 // Go to a non-animated "start" position to ensure there's enough room to spin forward
@@ -423,5 +423,3 @@ export default function CasePage() {
         </div>
     );
 }
-
-    
