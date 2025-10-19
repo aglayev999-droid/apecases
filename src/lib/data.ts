@@ -95,16 +95,16 @@ export const MOCK_CASES: Case[] = [
     },
      {
       id: 'case-legendary-1',
-      name: 'LEGENDARY',
+      name: 'LEGENDARY CASE',
       price: 4999,
-      image: 'https://i.ibb.co/f2kC2gr/legend-case.png',
+      image: 'https://i.ibb.co/93nbm8ky/a6f998b1-e6a7-4e6a-9b04-29b0fa661313-removebg-preview.png',
       imageHint: 'golden legendary case',
       items: [
-        { itemId: 'item-spy-agaric', probability: 0.5 },
+        { itemId: 'item-spy-agaric', probability: 0.45 },
         { itemId: 'item-evil-eye', probability: 0.3 },
-        { itemId: 'item-nft-ape-1', probability: 0.12 },
-        { itemId: 'item-nft-punk-1', probability: 0.05 },
-        { itemId: 'item-nft-cat-1', probability: 0.03 },
+        { itemId: 'item-nft-ape-1', probability: 0.15 },
+        { itemId: 'item-nft-punk-1', probability: 0.08 },
+        { itemId: 'item-nft-cat-1', probability: 0.02 },
       ],
     },
 ];
