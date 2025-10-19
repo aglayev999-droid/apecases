@@ -60,7 +60,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
       await addDoc(queueRef, {
         user_wallet_address: wallet.account.address,
         nft_id: item.id, // item.id is the Token ID from the 'items' collection
-        nft_contract_address: 'YOUR_NFT_CONTRACT_ADDRESS_HERE', // IMPORTANT: Replace with actual contract address
+        nft_contract_address: 'MENING_KOLLEKSIYA_MANZILIM', // IMPORTANT: Replace with actual contract address
         status: 'pending',
         timestamp: serverTimestamp(),
       });
