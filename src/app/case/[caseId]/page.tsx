@@ -105,9 +105,9 @@ export default function CasePage() {
     const handleSpin = useCallback(async (isFast: boolean = false) => {
         if (isSpinning || !caseData || !user || !emblaApi || caseItems.length === 0 || allItems.length === 0) return;
 
+        const isFree = caseData.price === 0;
         const numSpins = isFree ? 1 : spinMultiplier;
         const totalCost = caseData.price * numSpins;
-        const isFree = caseData.price === 0;
 
         if (isFree) {
             if (lastFreeCaseOpen && caseData.freeCooldownSeconds) {
