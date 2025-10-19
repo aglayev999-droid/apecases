@@ -44,8 +44,8 @@ export const AlertDialogProvider = ({ children }: { children: ReactNode }) => {
     <AlertDialogContext.Provider value={{ showAlert }}>
       {children}
       <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-        <AlertDialogContent className="w-[80vw] max-w-sm rounded-2xl bg-neutral-50/95 dark:bg-neutral-800/90 border-neutral-200 dark:border-neutral-700 shadow-xl">
-          <AlertDialogHeader className="items-center text-center">
+        <AlertDialogContent className="w-[80vw] max-w-sm rounded-2xl bg-neutral-50/95 dark:bg-neutral-800/90 border-neutral-200 dark:border-neutral-700 shadow-xl p-0">
+          <AlertDialogHeader className="items-center text-center p-4">
             {alertState?.title && (
               <AlertDialogTitle className="font-bold text-black dark:text-white">{alertState.title}</AlertDialogTitle>
             )}
@@ -55,10 +55,10 @@ export const AlertDialogProvider = ({ children }: { children: ReactNode }) => {
               </AlertDialogDescription>
             )}
           </AlertDialogHeader>
-          <AlertDialogFooter className="sm:justify-center mt-2">
+          <AlertDialogFooter className="sm:justify-center mt-0 border-t border-neutral-200 dark:border-neutral-700">
             <AlertDialogAction
               onClick={handleClose}
-              className="bg-transparent text-blue-500 hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50 w-full font-bold border-t border-neutral-200 dark:border-neutral-700 rounded-none p-3 h-auto"
+              className="bg-transparent text-blue-500 hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50 w-full font-bold rounded-none p-3 h-auto"
             >
               OK
             </AlertDialogAction>
