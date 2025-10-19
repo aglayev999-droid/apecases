@@ -8,9 +8,9 @@ import { DiamondIcon } from '@/components/icons/DiamondIcon';
 
 const navItems = [
   { href: '/inventory', label: 'Inventory', icon: Box },
+  { href: '/profile', label: 'Profile', icon: UserIcon },
   { href: '/giveaways', label: 'Giveaways', icon: Gift },
   { href: '/', label: 'Cases', icon: Box, isMain: true },
-  { href: '/profile', label: 'Profile', icon: UserIcon },
   { href: '/rocket', label: 'Rocket', icon: Rocket, isBeta: true },
   { href: '/upgrade', label: 'Upgrade', icon: DiamondIcon, isBeta: true },
   { href: '/leaderboard', label: 'Rating', icon: BarChart3 },
@@ -33,8 +33,8 @@ export default function BottomNav() {
         <div className="grid h-20 grid-cols-7 items-center">
           {navItems.map((item, index) => {
             // Check for active state. For the main button, it's only active if the path is exactly '/'.
-            // For others, we check if the path starts with the href.
-            const isActive = item.isMain ? pathname === item.href : pathname.startsWith(item.href);
+            // For others, we check if the path starts with the href, unless the href is just '/'.
+            const isActive = item.href === '/' ? pathname === item.href : pathname.startsWith(item.href);
 
             if (item.isMain) {
               return (
