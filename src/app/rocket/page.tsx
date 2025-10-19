@@ -13,6 +13,7 @@ import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import type { RocketPlayer } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Volume2, VolumeX } from 'lucide-react';
+import { RocketIcon } from '@/components/icons/RocketIcon';
 
 
 export default function RocketPage() {
@@ -86,25 +87,20 @@ export default function RocketPage() {
             const containerHeight = gameContainerRef.current.offsetHeight;
             const startX = 40;
             const startY = containerHeight - 60;
-            const endX = containerWidth;
-            const endY = 0;
-
+            
             const getRocketPosition = () => {
                 if (gameState === 'waiting' || gameState === 'crashed' || multiplier < 1.01) {
                     return { x: startX, y: startY, rotation: -45 };
                 }
 
-                // Normalize progress from 0 to 1 based on multiplier, but don't cap it.
-                // The visual path will cap at progress = 1, but the logic continues.
-                const progress = Math.min((multiplier - 1) / 4, 1); 
-                const visualProgress = Math.min(progress, 1); // Cap visual movement at progress 1
+                const progress = Math.min((multiplier - 1) / 4, 1);
 
                 const curvePower = 0.5;
-                const t = Math.pow(visualProgress, curvePower);
+                const t = Math.pow(progress, curvePower);
 
-                const x = startX + (endX - startX) * t;
-                const y = startY - (startY - endY) * Math.pow(visualProgress, 1.5);
-                const rotation = -45 + (45 * visualProgress);
+                const x = startX + (containerWidth - startX) * t;
+                const y = startY - (startY) * Math.pow(progress, 1.5);
+                const rotation = -45 + (45 * progress);
                 
                 return { x, y, rotation };
             };
@@ -129,7 +125,7 @@ export default function RocketPage() {
             left: `${position.x}px`,
             top: `${position.y}px`,
             transform: `translate(-50%, -50%) rotate(${position.rotation}deg)`,
-            transition: 'none', // Remove transition for smooth manual updates
+            transition: 'none',
             willChange: 'transform, left, top',
             opacity: gameState === 'crashed' ? 0 : 1,
             width: '120px',
@@ -138,16 +134,16 @@ export default function RocketPage() {
     
         return (
             <div ref={gameContainerRef} className="h-96 flex flex-col items-center justify-center relative w-full overflow-hidden rounded-lg border bg-gray-900">
-                {/* Background Stars */}
-                 <div className="absolute inset-0 z-0 opacity-50">
-                    <div id="stars"></div>
-                    <div id="stars2"></div>
-                    <div id="stars3"></div>
+                {/* Background */}
+                 <div className="absolute inset-0 z-0 bg-gradient-to-b from-[#0a122d] to-[#0d1a44] opacity-100">
+                     <div id="stars"></div>
+                     <div id="stars2"></div>
+                     <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-[#0d1a44] via-transparent to-transparent"/>
                 </div>
                  <style>
                     {`
-                        @keyframes animStar { from { transform: translateY(0px); } to { transform: translateY(-2000px); } }
-                        #stars, #stars2, #stars3 {
+                        @keyframes animStar { from { transform: translateY(0px); } to { transform: translateY(-1000px); } }
+                        #stars, #stars2 {
                           position: absolute;
                           top: 0;
                           left: 0;
@@ -159,22 +155,16 @@ export default function RocketPage() {
                           background: transparent;
                         }
                         #stars {
-                          background-image: radial-gradient(1px 1px at 20px 30px, #eee, rgba(0,0,0,0)), radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)), radial-gradient(1px 1px at 50px 160px, #ddd, rgba(0,0,0,0)), radial-gradient(1px 1px at 90px 40px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 160px 120px, #ddd, rgba(0,0,0,0));
+                          background-image: radial-gradient(1px 1px at 20px 30px, #eee, rgba(0,0,0,0)), radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)), radial-gradient(1px 1px at 50px 160px, #ddd, rgba(0,0,0,0)), radial-gradient(1px 1px at 90px 40px, #fff, rgba(0,0,0,0));
                           background-repeat: repeat;
                           background-size: 200px 200px;
                           animation: animStar 50s linear infinite;
                         }
                         #stars2 {
-                           background-image: radial-gradient(1px 1px at 40px 20px, #eee, rgba(0,0,0,0)), radial-gradient(1px 1px at 80px 60px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 120px 140px, #ddd, rgba(0,0,0,0));
+                           background-image: radial-gradient(1px 1px at 40px 20px, #eee, rgba(0,0,0,0)), radial-gradient(1px 1px at 80px 60px, #fff, rgba(0,0,0,0));
                            background-repeat: repeat;
                            background-size: 250px 250px;
                            animation: animStar 100s linear infinite;
-                        }
-                        #stars3 {
-                           background-image: radial-gradient(1px 1px at 50px 50px, #eee, rgba(0,0,0,0)), radial-gradient(2px 2px at 100px 100px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 180px 20px, #ddd, rgba(0,0,0,0));
-                           background-repeat: repeat;
-                           background-size: 300px 300px;
-                           animation: animStar 150s linear infinite;
                         }
                     `}
                 </style>
@@ -210,13 +200,19 @@ export default function RocketPage() {
                     </div>
                 </div>
 
-                {/* Multiplier Text */}
+                {/* Multiplier/Status Text */}
                 {gameState === 'crashed' ? (
                     <div className="absolute inset-0 flex items-center justify-center z-30">
                         <h1 className="text-8xl font-bold text-red-500 animate-in fade-in-0 zoom-in-75">
                             x{multiplier.toFixed(2)}
                         </h1>
                     </div>
+                ) : gameState === 'waiting' ? (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center z-30 text-center text-white">
+                        <Image src="https://i.ibb.co/ZpJBWrdY/626624c3-f89f-4f89-9d69-35d6ec78c83f-removebg-preview.png" width={80} height={80} alt="1case logo" className="mb-4 h-20 w-20"/>
+                        <p className="text-lg uppercase tracking-widest text-muted-foreground">Ожидание следующего раунда</p>
+                        <p className="text-8xl font-bold">{countdown}</p>
+                     </div>
                 ) : (
                     <div className="absolute top-1/2 left-10 -translate-y-1/2 text-left z-30">
                         <h1 className="text-6xl sm:text-8xl font-bold text-white">
@@ -224,15 +220,6 @@ export default function RocketPage() {
                         </h1>
                     </div>
                 )}
-
-
-                {/* Countdown Timer */}
-                 {gameState === 'waiting' && (
-                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-30 bg-black/30 p-4 rounded-xl">
-                        <p className="text-lg text-muted-foreground">Starting in...</p>
-                        <p className="text-5xl font-bold text-white">{countdown}</p>
-                     </div>
-                 )}
             </div>
         )
     };
@@ -242,7 +229,7 @@ export default function RocketPage() {
         
         const canCashOut = gameState === 'playing' && playerStatus?.status === 'playing';
 
-        let buttonText = 'Place Bet';
+        let buttonText: React.ReactNode = 'Place Bet';
         let buttonAction = handlePlaceBet;
         let buttonClass = 'bg-primary hover:bg-primary/90';
         let isButtonDisabled = false;
@@ -272,7 +259,11 @@ export default function RocketPage() {
                 buttonText = 'Waiting for next round';
                 isButtonDisabled = true;
              } else {
-                buttonText = 'Place Bet';
+                buttonText = (
+                    <>
+                        Сделать ставку <RocketIcon className="w-5 h-5" />
+                    </>
+                );
                 buttonAction = handlePlaceBet;
                 isButtonDisabled = !(user && user.balance.stars >= parsedBetAmount && parsedBetAmount > 0);
              }
@@ -309,6 +300,7 @@ export default function RocketPage() {
     const History = () => (
         <div className="flex items-center gap-2 overflow-x-auto py-2">
             <HistoryIcon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+            {gameState === 'waiting' && <Badge className="bg-primary/20 text-primary">Ожидание</Badge>}
             {history.map((h, i) => (
                 <Badge
                     key={i}
@@ -400,6 +392,7 @@ const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
 }
 
     
+
 
 
 

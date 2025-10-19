@@ -9,7 +9,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogOverlay,
 } from "@/components/ui/alert-dialog";
+import { cn } from '@/lib/utils';
 
 interface AlertOptions {
   title: React.ReactNode;
@@ -43,21 +45,23 @@ export const AlertDialogProvider = ({ children }: { children: ReactNode }) => {
     <AlertDialogContext.Provider value={{ showAlert }}>
       {children}
       <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
-        <AlertDialogContent className="w-[80vw] max-w-sm rounded-2xl bg-neutral-50/95 dark:bg-neutral-800/90 border-neutral-200 dark:border-neutral-700 shadow-xl p-0">
-          <AlertDialogHeader className="items-center text-center p-4">
+        <AlertDialogOverlay className="bg-black/60" />
+        <AlertDialogContent className="w-[80vw] max-w-sm rounded-2xl bg-neutral-50/95 dark:bg-neutral-800/90 p-0 border-0 shadow-xl">
+          <AlertDialogHeader className="text-center items-center p-4 pt-6">
             {alertState?.title && (
               <AlertDialogTitle className="font-bold text-black dark:text-white">{alertState.title}</AlertDialogTitle>
             )}
             {alertState?.description && (
-              <AlertDialogDescription className="font-bold text-neutral-600 dark:text-neutral-300">
+              <AlertDialogDescription className="font-bold text-neutral-800 dark:text-neutral-200">
                 {alertState.description}
               </AlertDialogDescription>
             )}
           </AlertDialogHeader>
-          <AlertDialogFooter className="sm:justify-center mt-0 border-t border-neutral-200 dark:border-neutral-700">
+          <div className="w-full h-[1px] bg-neutral-300 dark:bg-neutral-700" />
+          <AlertDialogFooter className="p-0">
             <AlertDialogAction
               onClick={handleClose}
-              className="bg-transparent text-blue-500 hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50 w-full font-bold rounded-none p-3 h-auto"
+              className="bg-transparent text-blue-500 hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50 w-full font-bold rounded-none p-3 h-auto text-center"
             >
               OK
             </AlertDialogAction>
