@@ -16,6 +16,7 @@ import type { Case, Item } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useFirestore, useMemoFirebase } from '@/firebase';
+import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 
 const RARITY_PROPERTIES = {
     Common: {
@@ -90,38 +91,54 @@ export default function CasePage() {
     , [firestore]);
 
     useEffect(() => {
-        if (!caseRef || !itemsColRef) return;
+        if (!firestore) return;
         const fetchCaseAndItemsData = async () => {
             const itemsSnapshot = await getDocs(itemsColRef);
-            const itemsList = itemsSnapshot.docs.map(d => ({ ...d.data(), id: d.id } as Item));
+            let itemsList: Item[];
+
+            if (!itemsSnapshot.empty) {
+                itemsList = itemsSnapshot.docs.map(d => ({ ...d.data(), id: d.id } as Item));
+            } else {
+                itemsList = MOCK_ITEMS;
+            }
             setAllItems(itemsList);
 
-            const caseSnap = await getDoc(caseRef);
+            const caseSnap = await getDoc(caseRef!);
+            let caseResult: Case | null = null;
 
             if (caseSnap.exists()) {
-                const caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
+                caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
+            } else {
+                // Fallback to mock data if case not found in Firestore
+                const mockCase = MOCK_CASES.find(c => c.id === caseId);
+                if (mockCase) {
+                    caseResult = mockCase;
+                } else {
+                    console.error("Case not found in Firestore or Mock data!");
+                }
+            }
+            
+            if(caseResult) {
                 setCaseData(caseResult);
-                
                 const currentCaseItems = caseResult.items
                     .map(i => itemsList.find(item => item.id === i.itemId))
                     .filter((item): item is Item => !!item);
                 setCaseItems(currentCaseItems);
-
-            } else {
-                console.error("Case not found!");
             }
         };
 
         fetchCaseAndItemsData();
-    }, [caseRef, itemsColRef]);
+    }, [caseId, firestore, caseRef, itemsColRef]);
     
     useEffect(() => {
         if (caseItems.length === 0) return;
         
         const shuffleArray = (array: Item[]) => {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+            if (typeof window !== 'undefined') {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
             }
             return array;
         }
@@ -392,3 +409,5 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
