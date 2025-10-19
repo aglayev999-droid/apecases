@@ -100,9 +100,13 @@ export default function RocketPage() {
 
                 const x = startX + (containerWidth - startX) * t;
                 const y = startY - (startY) * Math.pow(progress, 1.5);
+                
+                const boundedX = Math.min(x, containerWidth - 60);
+                const boundedY = Math.max(y, 60);
+
                 const rotation = -45 + (45 * progress);
                 
-                return { x, y, rotation };
+                return { x: boundedX, y: boundedY, rotation };
             };
             
             const getTrailPath = (newPos: { x: number, y: number }) => {
@@ -191,12 +195,16 @@ export default function RocketPage() {
                 </svg>
 
                 {/* Rocket Image */}
-                <div 
+                 <div
                     className="z-20"
-                     style={rocketStyle}
+                    style={rocketStyle}
                 >
                     <div className="relative w-full h-full">
-                         <Image src="https://i.ibb.co/93bWYZZf/3f7ad183-dda1-4dda-996c-69961a4fabdc-removebg-preview.png" alt="Rocket" layout="fill" objectFit="contain" />
+                         {gameState === 'crashed' ? (
+                             <Image src="https://i.ibb.co/bX6GfqY/e1e1a556-9e1f-4709-a78b-1a98625906a2-removebg-preview.png" alt="Explosion" layout="fill" objectFit="contain" />
+                         ) : (
+                            <Image src="https://i.ibb.co/93bWYZZf/3f7ad183-dda1-4dda-996c-69961a4fabdc-removebg-preview.png" alt="Rocket" layout="fill" objectFit="contain" />
+                         )}
                     </div>
                 </div>
 
@@ -397,3 +405,6 @@ const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
 
 
 
+
+
+    
