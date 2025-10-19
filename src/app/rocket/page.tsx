@@ -14,7 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Volume2, VolumeX } from 'lucide-react';
 import { RocketIcon } from '@/components/icons/RocketIcon';
 import { useRocket } from '@/contexts/RocketContext';
-import type { RocketPlayer } from '@/lib/types';
+import type { RocketPlayer, RocketGameState } from '@/lib/types';
 
 
 const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
@@ -58,16 +58,16 @@ const GameScreen = React.memo(({ gameState, multiplier, countdown, isMuted, setI
         
         const getRocketPosition = () => {
             if (gameState === 'waiting' || gameState === 'crashed') {
-                return { x: startX, y: startY, rotation: -45 };
+                return { x: startX, y: startY, rotation: -25 };
             }
 
-            const progress = Math.min((multiplier - 1) / 9, 1);
+            const progress = Math.min((multiplier - 1) / 10, 1);
             
-            const x = startX + (containerWidth - startX - 80) * progress;
-            const y = startY - (startY * 0.8) * progress; 
-            const rotation = -45 + (15 * progress);
+            const x = startX + (containerWidth - startX - 120) * progress;
+            const y = startY - (startY * 0.4) * progress * progress; 
+            const rotation = -25 + (25 * progress);
             
-            return { x, y, rotation: rotation };
+            return { x: Math.min(x, containerWidth - 60), y: Math.max(y, 40), rotation: rotation };
         };
         
         const newPos = getRocketPosition();
@@ -75,8 +75,6 @@ const GameScreen = React.memo(({ gameState, multiplier, countdown, isMuted, setI
         
         if (gameState === 'playing') {
              setTrailPath(prev => prev + ` L ${newPos.x} ${newPos.y}`);
-        } else {
-             setTrailPath(`M ${startX} ${startY}`);
         }
 
     }, [multiplier, gameState]);
