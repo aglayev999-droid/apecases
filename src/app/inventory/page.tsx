@@ -7,14 +7,24 @@ import Image from 'next/image';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import type { InventoryItem } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Trash2 } from 'lucide-react';
+import React from 'react';
 
 export default function InventoryPage() {
   const { inventory, removeInventoryItems, updateBalance, isUserLoading } = useUser();
   const { showAlert } = useAlertDialog();
 
+  const nonNftItems = React.useMemo(() => {
+    if (!inventory) return [];
+    return inventory.filter(item => item.rarity !== 'NFT');
+  }, [inventory]);
+
+  const totalSellValue = React.useMemo(() => {
+    return nonNftItems.reduce((sum, item) => sum + item.value, 0);
+  }, [nonNftItems]);
+
+
   const handleSellAll = () => {
-    if (!inventory) return;
-    const nonNftItems = inventory.filter(item => item.rarity !== 'NFT');
     if (nonNftItems.length === 0) {
       showAlert({
         title: 'Nothing to Sell',
@@ -23,15 +33,14 @@ export default function InventoryPage() {
       return;
     }
     
-    const totalValue = nonNftItems.reduce((sum, item) => sum + item.value, 0);
     const itemIdsToSell = nonNftItems.map(item => item.id);
     
-    updateBalance(totalValue);
+    updateBalance(totalSellValue);
     removeInventoryItems(itemIdsToSell);
 
     showAlert({
       title: 'All Items Sold!',
-      description: `You received ${totalValue} stars.`,
+      description: `You received ${totalSellValue} stars.`,
     });
   };
   
@@ -39,8 +48,8 @@ export default function InventoryPage() {
       return (
          <div className="space-y-4">
             <div className="flex justify-between items-center">
-                <Skeleton className="h-8 w-32" />
-                <Skeleton className="h-9 w-24" />
+                <h1 className="text-2xl font-bold tracking-tighter">Inventory</h1>
+                <Skeleton className="h-9 w-40" />
             </div>
             <div className="grid grid-cols-2 gap-4">
                 {[...Array(4)].map((_, i) => (
@@ -63,7 +72,11 @@ export default function InventoryPage() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold tracking-tighter">Inventory</h1>
-        <Button variant="destructive" size="sm" onClick={handleSellAll}>Sell All</Button>
+        <Button variant="destructive" size="sm" onClick={handleSellAll} disabled={nonNftItems.length === 0}>
+            <Trash2 className="mr-2 h-4 w-4" />
+            Sell All for {totalSellValue}
+             <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
+        </Button>
       </div>
       
       <div className="grid grid-cols-2 gap-4">

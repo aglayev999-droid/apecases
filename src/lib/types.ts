@@ -11,6 +11,7 @@ export interface Item {
   animationUrl?: string;
   isUpgradable?: boolean;
   isTargetable?: boolean;
+  collectionAddress?: string; // For withdrawable NFTs
 }
 
 export interface Case {

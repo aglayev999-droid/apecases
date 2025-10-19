@@ -54,13 +54,20 @@ export function InventoryCard({ item }: InventoryCardProps) {
         });
         return;
     }
+    if (!item.collectionAddress) {
+       showAlert({
+        title: 'Withdrawal Error',
+        description: `This NFT (${item.name}) does not have a collection address configured.`,
+      });
+      return;
+    }
 
     try {
       const queueRef = collection(firestore, 'withdrawal_queue');
       await addDoc(queueRef, {
         user_wallet_address: wallet.account.address,
         nft_id: item.id, // item.id is the Token ID from the 'items' collection
-        nft_contract_address: 'MENING_KOLLEKSIYA_MANZILIM', // IMPORTANT: Replace with actual contract address
+        nft_contract_address: item.collectionAddress,
         status: 'pending',
         timestamp: serverTimestamp(),
       });
@@ -123,7 +130,8 @@ export function InventoryCard({ item }: InventoryCardProps) {
         {isNft ? (
             <div className="w-full grid grid-cols-2 gap-2">
                 <Button variant="destructive" size="sm" onClick={handleSell}>
-                    Sell
+                    Sell for {item.value}
+                    <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
                 </Button>
                 <Button variant="default" size="sm" onClick={handleWithdraw}>
                     Withdraw
