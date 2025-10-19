@@ -192,7 +192,7 @@ export default function CasePage() {
             console.error("Prize item not found in reel items array. Adding it.");
             const newReelItems = [...reelItems, prize];
             setReelItems(newReelItems);
-            prizeIndexInReel = newRee' - 1;
+            prizeIndexInReel = newReelItems.length - 1;
         }
         
         const spinTime = isFast ? 1000 : 4000;
