@@ -26,7 +26,7 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <h1 className="text-2xl font-bold mb-4">Cases</h1>
+        <h1 className="text-2xl font-bold mb-4">APEX Cases</h1>
         <div className="grid grid-cols-2 gap-4">
           {[...Array(4)].map((_, i) => (
              <div key={i} className="flex flex-col gap-2">
@@ -43,7 +43,7 @@ export default function Home() {
 
   return (
     <div className="space-y-8">
-       <h1 className="text-2xl font-bold mb-4">Cases</h1>
+       <h1 className="text-2xl font-bold mb-4">APEX Cases</h1>
       <div className="grid grid-cols-2 gap-4">
         {displayCases.map((caseData) => (
           <CaseCard key={caseData.id} caseData={caseData} onOpen={() => handleCaseSelect(caseData)} />
