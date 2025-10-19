@@ -5,7 +5,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import type { InventoryItem } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Button } from './ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import { useUser } from '@/contexts/UserContext';
 import { useTonWallet } from '@tonconnect/ui-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -25,7 +25,7 @@ const RARITY_PROPERTIES = {
 };
 
 export function InventoryCard({ item }: InventoryCardProps) {
-  const { toast } = useToast();
+  const { showAlert } = useAlertDialog();
   const { removeInventoryItem, updateBalance } = useUser();
   const wallet = useTonWallet();
   const firestore = useFirestore();
@@ -33,7 +33,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
   const handleSell = () => {
     updateBalance(item.value, 0);
     removeInventoryItem(item.inventoryId);
-    toast({
+    showAlert({
       title: 'Item Sold!',
       description: `You sold ${item.name} for ${item.value} stars.`,
     });
@@ -41,16 +41,14 @@ export function InventoryCard({ item }: InventoryCardProps) {
 
   const handleWithdraw = async () => {
     if (!wallet) {
-      toast({
-        variant: 'destructive',
+      showAlert({
         title: 'Wallet Not Connected',
         description: 'Please connect your TON wallet to withdraw an NFT.',
       });
       return;
     }
     if (!firestore) {
-        toast({
-          variant: 'destructive',
+        showAlert({
           title: 'Error',
           description: 'Could not connect to the database. Please try again later.',
         });
@@ -71,14 +69,13 @@ export function InventoryCard({ item }: InventoryCardProps) {
       // For now, we remove it immediately.
       removeInventoryItem(item.inventoryId);
 
-      toast({
+      showAlert({
         title: 'Withdrawal Request Sent',
         description: `${item.name} is being processed. It will be sent to your wallet shortly.`,
       });
     } catch (error) {
       console.error("Error sending withdrawal request:", error);
-      toast({
-        variant: 'destructive',
+      showAlert({
         title: 'Withdrawal Failed',
         description: 'There was a problem sending your request. Please try again.',
       });

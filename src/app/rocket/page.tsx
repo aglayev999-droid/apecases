@@ -9,7 +9,7 @@ import { useUser } from '@/contexts/UserContext';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { HistoryIcon } from '@/components/icons/HistoryIcon';
-import { useToast } from '@/hooks/use-toast';
+import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import type { RocketPlayer } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -26,7 +26,7 @@ export default function RocketPage() {
         playerCashOut,
         getPlayerStatus 
     } = useUser();
-    const { toast } = useToast();
+    const { showAlert } = useAlertDialog();
     const [betAmount, setBetAmount] = useState('25');
     const musicRef = useRef<HTMLAudioElement>(null);
     const crashSfxRef = useRef<HTMLAudioElement>(null);
@@ -60,12 +60,12 @@ export default function RocketPage() {
     const handlePlaceBet = () => {
         const parsedBetAmount = parseInt(betAmount) || 0;
         if (!user || user.balance.stars < parsedBetAmount || parsedBetAmount <= 0) {
-            toast({ variant: 'destructive', title: "Not enough stars", description: "You don't have enough stars to place this bet." });
+            showAlert({ title: "Not enough stars", description: "You don't have enough stars to place this bet." });
             return;
         }
         if (gameState === 'waiting') {
             playerBet(user.id, parsedBetAmount, user.avatar, user.name);
-            toast({ title: "Bet placed!", description: `You bet ${parsedBetAmount} stars.` });
+            showAlert({ title: "Bet placed!", description: `You bet ${parsedBetAmount} stars.` });
         }
     };
 
@@ -228,7 +228,7 @@ export default function RocketPage() {
                     ) : (
                          <h1 className="text-7xl font-bold text-white [text-shadow:0_0_15px_hsl(var(--primary))]">
                            x{multiplier.toFixed(2)}
-                        </h1>
+                         </h1>
                     )}
                 </div>
 

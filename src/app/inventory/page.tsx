@@ -4,19 +4,18 @@ import { useUser } from '@/contexts/UserContext';
 import { InventoryCard } from '@/components/InventoryCard';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { useToast } from '@/hooks/use-toast';
+import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import type { InventoryItem } from '@/lib/types';
 
 export default function InventoryPage() {
   const { user, removeInventoryItems, updateBalance } = useUser();
-  const { toast } = useToast();
+  const { showAlert } = useAlertDialog();
 
   const handleSellAll = () => {
     if (!user) return;
     const nonNftItems = user.inventory.filter(item => item.rarity !== 'NFT');
     if (nonNftItems.length === 0) {
-      toast({
-        variant: 'destructive',
+      showAlert({
         title: 'Nothing to Sell',
         description: 'You do not have any non-NFT items to sell.',
       });
@@ -29,7 +28,7 @@ export default function InventoryPage() {
     updateBalance(totalValue, 0);
     removeInventoryItems(itemIdsToSell);
 
-    toast({
+    showAlert({
       title: 'All Items Sold!',
       description: `You received ${totalValue} stars.`,
     });

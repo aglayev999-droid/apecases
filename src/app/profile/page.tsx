@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Copy } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import Image from 'next/image';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
@@ -14,7 +14,7 @@ const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce3004
 
 export default function ProfilePage() {
   const { user } = useUser();
-  const { toast } = useToast();
+  const { showAlert } = useAlertDialog();
 
   const formatNumber = (num: number) => {
     if (num === undefined || num === null) return '0'; 
@@ -24,7 +24,7 @@ export default function ProfilePage() {
   const copyReferralCode = () => {
     if (!user || !user.referrals || !user.referrals.code) return; 
     navigator.clipboard.writeText(user.referrals.code);
-    toast({
+    showAlert({
       title: 'Copied!',
       description: 'Referral code copied to clipboard.',
     });

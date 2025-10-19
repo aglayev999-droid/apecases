@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogClose, DialogTitle } from '@/components/ui/dialog';
 import { useUser } from '@/contexts/UserContext';
-import { useToast } from '@/hooks/use-toast';
+import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import type { Case, Item } from '@/lib/types';
 import { ALL_ITEMS, MOCK_CASES } from '@/lib/data';
 import { cn } from '@/lib/utils';
@@ -75,7 +75,7 @@ export default function CasePage() {
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
     const { user, updateBalance, addInventoryItem, updateSpending, setLastFreeCaseOpen, lastFreeCaseOpen } = useUser();
-    const { toast } = useToast();
+    const { showAlert } = useAlertDialog();
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center', duration: 50 });
     const [reelItems, setReelItems] = useState<Item[]>([]);
 
@@ -115,13 +115,13 @@ export default function CasePage() {
                 const now = new Date();
                 const endTime = new Date(lastFreeCaseOpen.getTime() + caseData.freeCooldownSeconds * 1000);
                 if (now < endTime) {
-                    toast({ variant: 'destructive', title: "Cooldown active", description: "You can't open this free case yet." });
+                    showAlert({ title: "Cooldown Active", description: "You can't open this free case yet." });
                     return;
                 }
             }
         } else {
             if (user.balance.stars < caseData.price) {
-              toast({ variant: 'destructive', title: "Not enough stars", description: "You don't have enough stars to open this case." });
+              showAlert({ title: "Not enough stars", description: "You don't have enough stars to open this case." });
               return;
             }
             updateBalance(-caseData.price, 0);
@@ -162,7 +162,7 @@ export default function CasePage() {
                 
                 if (prize.id.startsWith('item-stars-')) {
                     updateBalance(prize.value, 0);
-                    toast({
+                    showAlert({
                         title: `You won ${prize.name}!`,
                         description: `Added ${prize.value} stars to your balance.`,
                     });
@@ -178,7 +178,7 @@ export default function CasePage() {
         }, spinTime);
 
 
-    }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, toast, reelItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
+    }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, reelItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
 
     const closeModal = () => {
         setIsWinModalOpen(false);
@@ -188,7 +188,7 @@ export default function CasePage() {
     const handleSell = () => {
         if (!wonItem) return;
         updateBalance(wonItem.value, 0);
-        toast({
+        showAlert({
             title: `Sold: ${wonItem.name}!`,
             description: `You got ${wonItem.value} stars.`,
         });
@@ -326,7 +326,11 @@ export default function CasePage() {
 
             {/* Win Modal */}
             <Dialog open={isWinModalOpen} onOpenChange={setIsWinModalOpen}>
-                <DialogContent className="sm:max-w-[425px] p-0 border-0 bg-transparent shadow-none" onInteractOutside={(e) => e.preventDefault()}>
+                <DialogContent className="sm:max-w-[425px] p-0 border-0 bg-transparent shadow-none" onInteractOutside={(e) => {
+                    if (isWinModalOpen) {
+                        e.preventDefault();
+                    }
+                }}>
                      {wonItem && (
                         <div className="text-center space-y-4 p-6 bg-card rounded-lg relative">
                              <DialogTitle className="sr-only">You Won!</DialogTitle>
