@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import type { User, InventoryItem, Item } from '@/lib/types';
-import { useAuth as useFirebaseAuth, useFirestore, useDoc, useCollection, addDocumentNonBlocking, useMemoFirebase } from '@/firebase';
+import { useAuth as useFirebaseAuth, useFirestore, useDoc, useCollection, addDocumentNonBlocking, useMemoFirebase, useAuth } from '@/firebase';
 import { doc, collection, writeBatch, serverTimestamp, increment } from 'firebase/firestore';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 
@@ -23,6 +23,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const firestore = useFirestore();
+  const auth = useAuth();
   const { user: firebaseUser, isUserLoading } = useFirebaseAuth();
   
   const userDocRef = useMemoFirebase(() => 
@@ -44,10 +45,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   });
 
   useEffect(() => {
-    if (!isUserLoading && !firebaseUser) {
-      initiateAnonymousSignIn();
+    if (!isUserLoading && !firebaseUser && auth) {
+      initiateAnonymousSignIn(auth);
     }
-  }, [isUserLoading, firebaseUser]);
+  }, [isUserLoading, firebaseUser, auth]);
 
   const setLastFreeCaseOpen = (date: Date) => {
     setLastFreeCaseOpenState(date);
