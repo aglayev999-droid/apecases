@@ -109,18 +109,14 @@ export default function RocketPage() {
                 if (!trailPath) {
                     setTrailPath(`M ${startX} ${startY} L ${newPos.x} ${newPos.y}`);
                 } else {
-                    // To make the line grow, we append new segments.
-                    // A simple L command will just draw a line from the last point.
                      const newPathSegment = ` L ${newPos.x} ${newPos.y}`;
-                     // To avoid making the SVG path data enormous, we can choose to rebuild it
-                     // or just append. For this game, appending is fine.
                      setTrailPath(prev => prev + newPathSegment);
                 }
             } else {
                  setTrailPath(`M ${startX} ${startY}`);
             }
 
-        }, [multiplier, gameState, trailPath]);
+        }, [multiplier, gameState]);
 
         const rocketStyle: React.CSSProperties = {
             position: 'absolute',
@@ -405,4 +401,5 @@ const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
     
 
     
+
 
