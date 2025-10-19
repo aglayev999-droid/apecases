@@ -10,6 +10,7 @@ import { collection } from 'firebase/firestore';
 import type { CaseBattle } from '@/lib/types';
 import { MOCK_BATTLES, MOCK_CASES } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAlertDialog } from '@/contexts/AlertDialogContext';
 
 const BattleCardLoader = () => (
   <Card className="overflow-hidden">
@@ -36,12 +37,20 @@ const BattleCardLoader = () => (
 
 export default function BattlesPage() {
   const firestore = useFirestore();
+  const { showAlert } = useAlertDialog();
   
   const battlesCollectionRef = useMemoFirebase(() => 
     firestore ? collection(firestore, 'battles') : null
   , [firestore]);
 
   const { data: battles, isLoading } = useCollection<CaseBattle>(battlesCollectionRef);
+
+  const handleComingSoon = () => {
+    showAlert({
+        title: 'Tez Kunda!',
+        description: 'Bu funksiya ustida ish olib bormoqdamiz va tez orada taqdim etamiz.',
+    });
+  }
 
   const getCaseById = (caseId: string) => {
     return MOCK_CASES.find(c => c.id === caseId);
@@ -52,7 +61,7 @@ export default function BattlesPage() {
         <div className="w-full space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold tracking-tighter">Case Battles</h1>
-                <Button>
+                <Button onClick={handleComingSoon}>
                 <Swords className="mr-2 h-4 w-4" /> Create Battle
                 </Button>
             </div>
@@ -70,7 +79,7 @@ export default function BattlesPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tighter">Case Battles</h1>
-        <Button>
+        <Button onClick={handleComingSoon}>
           <Swords className="mr-2 h-4 w-4" /> Create Battle
         </Button>
       </div>
@@ -107,9 +116,9 @@ export default function BattlesPage() {
                         </div>
                         </div>
                         {battle.status === 'waiting' ? (
-                            <Button variant="secondary" size="sm">Join</Button>
+                            <Button variant="secondary" size="sm" onClick={handleComingSoon}>Join</Button>
                         ) : (
-                            <Button variant="outline" size="sm">View</Button>
+                            <Button variant="outline" size="sm" onClick={handleComingSoon}>View</Button>
                         )}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
@@ -126,7 +135,7 @@ export default function BattlesPage() {
             <div className="text-center py-10 text-muted-foreground flex flex-col items-center gap-4">
                 <ShieldAlert className="w-16 h-16 text-primary/50" />
                 <p className="text-lg">No active battles right now.</p>
-                 <Button>
+                 <Button onClick={handleComingSoon}>
                     <Swords className="mr-2 h-4 w-4" /> Create the First Battle!
                 </Button>
             </div>
