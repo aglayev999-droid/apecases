@@ -25,7 +25,7 @@ export const MOCK_CASES: Case[] = [
       id: 'case-free-2',
       name: 'FREE BOX',
       price: 0,
-      image: 'https://i.ibb.co/RgxJTb9/image.png',
+      image: 'https://i.ibb.co/jZZBNxLD/free-box.png',
       imageHint: 'red apex case',
       items: [
         { itemId: 'item-stars-5', probability: 0.7 },
@@ -37,7 +37,7 @@ export const MOCK_CASES: Case[] = [
       id: 'case-floor-8',
       name: 'FLOOR CASE',
       price: 180,
-      image: 'https://i.ibb.co/gDFsW3z/image.png',
+      image: 'https://i.ibb.co/twnxRfvP/floor.png',
       imageHint: 'blue apex case',
       items: [
         { itemId: 'item-stars-10', probability: 0.3 },
@@ -51,7 +51,7 @@ export const MOCK_CASES: Case[] = [
       id: 'case-labubu-10',
       name: 'LABUBU CASE',
       price: 240,
-      image: 'https://i.ibb.co/Q8Wbrp3/image.png',
+      image: 'https://i.ibb.co/20Fh8RKz/labubu.png',
       imageHint: 'green labubu case',
       items: [
         { itemId: 'item-stars-5', probability: 0.4 },
@@ -65,7 +65,7 @@ export const MOCK_CASES: Case[] = [
       id: 'case-snoop-7',
       name: 'SNOOP DOGG CASE',
       price: 180,
-      image: 'https://i.ibb.co/cQhBv5W/image.png',
+      image: 'https://i.ibb.co/F4V0dGX3/Apex-Case.png',
       imageHint: 'purple snoop dogg case',
       items: [
         { itemId: 'item-stars-20', probability: 0.3 },
