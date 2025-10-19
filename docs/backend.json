@@ -296,6 +296,26 @@
         "status",
         "timestamp"
       ]
+    },
+    "Upgrade": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "Upgrade",
+        "description": "Represents an item upgrade attempt by a user.",
+        "type": "object",
+        "properties": {
+            "id": { "type": "string", "description": "Unique identifier for the upgrade event." },
+            "userId": { "type": "string", "description": "The user who performed the upgrade." },
+            "sourceItems": {
+                "type": "array",
+                "description": "An array of inventory item IDs that were used for the upgrade.",
+                "items": { "type": "string" }
+            },
+            "targetItem": { "type": "string", "description": "The ID of the item the user was trying to get." },
+            "chance": { "type": "number", "description": "The success probability of the upgrade." },
+            "outcome": { "type": "string", "enum": ["success", "failure"], "description": "The result of the upgrade." },
+            "createdAt": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "userId", "sourceItems", "targetItem", "chance", "outcome", "createdAt"]
     }
   },
   "auth": {
@@ -335,6 +355,10 @@
     "/withdrawal_queue/{requestId}": {
       "schema": { "$ref": "#/entities/WithdrawalQueue" },
       "description": "A queue of NFT withdrawal requests to be processed by an off-chain relayer service. This allows for secure and automated NFT transfers."
+    },
+    "/upgrades/{upgradeId}": {
+        "schema": { "$ref": "#/entities/Upgrade" },
+        "description": "Logs all upgrade attempts for analytics and history."
     }
   }
 }

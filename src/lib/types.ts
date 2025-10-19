@@ -9,6 +9,8 @@ export interface Item {
   value: number; // in Stars
   description?: string;
   animationUrl?: string;
+  isUpgradable?: boolean;
+  isTargetable?: boolean;
 }
 
 export interface Case {
