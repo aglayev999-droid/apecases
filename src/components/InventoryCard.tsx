@@ -87,7 +87,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
     }
   };
 
-  const isNft = item.rarity === 'NFT';
+  const isWithdrawable = !!item.collectionAddress;
   const hasAnimation = !!item.animationUrl;
 
   return (
@@ -119,14 +119,14 @@ export function InventoryCard({ item }: InventoryCardProps) {
       </CardHeader>
       <CardContent className="p-2 pt-0 text-left flex-grow">
         <p className="text-sm font-semibold truncate">{item.name}</p>
-        {isNft ? (
+        {isWithdrawable ? (
             <p className="text-xs text-muted-foreground truncate">ID: {item.id.split('-').pop()}</p>
         ) : (
             <p className={cn("text-xs font-bold", RARITY_PROPERTIES[item.rarity].text)}>{item.rarity}</p>
         )}
       </CardContent>
       <CardFooter className="p-2 flex flex-col gap-2">
-        {isNft ? (
+        {isWithdrawable ? (
             <div className="w-full grid grid-cols-2 gap-2">
                 <Button variant="destructive" size="sm" onClick={handleSell}>
                     Sell

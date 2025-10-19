@@ -102,10 +102,11 @@ export default function CasePage() {
         setReelItems(initialReel);
     }, [caseItems]);
     
-    const handleSpin = useCallback((isFast: boolean = false) => {
+    const handleSpin = useCallback(async (isFast: boolean = false) => {
         if (isSpinning || !caseData || !user || !emblaApi || caseItems.length === 0 || allItems.length === 0) return;
-        
-        const totalCost = caseData.price * spinMultiplier;
+
+        const numSpins = isFree ? 1 : spinMultiplier;
+        const totalCost = caseData.price * numSpins;
         const isFree = caseData.price === 0;
 
         if (isFree) {
@@ -119,7 +120,7 @@ export default function CasePage() {
             }
         } else {
             if (user.balance.stars < totalCost) {
-              showAlert({ title: "Not enough stars", description: `You need ${totalCost} stars to open ${spinMultiplier} cases.` });
+              showAlert({ title: "Not enough stars", description: `You need ${totalCost} stars to open ${numSpins} cases.` });
               return;
             }
             updateBalance(-totalCost);
@@ -131,7 +132,7 @@ export default function CasePage() {
         if (isFree) setLastFreeCaseOpen(new Date());
 
         const prizes: Item[] = [];
-        for (let i = 0; i < (isFree ? 1 : spinMultiplier); i++) {
+        for (let i = 0; i < numSpins; i++) {
             const prize = selectItem(caseData, allItems);
             if (prize) prizes.push(prize);
         }
@@ -143,39 +144,45 @@ export default function CasePage() {
         }
 
         const reelLength = 100;
-        let newReelItems = Array.from({ length: reelLength }, () => caseItems[Math.floor(Math.random() * caseItems.length)]);
-        
         const targetIndex = 75; // The final item shown in the reel
-        newReelItems[targetIndex] = prizes[prizes.length - 1];
-        setReelItems(newReelItems);
+        const spinTime = isFast ? 1000 : 5000;
+        const pauseBetweenSpins = 500;
 
-        setTimeout(() => {
+        for (let i = 0; i < prizes.length; i++) {
+            const prize = prizes[i];
+            
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            let newReelItems = Array.from({ length: reelLength }, () => caseItems[Math.floor(Math.random() * caseItems.length)]);
+            newReelItems[targetIndex] = prize;
+            setReelItems(newReelItems);
+
             if (emblaApi) {
                 emblaApi.reInit();
                 emblaApi.scrollTo(0, true); 
                 
-                const spinTime = isFast ? 1000 : 5000;
                 const container = emblaApi.containerNode();
                 if (container) container.style.transition = `transform ${spinTime}ms ease-out`;
 
                 emblaApi.scrollTo(targetIndex); 
-                
-                setTimeout(() => {
-                    setIsSpinning(false);
-                    setWonItems(prizes);
-                    setIsWinModalOpen(true);
-                    
-                    prizes.forEach(prize => {
-                        if (prize.id.startsWith('item-stars-')) {
-                            updateBalance(prize.value);
-                        } else {
-                            addInventoryItem(prize);
-                        }
-                    });
-                    if (container) container.style.transition = '';
-                }, spinTime + 500);
+
+                await new Promise(resolve => setTimeout(resolve, spinTime + (i === prizes.length -1 ? pauseBetweenSpins : 0)));
+                if (container) container.style.transition = '';
             }
-        }, 100);
+        }
+        
+        setIsSpinning(false);
+        setWonItems(prizes);
+        setIsWinModalOpen(true);
+        
+        prizes.forEach(prize => {
+            if (prize.id.startsWith('item-stars-')) {
+                updateBalance(prize.value);
+            } else {
+                addInventoryItem(prize);
+            }
+        });
+
     }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning, spinMultiplier]);
 
     const handleModalOpenChange = (open: boolean) => {
@@ -199,7 +206,7 @@ export default function CasePage() {
     if (!caseData) return <div className="flex items-center justify-center h-full"><p>Loading case...</p></div>;
     
     const isFree = caseData.price === 0;
-    const totalCost = caseData.price * spinMultiplier;
+    const totalCost = caseData.price * (isFree ? 1 : spinMultiplier);
     let canAfford = user ? user.balance.stars >= totalCost : false;
     if (isFree) {
         canAfford = true; 
@@ -280,7 +287,7 @@ export default function CasePage() {
                 <DialogContent className="sm:max-w-md w-[90vw] p-0 border-0 bg-transparent shadow-none" onInteractOutside={(e) => { if (isWinModalOpen) e.preventDefault(); }}>
                      {wonItems.length > 0 && (
                         <div className="text-center space-y-4 p-4 sm:p-6 bg-card rounded-lg relative">
-                            <DialogClose className="absolute right-2 top-2 p-1 rounded-full bg-background/50 hover:bg-background/80"><X className="h-4 w-4" /></DialogClose>
+                           <button onClick={() => handleModalOpenChange(false)} className="absolute right-2 top-2 p-1 rounded-full bg-background/50 hover:bg-background/80"><X className="h-4 w-4" /></button>
                             <DialogTitle className="text-2xl font-bold">You Won {wonItems.length} Item{wonItems.length > 1 ? 's' : ''}!</DialogTitle>
                             <ScrollArea className="max-h-64 pr-4">
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
