@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Logo } from '@/components/icons/Logo';
+import { Swords } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
 export const LoadingScreen = () => {
@@ -22,7 +22,7 @@ export const LoadingScreen = () => {
                 }}
             />
             <div className="relative z-10 flex flex-col items-center">
-                <Logo className="h-16 w-16 mb-4 text-primary" />
+                <Swords className="h-16 w-16 mb-4 text-primary" />
                 <h1 className="text-4xl font-bold tracking-tighter">APEX</h1>
                 <p className="text-muted-foreground mb-8">Case Battles</p>
                 <Progress value={progress} className="w-48 h-1 bg-primary/20" />
