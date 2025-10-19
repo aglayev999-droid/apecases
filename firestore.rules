@@ -1,53 +1,64 @@
 /**
- * @fileoverview Firestore Security Rules for Apex Case Battles.
- *
- * Core Philosophy:
- * This ruleset employs a hybrid security model, balancing open read access for certain collections with strict ownership and role-based access control for sensitive data.
- *
- * Data Structure:
- * - User-specific data is stored under `/users/{userId}`, ensuring private data remains siloed.
- * - Publicly accessible data, like `/cases` and `/items`, is open for reading.
- * - The `/settings/global` document stores global settings.
- * - `/battles/{battleId}` stores case battle events.
- *
- * Key Security Decisions:
- * - Users can only create, update, and delete their own user documents.
- * - Public data (cases, items) is readable by everyone but only modifiable by authorized personnel (not implemented in this prototype).
- * - The settings document is read-only for clients.
- * - User listing is generally disallowed to protect privacy.
- * - The rules do not enforce strict data validation in this prototype phase.
+ * @file Firestore Security Rules
+ * @core_philosophy This ruleset enforces a user-ownership model for user-specific data and public read access for certain collections like 'cases' and 'items'.
+ *   It prioritizes security by default, explicitly denying access where not specifically granted.
+ * @data_structure
+ *   - /users/{userId}: Stores individual user profiles.
+ *   - /cases/{caseId}: Stores information about cases.
+ *   - /nft_inventory/{nftId}: Manages the bot's NFT inventory.
+ *   - /users/{userId}/inventory/{inventoryId}: Tracks user-specific inventory.
+ *   - /items/{itemId}: Contains the definitions for items.
+ *   - /transactions/{transactionId}: Logs all transactions.
+ *   - /settings/global: Stores global settings.
+ *   - /withdrawal_queue/{requestId}: Manages NFT withdrawal requests.
+ *   - /upgrades/{upgradeId}: Logs item upgrade attempts.
+ *   - /battles/{battleId}: Stores case battle information.
+ * @key_security_decisions
+ *   - Users can only read/write their own user document.
+ *   - Public read access is granted to 'cases' and 'items'.
+ *   - Listing of user documents is disallowed.
+ *   - The 'settings' document is read-only.
+ *   - All write operations require authentication.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Allows users to manage their own user data.
+     * @description Controls access to user documents.
      * @path /users/{userId}
-     * @allow (create) - User with UID 'user_abc' can create their own document at /users/user_abc if request.auth.uid == 'user_abc'.
-     * @allow (update) - User with UID 'user_abc' can update their own document at /users/user_abc.
-     * @allow (delete) - User with UID 'user_abc' can delete their own document at /users/user_abc.
-     * @deny (create) - User with UID 'user_xyz' cannot create a document at /users/user_abc.
-     * @principle Enforces document ownership for writes.
+     * @allow (create) Signed-in user can create their own document.
+     * @allow (get, update, delete) Signed-in user can only access their own document.
+     * @deny (list) Listing all users is not allowed.
+     * @deny (create) Cannot create a user with an ID that does not match auth.uid
+     * @principle Enforces document ownership; users can only manage their own data.
      */
     match /users/{userId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
       function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
       }
 
       allow get: if isOwner(userId);
-      allow list: if false; // User listing is disallowed for privacy.
-      allow create: if isOwner(userId) && request.resource.data.id == request.auth.uid;
-      allow update: if isOwner(userId) && resource.data.id == request.resource.data.id;
-      allow delete: if isOwner(userId) && resource != null;
+      allow list: if false;
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Allows anyone to read case data, but restricts writes.
+     * @description Allows public read access to case documents.
      * @path /cases/{caseId}
-     * @allow (get, list) - Any user, signed in or not, can read case data.
-     * @deny (create, update, delete) - No user can create, update, or delete case data without specific authorization (not implemented).
-     * @principle Public read access with restricted writes.
+     * @allow (get, list) Anyone can read case details.
+     * @deny (create, update, delete) Only admins can modify case data.
+     * @principle Provides public information about available cases.
      */
     match /cases/{caseId} {
       allow get, list: if true;
@@ -55,44 +66,49 @@ service cloud.firestore {
     }
 
     /**
-     * @description Allows management of NFT inventory.
+     * @description Controls access to NFT inventory documents.
      * @path /nft_inventory/{nftId}
-     * @allow (get, list) - Any user, signed in or not, can read NFT inventory data.
-     * @deny (create, update, delete) - No user can create, update, or delete NFT inventory data without specific authorization (not implemented).
-     * @principle Public read access with restricted writes.
+     * @allow (get) Anyone can read NFT inventory details.
+     * @deny (create, update, delete, list) Only admins can modify NFT inventory data.
+     * @principle  Manages the bot's NFT inventory, restricting write access.
      */
     match /nft_inventory/{nftId} {
-      allow get, list: if true;
-      allow create, update, delete: if false;
+      allow get: if true;
+      allow list, create, update, delete: if false;
     }
 
     /**
-     * @description Allows users to manage their own inventory.
+     * @description Controls access to user-specific inventory.
      * @path /users/{userId}/inventory/{inventoryId}
-     * @allow (create) - User with UID 'user_abc' can create an inventory item at /users/user_abc/inventory/item_123 if request.auth.uid == 'user_abc'.
-     * @allow (update) - User with UID 'user_abc' can update their own inventory item.
-     * @allow (delete) - User with UID 'user_abc' can delete their own inventory item.
-     * @deny (create) - User with UID 'user_xyz' cannot create an inventory item at /users/user_abc/inventory/item_123.
-     * @principle Enforces document ownership for writes, restricts access to a user's own data tree.
+     * @allow (create, get, list, update, delete) Signed-in user can manage their own inventory.
+     * @deny (create) Cannot create inventory with userId that does not match auth.uid
+     * @principle Enforces user ownership of inventory items.
      */
     match /users/{userId}/inventory/{inventoryId} {
-      function isOwner(userId) {
-        return request.auth != null && request.auth.uid == userId;
+      function isSignedIn() {
+        return request.auth != null;
       }
 
-      allow get: if isOwner(userId);
-      allow list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.userId == request.auth.uid;
-      allow update: if isOwner(userId) && resource != null && resource.data.userId == request.resource.data.userId;
-      allow delete: if isOwner(userId) && resource != null;
+      function isOwner(userId) {
+        return request.auth.uid == userId;
+      }
+
+      function isExistingOwner(userId) {
+        return isOwner(userId) && resource != null;
+      }
+
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isExistingOwner(userId);
+      allow delete: if isExistingOwner(userId);
     }
 
     /**
-     * @description Allows anyone to read item data, but restricts writes.
+     * @description Allows public read access to item documents.
      * @path /items/{itemId}
-     * @allow (get, list) - Any user, signed in or not, can read item data.
-     * @deny (create, update, delete) - No user can create, update, or delete item data without specific authorization (not implemented).
-     * @principle Public read access with restricted writes.
+     * @allow (get, list) Anyone can read item details.
+     * @deny (create, update, delete) Only admins can modify item data.
+     * @principle Provides public information about available items.
      */
     match /items/{itemId} {
       allow get, list: if true;
@@ -100,21 +116,27 @@ service cloud.firestore {
     }
 
     /**
-     * @description Restricts access to transaction data.
+     * @description Controls access to transaction documents.
      * @path /transactions/{transactionId}
-     * @deny (get, list, create, update, delete) - No user can access transaction data without specific authorization (not implemented).
-     * @principle Restricts access to sensitive data.
+     * @allow (create) Any signed-in user can create transaction.
+     * TODO: add condition what user id from transaction is equal to auth id.
      */
     match /transactions/{transactionId} {
-      allow get, list, create, update, delete: if false;
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get, list: if false;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
     }
 
     /**
-     * @description Allows anyone to read global settings, but restricts writes.
+     * @description Controls access to the global settings document.
      * @path /settings/global
-     * @allow (get) - Any user, signed in or not, can read global settings.
-     * @deny (list, create, update, delete) - No user can list, create, update, or delete global settings without specific authorization.
-     * @principle Public read access with restricted writes.
+     * @allow (get) Anyone can read the settings.
+     * @deny (create, update, delete, list) No one can modify the settings.
+     * @principle Restricts modification of global settings.
      */
     match /settings/global {
       allow get: if true;
@@ -122,33 +144,41 @@ service cloud.firestore {
     }
 
     /**
-     * @description Restricts access to withdrawal queue.
+     * @description Controls access to the withdrawal queue.
      * @path /withdrawal_queue/{requestId}
-     * @deny (get, list, create, update, delete) - No user can access the withdrawal queue without specific authorization (not implemented).
-     * @principle Restricts access to sensitive data.
+     * @deny (get, create, update, delete, list) Only trusted services can manage the queue.
+     * @principle Restricts access to the withdrawal queue for security.
      */
     match /withdrawal_queue/{requestId} {
       allow get, list, create, update, delete: if false;
     }
 
     /**
-     * @description Logs all upgrade attempts for analytics and history.
+     * @description Controls access to upgrade documents.
      * @path /upgrades/{upgradeId}
-     * @deny (get, list, create, update, delete) - No user can create, update, or delete upgrade attempts data without specific authorization (not implemented).
+     *  @allow (create) Any signed-in user can create upgrade event.
      */
     match /upgrades/{upgradeId} {
-        allow get, list, create, update, delete: if false;
+      function isSignedIn() {
+        return request.auth != null;
+      }
+      allow get, list: if false;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
     }
 
     /**
-     * @description Stores information about each case battle event.
+     * @description Controls access to case battle documents.
      * @path /battles/{battleId}
-     * @allow (get, list) - Any user can read battle information
-     * @deny (create, update, delete) - No user can create, update or delete battle information.
+     * @allow (get, list) All signed in users can see the list of case battles.
      */
     match /battles/{battleId} {
-        allow get, list: if true;
-        allow create, update, delete: if false;
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if false;
     }
   }
 }
