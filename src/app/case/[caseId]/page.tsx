@@ -247,6 +247,7 @@ export default function CasePage() {
     const closeModal = () => {
         setIsWinModalOpen(false);
         setWonItem(null);
+        router.push('/');
     }
 
     const handleSell = () => {
