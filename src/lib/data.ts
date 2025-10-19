@@ -18,7 +18,7 @@ export const ALL_ITEMS: Item[] = [
   { id: 'item-diamond', name: 'Diamond', rarity: 'Common', image: 'https://i.ibb.co/RGtr2rCb/diamond.png', imageHint: 'blue diamond gem', value: 100, description: 'A sparkling diamond.' },
   
   // Uncommon
-  { id: 'item-ring', name: 'Ring', rarity: 'Uncommon', image: 'https://i.ibb.co/hxy5rG61/ring.png', imageHint: 'silver diamond ring', value: 200, description: 'A beautiful silver ring.' },
+  { id: 'item-ring', name: 'Ring', rarity: 'Uncommon', image: 'https://i.ibb.co/hxy5rG61/ring.png', imageHint: 'silver diamond ring', value: 100, description: 'A beautiful silver ring.' },
   { id: 'item-lol-pop-random', name: 'Lol Pop (Random)', rarity: 'Uncommon', image: 'https://i.ibb.co/chQrQb4J/desk.png', imageHint: 'swirl lollipop', value: 360, description: 'A colorful lollipop.' },
   { id: 'item-candy-cane-random', name: 'Candy Cane (Random)', rarity: 'Uncommon', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'candy cane with bow', value: 380, description: 'A festive candy cane with a bow.' },
   { id: 'item-desk-calendar-random', name: 'Desk Calendar (Random)', rarity: 'Uncommon', image: 'https://i.ibb.co/bRrhpVKL/9ac8f934df67fea7-removebg-preview.png', imageHint: 'desk calendar', value: 426, description: 'A fun desk calendar.' },
