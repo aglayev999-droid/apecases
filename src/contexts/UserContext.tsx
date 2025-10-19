@@ -30,7 +30,7 @@ const createNewUserDocument = async (firestore: any, firebaseUser: FirebaseUser)
         name: 'Anonymous',
         username: `user${Math.floor(Math.random() * 90000) + 10000}`,
         avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg',
-        balance: { stars: 1000, diamonds: 0 },
+        balance: { stars: 10000, diamonds: 0 },
         referrals: { count: 0, commissionEarned: 0, code: `ref-${firebaseUser.uid.slice(0, 5)}` },
         weeklySpending: 0,
     };
