@@ -94,14 +94,17 @@ export default function RocketPage() {
                     return { x: startX, y: startY, rotation: -45 };
                 }
 
-                const progress = Math.min((multiplier - 1) / 4, 1); // Normalize progress, max out at 5x for positioning
-                const curvePower = 0.5; // Controls the curve of the path, 1 is linear
-                
-                const t = Math.pow(progress, curvePower);
+                // Normalize progress from 0 to 1 based on multiplier, but don't cap it.
+                // The visual path will cap at progress = 1, but the logic continues.
+                const progress = (multiplier - 1) / 4; 
+                const visualProgress = Math.min(progress, 1); // Cap visual movement at progress 1
+
+                const curvePower = 0.5;
+                const t = Math.pow(visualProgress, curvePower);
 
                 const x = startX + (endX - startX) * t;
-                const y = startY - (startY - endY) * Math.pow(progress, 1.5);
-                const rotation = -45 + (45 * progress);
+                const y = startY - (startY - endY) * Math.pow(visualProgress, 1.5);
+                const rotation = -45 + (45 * visualProgress);
                 
                 return { x, y, rotation };
             };
@@ -126,7 +129,7 @@ export default function RocketPage() {
             left: `${position.x}px`,
             top: `${position.y}px`,
             transform: `translate(-50%, -50%) rotate(${position.rotation}deg)`,
-            transition: 'none',
+            transition: 'none', // Remove transition for smooth manual updates
             willChange: 'transform, left, top',
             opacity: gameState === 'crashed' ? 0 : 1,
             width: '120px',
@@ -394,4 +397,5 @@ const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
 }
 
     
+
 
