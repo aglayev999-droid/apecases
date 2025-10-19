@@ -14,7 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Volume2, VolumeX } from 'lucide-react';
 import { RocketIcon } from '@/components/icons/RocketIcon';
 import { useRocket } from '@/contexts/RocketContext';
-import type { RocketPlayer, RocketGameState } from '@/lib/types';
+import type { RocketPlayer } from '@/lib/types';
 
 
 const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
@@ -154,16 +154,17 @@ const GameScreen = React.memo(({ gameState, multiplier, countdown, isMuted, setI
                  />
              </svg>
 
-            {/* Rocket Image */}
+            {/* Rocket & Explosion */}
              <div
                 className={cn("z-20")}
                 style={rocketStyle}
             >
                 <div className="relative w-full h-full">
-                     {gameState === 'crashed' ? (
+                     {gameState === 'crashed' && (
                          <Image src="https://i.ibb.co/bX6GfqY/e1e1a556-9e1f-4709-a78b-1a98625906a2-removebg-preview.png" alt="Explosion" layout="fill" objectFit="contain" />
-                     ) : (
-                        <Image src="https://i.ibb.co/93bWYZZf/3f7ad183-dda1-4dda-996c-69961a4fabdc-removebg-preview.png" alt="Rocket" layout="fill" objectFit="contain" />
+                     )}
+                     {gameState === 'playing' && (
+                        <Image src="https://i.ibb.co/93bWYZZ/3f7ad183-dda1-4dda-996c-69961a4fabdc-removebg-preview.png" alt="Rocket" layout="fill" objectFit="contain" />
                      )}
                 </div>
             </div>
