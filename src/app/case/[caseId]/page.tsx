@@ -202,7 +202,7 @@ export default function CasePage() {
 
         setTimeout(() => {
             if (emblaApi) {
-                emblaApi.reInit(); // VERY IMPORTANT: Re-initialize Embla with new items
+                emblaApi.reInit();
                 
                 const spinTime = isFast ? 1000 : 5000;
                 const engine = emblaApi.internalEngine();
@@ -214,12 +214,11 @@ export default function CasePage() {
                 emblaApi.scrollTo(0, true); 
                 
                 // Animate the scroll to the pre-determined target index.
-                emblaApi.scrollTo(targetIndex, false); // `false` here uses the duration we set
+                emblaApi.scrollTo(targetIndex); 
 
                 // Schedule the 'spin end' logic.
                 setTimeout(() => {
                     setIsSpinning(false);
-                    // The prize to show is the `logicalPrize` we decided on at the very beginning.
                     setWonItem(logicalPrize);
                     setIsWinModalOpen(true);
                     
