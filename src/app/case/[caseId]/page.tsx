@@ -205,16 +205,20 @@ export default function CasePage() {
                 // Re-initialize Embla to recognize the new slides
                 emblaApi.reInit();
                 
-                // Get the internal engine to control animation duration
-                const engine = emblaApi.internalEngine();
-                const spinTime = isFast ? 1000 : 5000;
-                engine.scrollBody.duration = spinTime;
-                
                 // Go to a non-animated "start" position to ensure there's enough room to spin forward
                 emblaApi.scrollTo(0, true); 
                 
+                const engine = emblaApi.internalEngine();
+                const spinTime = isFast ? 1000 : 5000;
+                
                 // Animate the scroll to the pre-determined target index.
                 emblaApi.scrollTo(targetIndex); 
+                
+                // Manually set transition duration on the container
+                const container = emblaApi.containerNode();
+                if (container) {
+                    container.style.transition = `transform ${spinTime}ms ease-out`;
+                }
 
                 // Schedule the 'spin end' logic.
                 setTimeout(() => {
