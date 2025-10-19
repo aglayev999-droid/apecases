@@ -66,13 +66,12 @@ export function InventoryCard({ item }: InventoryCardProps) {
       const queueRef = collection(firestore, 'withdrawal_queue');
       await addDoc(queueRef, {
         user_wallet_address: wallet.account.address,
-        nft_id: item.id, // item.id is the Token ID from the 'items' collection
+        nft_id: item.id,
         nft_contract_address: item.collectionAddress,
         status: 'pending',
         timestamp: serverTimestamp(),
       });
 
-      // Remove from inventory after successfully queuing for withdrawal
       removeInventoryItem(item.id);
 
       showAlert({

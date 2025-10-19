@@ -17,60 +17,31 @@ import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useFirestore, useMemoFirebase } from '@/firebase';
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const RARITY_PROPERTIES = {
-    Common: {
-        glow: 'shadow-gray-400/50',
-        border: 'border-gray-500',
-        text: 'text-gray-400',
-    },
-    Uncommon: {
-        glow: 'shadow-green-400/60',
-        border: 'border-green-500',
-        text: 'text-green-400',
-    },
-    Rare: {
-        glow: 'shadow-blue-400/70',
-        border: 'border-blue-500',
-        text: 'text-blue-400',
-    },
-    Epic: {
-        glow: 'shadow-purple-400/80',
-        border: 'border-purple-500',
-        text: 'text-purple-400',
-    },
-    Legendary: {
-        glow: 'shadow-orange-400/90',
-        border: 'border-orange-500',
-        text: 'text-orange-400',
-    },
-    NFT: {
-        glow: 'shadow-purple-400/90',
-        border: 'border-purple-400',
-        text: 'bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500',
-    },
+    Common: { glow: 'shadow-gray-400/50', border: 'border-gray-500', text: 'text-gray-400' },
+    Uncommon: { glow: 'shadow-green-400/60', border: 'border-green-500', text: 'text-green-400' },
+    Rare: { glow: 'shadow-blue-400/70', border: 'border-blue-500', text: 'text-blue-400' },
+    Epic: { glow: 'shadow-purple-400/80', border: 'border-purple-500', text: 'text-purple-400' },
+    Legendary: { glow: 'shadow-orange-400/90', border: 'border-orange-500', text: 'text-orange-400' },
+    NFT: { glow: 'shadow-purple-400/90', border: 'border-purple-400', text: 'bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500' },
 };
 
 const selectItem = (currentCase: Case, allItems: Item[]): Item | undefined => {
-    // This function must run only on the client where Math.random is safe
     if (typeof window === 'undefined') {
         const fallbackItemId = currentCase.items[0].itemId;
         return allItems.find(i => i.id === fallbackItemId);
     }
     const rand = Math.random();
     let cumulativeProbability = 0;
-    
-    // Sort items by probability to ensure fairness
     const sortedCaseItems = [...currentCase.items].sort((a, b) => a.probability - b.probability);
-
     for (const { itemId, probability } of sortedCaseItems) {
         cumulativeProbability += probability;
         if (rand < cumulativeProbability) {
-            const foundItem = allItems.find(i => i.id === itemId);
-            if (foundItem) return foundItem;
+            return allItems.find(i => i.id === itemId);
         }
     }
-    // Fallback in case of rounding errors or misconfigured probabilities
     const fallbackItemId = currentCase.items[Math.floor(Math.random() * currentCase.items.length)].itemId;
     return allItems.find(i => i.id === fallbackItemId);
 };
@@ -84,49 +55,32 @@ export default function CasePage() {
     const [caseData, setCaseData] = useState<Case | null>(null);
     const [allItems, setAllItems] = useState<Item[]>([]);
     const [isSpinning, setIsSpinning] = useState(false);
-    const [wonItem, setWonItem] = useState<Item | null>(null);
+    const [wonItems, setWonItems] = useState<Item[]>([]);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
     const { user, updateBalance, addInventoryItem, updateSpending, setLastFreeCaseOpen, lastFreeCaseOpen } = useUser();
     const { showAlert } = useAlertDialog();
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
     const [reelItems, setReelItems] = useState<Item[]>([]);
     const [caseItems, setCaseItems] = useState<Item[]>([]);
+    const [spinMultiplier, setSpinMultiplier] = useState(1);
 
-    const caseRef = useMemoFirebase(() => 
-        firestore && caseId ? doc(firestore, 'cases', caseId) : null
-    , [firestore, caseId]);
-    
-    const itemsColRef = useMemoFirebase(() =>
-        firestore ? collection(firestore, 'items') : null
-    , [firestore]);
+    const caseRef = useMemoFirebase(() => firestore && caseId ? doc(firestore, 'cases', caseId) : null, [firestore, caseId]);
+    const itemsColRef = useMemoFirebase(() => firestore ? collection(firestore, 'items') : null, [firestore]);
 
     useEffect(() => {
         if (!firestore) return;
         const fetchCaseAndItemsData = async () => {
             if (!itemsColRef || !caseRef) return;
             const itemsSnapshot = await getDocs(itemsColRef);
-            let itemsList: Item[];
-
-            if (!itemsSnapshot.empty) {
-                itemsList = itemsSnapshot.docs.map(d => ({ ...d.data(), id: d.id } as Item));
-            } else {
-                itemsList = MOCK_ITEMS;
-            }
+            let itemsList: Item[] = !itemsSnapshot.empty
+                ? itemsSnapshot.docs.map(d => ({ ...d.data(), id: d.id } as Item))
+                : MOCK_ITEMS;
             setAllItems(itemsList);
 
             const caseSnap = await getDoc(caseRef);
-            let caseResult: Case | null = null;
-
-            if (caseSnap.exists()) {
-                caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
-            } else {
-                const mockCase = MOCK_CASES.find(c => c.id === caseId);
-                if (mockCase) {
-                    caseResult = mockCase;
-                } else {
-                    console.error("Case not found in Firestore or Mock data!");
-                }
-            }
+            let caseResult: Case | null = caseSnap.exists()
+                ? { ...caseSnap.data(), id: caseSnap.id } as Case
+                : MOCK_CASES.find(c => c.id === caseId) || null;
             
             if(caseResult) {
                 setCaseData(caseResult);
@@ -135,28 +89,25 @@ export default function CasePage() {
                     .filter((item): item is Item => !!item)
                     .sort((a,b) => a.value - b.value);
                 setCaseItems(currentCaseItems);
+            } else {
+                console.error("Case not found!");
             }
         };
-
         fetchCaseAndItemsData();
     }, [caseId, firestore, caseRef, itemsColRef]);
     
     useEffect(() => {
         if (caseItems.length === 0) return;
-        // Create a long reel for the initial view
-        const initialReelLength = 100;
-        let initialReel = [];
-        for(let i=0; i<initialReelLength; i++) {
-             initialReel.push(caseItems[Math.floor(Math.random() * caseItems.length)]);
-        }
+        const initialReel = Array.from({ length: 100 }, () => caseItems[Math.floor(Math.random() * caseItems.length)]);
         setReelItems(initialReel);
     }, [caseItems]);
     
-     const handleSpin = useCallback((isFast: boolean = false) => {
+    const handleSpin = useCallback((isFast: boolean = false) => {
         if (isSpinning || !caseData || !user || !emblaApi || caseItems.length === 0 || allItems.length === 0) return;
         
+        const totalCost = caseData.price * spinMultiplier;
         const isFree = caseData.price === 0;
-        
+
         if (isFree) {
             if (lastFreeCaseOpen && caseData.freeCooldownSeconds) {
                 const now = new Date();
@@ -167,290 +118,193 @@ export default function CasePage() {
                 }
             }
         } else {
-            if (user.balance.stars < caseData.price) {
-              showAlert({ title: "Not enough stars", description: "You don't have enough stars to open this case." });
+            if (user.balance.stars < totalCost) {
+              showAlert({ title: "Not enough stars", description: `You need ${totalCost} stars to open ${spinMultiplier} cases.` });
               return;
             }
-            updateBalance(-caseData.price);
-            updateSpending(caseData.price);
+            updateBalance(-totalCost);
+            updateSpending(totalCost);
         }
         
         setIsSpinning(true);
-        setWonItem(null);
-        
-        if (isFree) {
-            setLastFreeCaseOpen(new Date());
+        setWonItems([]);
+        if (isFree) setLastFreeCaseOpen(new Date());
+
+        const prizes: Item[] = [];
+        for (let i = 0; i < (isFree ? 1 : spinMultiplier); i++) {
+            const prize = selectItem(caseData, allItems);
+            if (prize) prizes.push(prize);
         }
 
-        // 1. Select the logical prize first. This is the TRUE prize.
-        const logicalPrize = selectItem(caseData, allItems);
-        if (!logicalPrize) {
-            console.error("Could not select a prize. Aborting spin.");
+        if (prizes.length === 0) {
+            console.error("Could not select any prizes. Aborting spin.");
             setIsSpinning(false);
             return;
         }
 
-        // 2. Create a new, freshly shuffled reel for this specific spin.
         const reelLength = 100;
-        let newReelItems = [];
-        for (let i = 0; i < reelLength; i++) {
-            const randomItem = caseItems[Math.floor(Math.random() * caseItems.length)];
-            newReelItems.push(randomItem);
-        }
-
-        // 3. Deterministically place the TRUE prize at a specific target index (e.g., 75% through the reel).
-        const targetIndex = 75;
-        newReelItems[targetIndex] = logicalPrize;
+        let newReelItems = Array.from({ length: reelLength }, () => caseItems[Math.floor(Math.random() * caseItems.length)]);
         
-        // 4. Set the new reel for rendering and re-initialize the carousel.
+        const targetIndex = 75; // The final item shown in the reel
+        newReelItems[targetIndex] = prizes[prizes.length - 1];
         setReelItems(newReelItems);
 
         setTimeout(() => {
             if (emblaApi) {
-                // Re-initialize Embla to recognize the new slides
                 emblaApi.reInit();
-                
-                // Go to a non-animated "start" position to ensure there's enough room to spin forward
                 emblaApi.scrollTo(0, true); 
                 
                 const spinTime = isFast ? 1000 : 5000;
-                
-                // Manually set transition duration on the container
                 const container = emblaApi.containerNode();
-                if (container) {
-                    container.style.transition = `transform ${spinTime}ms ease-out`;
-                }
+                if (container) container.style.transition = `transform ${spinTime}ms ease-out`;
 
-                // Animate the scroll to the pre-determined target index.
                 emblaApi.scrollTo(targetIndex); 
                 
-                // Schedule the 'spin end' logic.
                 setTimeout(() => {
                     setIsSpinning(false);
-                    setWonItem(logicalPrize);
+                    setWonItems(prizes);
                     setIsWinModalOpen(true);
                     
-                    if (logicalPrize.id.startsWith('item-stars-')) {
-                        updateBalance(logicalPrize.value);
-                    } else {
-                        addInventoryItem(logicalPrize);
-                    }
-                    if (container) {
-                        container.style.transition = '';
-                    }
-                }, spinTime + 500); // Add a small buffer after animation ends
+                    prizes.forEach(prize => {
+                        if (prize.id.startsWith('item-stars-')) {
+                            updateBalance(prize.value);
+                        } else {
+                            addInventoryItem(prize);
+                        }
+                    });
+                    if (container) container.style.transition = '';
+                }, spinTime + 500);
             }
-        }, 100); // A small delay to allow React to render the new reel.
+        }, 100);
+    }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning, spinMultiplier]);
 
-    }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
-
-
-    const closeModalAndRedirect = () => {
-        setIsWinModalOpen(false);
-        setWonItem(null);
-        router.push('/');
-    }
-    
     const handleModalOpenChange = (open: boolean) => {
         if (!open) {
-            // This will trigger when the dialog is closed by any means (X button, overlay click)
-            closeModalAndRedirect();
-        } else {
-            setIsWinModalOpen(true);
+            setIsWinModalOpen(false);
+            setWonItems([]);
+            router.push('/');
         }
     }
 
-
-    const handleSell = () => {
-        if (!wonItem) return;
-        updateBalance(wonItem.value);
+    const handleSellAllWon = () => {
+        const totalValue = wonItems.reduce((sum, item) => item.value, 0);
+        updateBalance(totalValue);
         showAlert({
-            title: `Sold: ${wonItem.name}!`,
-            description: `You got ${wonItem.value} stars.`,
+            title: `Sold ${wonItems.length} items!`,
+            description: `You got ${totalValue} stars.`,
         });
-        closeModalAndRedirect();
-    };
-    
-    const handleComingSoon = () => {
-        showAlert({
-            title: 'Tez Kunda!',
-            description: 'Bu funksiya ustida ish olib bormoqdamiz va tez orada taqdim etamiz.',
-        });
-    }
-
-    const handleGoToInventory = () => {
-        // Set state to close modal but redirect is handled by onOpenChange
-        setIsWinModalOpen(false); 
-        // Redirect immediately
-        router.push('/inventory');
+        handleModalOpenChange(false);
     };
 
-    if (!caseData) {
-        return (
-            <div className="flex items-center justify-center h-full">
-                <p>Loading case...</p>
-            </div>
-        );
-    }
+    if (!caseData) return <div className="flex items-center justify-center h-full"><p>Loading case...</p></div>;
     
     const isFree = caseData.price === 0;
-    let canAfford = user ? user.balance.stars >= caseData.price : false;
+    const totalCost = caseData.price * spinMultiplier;
+    let canAfford = user ? user.balance.stars >= totalCost : false;
     if (isFree) {
         canAfford = true; 
         if (lastFreeCaseOpen && caseData.freeCooldownSeconds) {
             const now = new Date();
             const endTime = new Date(lastFreeCaseOpen.getTime() + caseData.freeCooldownSeconds * 1000);
-            if (now < endTime) {
-                canAfford = false;
-            }
+            if (now < endTime) canAfford = false;
         }
     }
-
-    const GiftsInside = () => (
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="item-1" className="border-none">
-            <AccordionTrigger className="justify-center gap-2 text-muted-foreground hover:no-underline font-bold">
-                <Gift className="h-5 w-5 text-primary"/>
-                <span>Gifts Inside</span>
-            </AccordionTrigger>
-            <AccordionContent>
-                <div className="grid grid-cols-3 gap-2">
-                    {caseItems.map(item => {
-                        if (!item) return null;
-                        return (
-                             <Card key={item.id} className={cn("p-2 border-2 text-center", RARITY_PROPERTIES[item.rarity].border)}>
-                                <div className="aspect-square relative">
-                                    <Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain p-2" data-ai-hint={item.imageHint}/>
-                                </div>
-                                 <p className="text-xs font-bold truncate mt-1">{item.name}</p>
-                                 <div className="flex items-center justify-center gap-1 text-xs font-bold text-amber-400">
-                                    <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12} className="h-3 w-3 object-contain" />
-                                    {item.value}
-                                 </div>
-                            </Card>
-                        )
-                    })}
-                </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-    );
+    
+    const totalWonValue = wonItems.reduce((sum, item) => item.value, 0);
 
     return (
         <div className="flex flex-col h-full">
-            {/* Custom Header */}
             <div className="flex items-center justify-between mb-4">
-                <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                    <ChevronLeft className="h-6 w-6" />
-                </Button>
+                <Button variant="ghost" size="icon" onClick={() => router.back()}><ChevronLeft className="h-6 w-6" /></Button>
                 <h1 className="text-xl font-bold">Roulette</h1>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" className="w-10 h-10 p-0 font-bold" onClick={handleComingSoon}>x2</Button>
-                    <Button variant="outline" className="w-10 h-10 p-0 font-bold" onClick={handleComingSoon}>x3</Button>
-                    <Button variant="destructive" size="icon" className="w-10 h-10" onClick={handleComingSoon}>
-                        <Trash2 className="h-5 w-5"/>
-                    </Button>
+                    {[2, 3].map(multi => (
+                        <Button key={multi} variant={spinMultiplier === multi ? 'default' : 'outline'} className="w-10 h-10 p-0 font-bold" onClick={() => setSpinMultiplier(multi)}>x{multi}</Button>
+                    ))}
+                    <Button variant="destructive" size="icon" className="w-10 h-10" onClick={() => setSpinMultiplier(1)}><Trash2 className="h-5 w-5"/></Button>
                 </div>
             </div>
 
-            {/* Main content */}
             <div className="flex-grow flex flex-col justify-between">
-                {/* Roulette Reel */}
                  <div className="flex-grow flex flex-col items-center justify-center relative">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-primary z-10">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
-                    </div>
-                    
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5L22 15H2L12 5Z"/></svg></div>
                     <div className="overflow-hidden w-full" ref={emblaRef}>
                         <div className="flex">
-                            {reelItems.length > 0 ? reelItems.map((item, index) => (
+                            {reelItems.map((item, index) => (
                                 <div key={index} className="flex-[0_0_9rem] mx-2">
-                                    <Card className={cn(
-                                        "p-2 border-2 bg-card/50 transition-all duration-300", 
-                                        item ? RARITY_PROPERTIES[item.rarity].border : 'border-gray-500',
-                                        isSpinning ? 'opacity-70 scale-95' : 'opacity-50'
-                                        )}>
-                                        <div className="aspect-square relative">
-                                            {item && <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" data-ai-hint={item.imageHint}/>}
-                                        </div>
+                                    <Card className={cn("p-2 border-2 bg-card/50 transition-all duration-300", item ? RARITY_PROPERTIES[item.rarity].border : 'border-gray-500', isSpinning ? 'opacity-70 scale-95' : 'opacity-50')}>
+                                        <div className="aspect-square relative">{item && <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" data-ai-hint={item.imageHint}/>}</div>
                                     </Card>
                                 </div>
-                            )) : (
-                                <div className="flex-[0_0_9rem] mx-2">
-                                    <Card className="p-2 border-2 bg-card/50">
-                                         <div className="aspect-square relative" />
-                                    </Card>
-                                </div>
-                            )}
+                            ))}
                         </div>
                     </div>
-
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-primary z-10">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L2 9H22L12 19Z"/></svg>
-                    </div>
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 19L2 9H22L12 19Z"/></svg></div>
                 </div>
 
-                {/* Controls */}
                 <div className="mt-auto pt-8">
-                    <Button 
-                        onClick={() => handleSpin(false)}
-                        onDoubleClick={() => handleSpin(true)}
-                        disabled={isSpinning || !canAfford || reelItems.length === 0} 
-                        className="w-full h-16 text-xl"
-                        size="lg"
-                    >
+                    <Button onClick={() => handleSpin(false)} onDoubleClick={() => handleSpin(true)} disabled={isSpinning || !canAfford || reelItems.length === 0} className="w-full h-16 text-xl" size="lg">
                        <div className="flex flex-col">
                             <div className="flex items-center justify-center gap-2">
-                                <span>{isFree ? 'Spin' : `Spin ${caseData.price}`}</span>
+                                <span>{isFree ? 'Spin' : `Spin x${spinMultiplier} for ${totalCost}`}</span>
                                 {!isFree && <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />}
                             </div>
                              <span className="text-xs font-normal text-primary-foreground/70">(Double-click for a quick spin)</span>
                        </div>
                     </Button>
                     <div className="mt-4">
-                        <GiftsInside />
+                        <Accordion type="single" collapsible className="w-full">
+                          <AccordionItem value="item-1" className="border-none">
+                            <AccordionTrigger className="justify-center gap-2 text-muted-foreground hover:no-underline font-bold"><Gift className="h-5 w-5 text-primary"/><span>Gifts Inside</span></AccordionTrigger>
+                            <AccordionContent>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {caseItems.map(item => item && (
+                                         <Card key={item.id} className={cn("p-2 border-2 text-center", RARITY_PROPERTIES[item.rarity].border)}>
+                                            <div className="aspect-square relative"><Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain p-2" data-ai-hint={item.imageHint}/></div>
+                                             <p className="text-xs font-bold truncate mt-1">{item.name}</p>
+                                             <div className="flex items-center justify-center gap-1 text-xs font-bold text-amber-400">
+                                                <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12} className="h-3 w-3 object-contain" />
+                                                {item.value}
+                                             </div>
+                                        </Card>
+                                    ))}
+                                </div>
+                            </AccordionContent>
+                          </AccordionItem>
+                        </Accordion>
                     </div>
                 </div>
             </div>
 
-            {/* Win Modal */}
             <Dialog open={isWinModalOpen} onOpenChange={handleModalOpenChange}>
-                <DialogContent className="sm:max-w-[425px] p-0 border-0 bg-transparent shadow-none" onInteractOutside={(e) => {
-                    if (isWinModalOpen) {
-                        e.preventDefault();
-                    }
-                }}>
-                     {wonItem && (
-                        <div className="text-center space-y-4 p-6 bg-card rounded-lg relative">
-                             <DialogTitle className="sr-only">You Won!</DialogTitle>
-                            
-                            <div className="relative w-48 h-48 mx-auto">
-                                <Image src={wonItem.image} alt={wonItem.name} fill sizes="50vw" className="object-contain" data-ai-hint={wonItem.imageHint} />
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-bold">You won: <span className={cn(RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.name}</span></h3>
-                                <p className={cn("font-semibold", RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.rarity}</p>
-                            </div>
-                            { wonItem.id.startsWith('item-stars-') ? (
-                                <Button variant="default" size="lg" className="w-full" onClick={closeModalAndRedirect}>
-                                    Awesome!
-                                </Button>
-                            ) : (
-                                <div className="grid grid-cols-2 gap-4 pt-4">
-                                    <Button variant="destructive" size="lg" onClick={handleSell}>
-                                        Sell {wonItem.value}
-                                        <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain ml-2" />
-                                    </Button>
-                                    <Button variant="default" size="lg" onClick={handleGoToInventory}>
-                                        Go to inventory
-                                    </Button>
+                <DialogContent className="sm:max-w-md w-[90vw] p-0 border-0 bg-transparent shadow-none" onInteractOutside={(e) => { if (isWinModalOpen) e.preventDefault(); }}>
+                     {wonItems.length > 0 && (
+                        <div className="text-center space-y-4 p-4 sm:p-6 bg-card rounded-lg relative">
+                            <DialogClose className="absolute right-2 top-2 p-1 rounded-full bg-background/50 hover:bg-background/80"><X className="h-4 w-4" /></DialogClose>
+                            <DialogTitle className="text-2xl font-bold">You Won {wonItems.length} Item{wonItems.length > 1 ? 's' : ''}!</DialogTitle>
+                            <ScrollArea className="max-h-64 pr-4">
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                    {wonItems.map((item, index) => (
+                                        <Card key={index} className={cn("p-2", RARITY_PROPERTIES[item.rarity].border)}>
+                                            <div className="aspect-square relative"><Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain" data-ai-hint={item.imageHint} /></div>
+                                            <p className="text-xs font-bold truncate mt-1">{item.name}</p>
+                                        </Card>
+                                    ))}
                                 </div>
-                            )}
+                            </ScrollArea>
+                            <div className="grid grid-cols-2 gap-4 pt-4">
+                                <Button variant="destructive" size="lg" onClick={handleSellAllWon}>
+                                    Sell All for {totalWonValue}
+                                    <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain ml-2" />
+                                </Button>
+                                <Button variant="default" size="lg" onClick={() => router.push('/inventory')}>
+                                    Go to inventory
+                                </Button>
+                            </div>
                         </div>
                      )}
                 </DialogContent>
             </Dialog>
-
         </div>
     );
 }
