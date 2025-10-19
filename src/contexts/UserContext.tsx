@@ -2,9 +2,10 @@
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import type { User, InventoryItem, Item } from '@/lib/types';
-import { useAuth as useFirebaseAuth, useFirestore, useDoc, useCollection, addDocumentNonBlocking, useMemoFirebase, useAuth } from '@/firebase';
-import { doc, collection, writeBatch, serverTimestamp, increment } from 'firebase/firestore';
+import { useAuth as useFirebaseAuth, useFirestore, useDoc, useCollection, addDocumentNonBlocking, useMemoFirebase } from '@/firebase';
+import { doc, collection, writeBatch, serverTimestamp, increment, setDoc } from 'firebase/firestore';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
+import { Auth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 
 interface UserContextType {
   user: User | null;
@@ -21,16 +22,34 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+const createNewUserDocument = async (firestore: any, firebaseUser: FirebaseUser) => {
+    const userDocRef = doc(firestore, 'users', firebaseUser.uid);
+    const newUser: User = {
+        id: firebaseUser.uid,
+        telegramId: `tg-${Math.random().toString(36).substring(2, 9)}`,
+        name: 'Anonymous',
+        username: `user${Math.floor(Math.random() * 90000) + 10000}`,
+        avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg',
+        balance: { stars: 1000, diamonds: 0 },
+        referrals: { count: 0, commissionEarned: 0, code: `ref-${firebaseUser.uid.slice(0, 5)}` },
+        weeklySpending: 0,
+    };
+    await setDoc(userDocRef, newUser);
+    return newUser;
+};
+
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const firestore = useFirestore();
-  const auth = useAuth();
-  const { user: firebaseUser, isUserLoading } = useFirebaseAuth();
+  const { user: firebaseUser, isUserLoading: isAuthLoading, auth } = useFirebaseAuth();
   
   const userDocRef = useMemoFirebase(() => 
     firestore && firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null, 
     [firestore, firebaseUser]
   );
-  const { data: user } = useDoc<User>(userDocRef);
+  
+  const { data: user, isLoading: isUserDocLoading } = useDoc<User>(userDocRef, {
+      onCreate: (firebaseUser) => createNewUserDocument(firestore, firebaseUser)
+  });
 
   const inventoryColRef = useMemoFirebase(() =>
     firestore && firebaseUser ? collection(firestore, 'users', firebaseUser.uid, 'inventory') : null,
@@ -43,12 +62,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const savedDate = localStorage.getItem('lastFreeCaseOpen');
     return savedDate ? new Date(savedDate) : null;
   });
-
+  
   useEffect(() => {
-    if (!isUserLoading && !firebaseUser && auth) {
+    if (!isAuthLoading && !firebaseUser && auth) {
       initiateAnonymousSignIn(auth);
     }
-  }, [isUserLoading, firebaseUser, auth]);
+  }, [isAuthLoading, firebaseUser, auth]);
+
 
   const setLastFreeCaseOpen = (date: Date) => {
     setLastFreeCaseOpenState(date);
@@ -99,7 +119,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     batch.commit().catch(e => console.error("Failed to update spending:", e));
   }, [firestore, userDocRef]);
 
-
   return (
     <UserContext.Provider value={{ 
       user, 
@@ -111,7 +130,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       updateSpending, 
       lastFreeCaseOpen, 
       setLastFreeCaseOpen,
-      isUserLoading,
+      isUserLoading: isAuthLoading || isUserDocLoading,
     }}>
       {children}
     </UserContext.Provider>

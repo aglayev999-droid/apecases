@@ -7,12 +7,18 @@ import {
   DocumentData,
   FirestoreError,
   DocumentSnapshot,
+  getDoc,
 } from 'firebase/firestore';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { User as FirebaseUser } from 'firebase/auth';
 
 /** Utility type to add an 'id' field to a given type T. */
 type WithId<T> = T & { id: string };
+
+interface UseDocOptions<T> {
+    onCreate?: (user: FirebaseUser) => Promise<T>;
+}
 
 /**
  * Interface for the return value of the useDoc hook.
@@ -40,11 +46,12 @@ export interface UseDocResult<T> {
  */
 export function useDoc<T = any>(
   memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
+  options?: UseDocOptions<T>
 ): UseDocResult<T> {
   type StateDataType = WithId<T> | null;
 
   const [data, setData] = useState<StateDataType>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
 
   useEffect(() => {
@@ -57,18 +64,27 @@ export function useDoc<T = any>(
 
     setIsLoading(true);
     setError(null);
-    // Optional: setData(null); // Clear previous data instantly
-
+    
     const unsubscribe = onSnapshot(
       memoizedDocRef,
-      (snapshot: DocumentSnapshot<DocumentData>) => {
+      async (snapshot: DocumentSnapshot<DocumentData>) => {
         if (snapshot.exists()) {
           setData({ ...(snapshot.data() as T), id: snapshot.id });
         } else {
-          // Document does not exist
-          setData(null);
+            if (options?.onCreate) {
+                try {
+                    // @ts-ignore
+                    const user = { uid: memoizedDocRef.id };
+                    const newData = await options.onCreate(user as FirebaseUser);
+                    setData({ ...newData, id: snapshot.id });
+                } catch (e) {
+                     setError(new Error('Failed to create new document.'));
+                }
+            } else {
+                 setData(null);
+            }
         }
-        setError(null); // Clear any previous error on successful snapshot (even if doc doesn't exist)
+        setError(null); 
         setIsLoading(false);
       },
       (error: FirestoreError) => {
@@ -87,7 +103,7 @@ export function useDoc<T = any>(
     );
 
     return () => unsubscribe();
-  }, [memoizedDocRef]); // Re-run if the memoizedDocRef changes.
+  }, [memoizedDocRef, options]);
 
   return { data, isLoading, error };
 }
