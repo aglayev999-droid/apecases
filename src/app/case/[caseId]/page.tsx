@@ -147,6 +147,27 @@ export default function CasePage() {
         
     }, [caseItems]);
     
+    useEffect(() => {
+        if (!emblaApi) return;
+        
+        const applyTransition = () => {
+            const engine = emblaApi.internalEngine();
+            engine.translate.toggleActive(false); // Disable internal translation
+            const container = emblaApi.containerNode();
+            if (container) {
+                container.style.transition = 'transform 5s ease-out';
+            }
+        };
+
+        emblaApi.on('init', applyTransition);
+        emblaApi.on('reInit', applyTransition);
+
+        return () => {
+             emblaApi.off('init', applyTransition);
+             emblaApi.off('reInit', applyTransition);
+        };
+    }, [emblaApi]);
+
     const handleSpin = useCallback((isFast: boolean = false) => {
         if (isSpinning || !caseData || !user || !emblaApi || caseItems.length === 0 || allItems.length === 0) return;
         
@@ -201,12 +222,16 @@ export default function CasePage() {
             prizeIndexInReel = finalReelItems.length - 1;
         }
         
-        const spinTime = isFast ? 1000 : 4000;
+        const spinTime = isFast ? 1000 : 5000;
 
         // Give React time to re-render the shuffled reel before scrolling
         setTimeout(() => {
             if (emblaApi) {
-                emblaApi.reInit(); // Re-initialize embla to recognize new slide order
+                const container = emblaApi.containerNode();
+                if(container) {
+                    container.style.transition = `transform ${spinTime / 1000}s ease-out`;
+                }
+                emblaApi.reInit();
                 emblaApi.scrollTo(prizeIndexInReel, false);
             }
         }, 100);
@@ -226,7 +251,7 @@ export default function CasePage() {
             }
         };
 
-        setTimeout(onSpinEnd, spinTime + 100);
+        setTimeout(onSpinEnd, spinTime + 200);
 
 
     }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
@@ -354,7 +379,7 @@ export default function CasePage() {
                 {/* Controls */}
                 <div className="mt-auto pt-8">
                     <Button 
-                        onClick={() => handleSpin()}
+                        onClick={() => handleSpin(false)}
                         onDoubleClick={() => handleSpin(true)}
                         disabled={isSpinning || !canAfford || reelItems.length === 0} 
                         className="w-full h-16 text-xl"
