@@ -6,6 +6,7 @@ export interface Item {
   imageHint: string;
   value: number; // in Stars
   description?: string;
+  animationUrl?: string;
 }
 
 export interface Case {

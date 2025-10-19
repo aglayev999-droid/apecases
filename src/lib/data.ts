@@ -16,7 +16,7 @@ export const ALL_ITEMS: Item[] = [
   { id: 'item-boots-1', name: 'Hermes Greaves', rarity: 'Legendary', image: 'https://i.ibb.co/PQLPj58/s5.jpg', imageHint: 'glowing boots', value: 10000, description: 'Grants unbelievable speed and agility.' },
   { id: 'item-gloves-1', name: 'Power Grips', rarity: 'Rare', image: 'https://i.ibb.co/V9ZDBJg/s6.jpg', imageHint: 'power gloves', value: 450, description: 'Enhances strength and weapon handling.' },
   { id: 'item-nft-1', name: 'CryptoKey Alpha', rarity: 'NFT', image: 'https://i.ibb.co/JmB9Z1G/s7.jpg', imageHint: 'crypto art', value: 50000, description: 'A unique, verifiable digital artifact from the Old Web.' },
-  { id: 'item-nft-10348', name: 'Hex Pot', rarity: 'NFT', image: 'https://i.ibb.co/C2t4X1g/hex-pot.png', imageHint: 'hexagon pot', value: 500, description: 'A mysterious hexagonal artifact radiating energy.' },
+  { id: 'item-nft-10348', name: 'Hex Pot', rarity: 'NFT', image: 'https://i.ibb.co/C2t4X1g/hex-pot.png', imageHint: 'hexagon pot', value: 500, description: 'A mysterious hexagonal artifact radiating energy.', animationUrl: 'https://player.vimeo.com/video/1128573918?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1' },
 ];
 
 export const MOCK_CASES: Case[] = [

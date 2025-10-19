@@ -83,6 +83,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
   };
 
   const isNft = item.rarity === 'NFT';
+  const hasAnimation = !!item.animationUrl;
 
   return (
     <Card className={cn(
@@ -90,14 +91,26 @@ export function InventoryCard({ item }: InventoryCardProps) {
         RARITY_PROPERTIES[item.rarity].border
     )}>
       <CardHeader className="p-2 relative aspect-square">
-        <Image
-          src={item.image}
-          alt={item.name}
-          fill
-          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-          className="object-contain p-2 group-hover:scale-105 transition-transform"
-          data-ai-hint={item.imageHint}
-        />
+        {hasAnimation ? (
+           <div style={{padding:'100% 0 0 0',position:'relative'}}>
+             <iframe 
+                src={item.animationUrl}
+                frameBorder="0" 
+                allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" 
+                style={{position:'absolute',top:0,left:0,width:'100%',height:'100%'}} 
+                title={item.name}>
+              </iframe>
+           </div>
+        ) : (
+          <Image
+            src={item.image}
+            alt={item.name}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+            className="object-contain p-2 group-hover:scale-105 transition-transform"
+            data-ai-hint={item.imageHint}
+          />
+        )}
       </CardHeader>
       <CardContent className="p-2 pt-0 text-left flex-grow">
         <p className="text-sm font-semibold truncate">{item.name}</p>
