@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useUser } from '@/contexts/UserContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,6 +19,11 @@ export default function ProfilePage() {
   const { user } = useUser();
   const { showAlert } = useAlertDialog();
   const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const formatNumber = (num: number) => {
     if (num === undefined || num === null) return '0';
@@ -78,17 +84,27 @@ export default function ProfilePage() {
               <CardTitle>Settings</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="theme-switch" className="flex items-center gap-2">
-                  {theme === 'dark' ? <Moon className="h-5 w-5"/> : <Sun className="h-5 w-5" />}
-                  <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
-                </Label>
-                <Switch
-                  id="theme-switch"
-                  checked={theme === 'dark'}
-                  onCheckedChange={handleThemeChange}
-                />
-              </div>
+              {!mounted ? (
+                <div className="flex items-center justify-between">
+                   <div className="flex items-center gap-2">
+                     <Skeleton className="h-5 w-5 rounded-full" />
+                     <Skeleton className="h-5 w-20" />
+                   </div>
+                   <Skeleton className="h-6 w-11 rounded-full" />
+                </div>
+              ) : (
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="theme-switch" className="flex items-center gap-2">
+                    {theme === 'dark' ? <Moon className="h-5 w-5"/> : <Sun className="h-5 w-5" />}
+                    <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
+                  </Label>
+                  <Switch
+                    id="theme-switch"
+                    checked={theme === 'dark'}
+                    onCheckedChange={handleThemeChange}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
       </div>
