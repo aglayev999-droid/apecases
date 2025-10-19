@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import './globals.css';
 import { UserProvider } from '@/contexts/UserContext';
 import AppHeader from '@/components/layout/AppHeader';
@@ -23,6 +24,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <Script
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className={cn("font-body antialiased font-bold")} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"

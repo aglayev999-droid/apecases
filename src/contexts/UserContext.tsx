@@ -7,6 +7,27 @@ import { doc, collection, writeBatch, serverTimestamp, increment, setDoc } from 
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { Auth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 
+// Define the Telegram user structure on the window object
+declare global {
+  interface Window {
+    Telegram?: {
+      WebApp: {
+        initDataUnsafe: {
+          user?: {
+            id: number;
+            first_name: string;
+            last_name?: string;
+            username?: string;
+            language_code: string;
+            is_premium?: boolean;
+          };
+        };
+        ready: () => void;
+      };
+    };
+  }
+}
+
 interface UserContextType {
   user: User | null;
   inventory: InventoryItem[] | null;
@@ -24,16 +45,36 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 const createNewUserDocument = async (firestore: any, firebaseUser: FirebaseUser) => {
     const userDocRef = doc(firestore, 'users', firebaseUser.uid);
-    const newUser: User = {
-        id: firebaseUser.uid,
-        telegramId: `tg-${Math.random().toString(36).substring(2, 9)}`,
-        name: 'Anonymous',
-        username: `user${Math.floor(Math.random() * 90000) + 10000}`,
-        avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg',
-        balance: { stars: 10000, diamonds: 0 },
-        referrals: { count: 0, commissionEarned: 0, code: `ref-${firebaseUser.uid.slice(0, 5)}` },
-        weeklySpending: 0,
-    };
+    const tgUser = window.Telegram?.WebApp.initDataUnsafe.user;
+    
+    let newUser: User;
+
+    if (tgUser) {
+        // If Telegram data is available, use it
+        newUser = {
+            id: firebaseUser.uid,
+            telegramId: String(tgUser.id),
+            name: `${tgUser.first_name} ${tgUser.last_name || ''}`.trim(),
+            username: tgUser.username || `tg_${tgUser.id}`,
+            avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg', // You can add logic to fetch profile photo later
+            balance: { stars: 1000, diamonds: 0 },
+            referrals: { count: 0, commissionEarned: 0, code: `ref-${firebaseUser.uid.slice(0, 5)}` },
+            weeklySpending: 0,
+        };
+    } else {
+        // Fallback for when not in Telegram (e.g., web browser)
+        newUser = {
+            id: firebaseUser.uid,
+            telegramId: `tg-web-${Math.random().toString(36).substring(2, 9)}`,
+            name: 'Web User',
+            username: `user${Math.floor(Math.random() * 90000) + 10000}`,
+            avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg',
+            balance: { stars: 10000, diamonds: 0 }, // Higher balance for web testing
+            referrals: { count: 0, commissionEarned: 0, code: `ref-${firebaseUser.uid.slice(0, 5)}` },
+            weeklySpending: 0,
+        };
+    }
+
     await setDoc(userDocRef, newUser);
     return newUser;
 };
@@ -71,6 +112,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   });
   
   useEffect(() => {
+    // Make sure Telegram WebApp is ready
+    if (window.Telegram) {
+      window.Telegram.WebApp.ready();
+    }
+    
     if (!isAuthLoading && !firebaseUser && auth) {
       initiateAnonymousSignIn(auth);
     }
