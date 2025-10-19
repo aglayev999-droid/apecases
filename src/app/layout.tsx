@@ -4,17 +4,11 @@ import { UserProvider } from '@/contexts/UserContext';
 import AppHeader from '@/components/layout/AppHeader';
 import BottomNav from '@/components/layout/BottomNav';
 import { Toaster } from "@/components/ui/toaster";
-import { Inter } from 'next/font/google';
 import { cn } from '@/lib/utils';
 import { TonConnectProvider } from '@/contexts/TonConnectProvider';
 import { FirebaseClientProvider } from '@/firebase';
 import { AlertDialogProvider } from '@/contexts/AlertDialogContext';
 import { ThemeProvider } from '@/components/ThemeProvider';
-
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-});
 
 export const metadata: Metadata = {
   title: '1CASE',
@@ -28,7 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn("font-body antialiased font-bold", inter.variable)} suppressHydrationWarning>
+      <body className={cn("font-body antialiased font-bold")} suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
