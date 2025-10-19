@@ -12,6 +12,7 @@ import { HistoryIcon } from '@/components/icons/HistoryIcon';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import type { RocketPlayer } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Volume2, VolumeX } from 'lucide-react';
 
 
 export default function RocketPage() {
@@ -30,29 +31,28 @@ export default function RocketPage() {
     const [betAmount, setBetAmount] = useState('25');
     const musicRef = useRef<HTMLAudioElement>(null);
     const crashSfxRef = useRef<HTMLAudioElement>(null);
-    
+    const [isMuted, setIsMuted] = useState(true);
+
     useEffect(() => {
-        if (musicRef.current) {
-            musicRef.current.volume = 0.1;
-            // Try to play, but catch error if browser blocks it.
-            // User interaction is usually required to play audio.
-            musicRef.current.play().catch(error => {
-                console.log("Audio autoplay prevented by browser:", error);
-            });
-        }
-        return () => {
-            if (musicRef.current) {
-                musicRef.current.pause();
+        const musicElement = musicRef.current;
+        if (musicElement) {
+            musicElement.volume = 0.1;
+            if (isMuted) {
+                musicElement.pause();
+            } else {
+                musicElement.play().catch(error => {
+                    console.log("Audio autoplay prevented:", error);
+                });
             }
         }
-    }, []);
+    }, [isMuted]);
 
      useEffect(() => {
-        if (gameState === 'crashed' && crashSfxRef.current) {
+        if (gameState === 'crashed' && crashSfxRef.current && !isMuted) {
             crashSfxRef.current.volume = 0.2;
             crashSfxRef.current.play().catch(e => console.log("Crash SFX autoplay error", e));
         }
-    }, [gameState]);
+    }, [gameState, isMuted]);
     
     const playerStatus = user ? getPlayerStatus(user.id) : undefined;
     const hasPlacedBet = !!playerStatus?.bet && playerStatus.bet > 0;
@@ -75,9 +75,8 @@ export default function RocketPage() {
     };
 
     const GameScreen = () => {
-        const VERTICAL_THRESHOLD = 3;
         const gameContainerRef = useRef<HTMLDivElement>(null);
-        const [position, setPosition] = useState({ x: 20, y: 200, rotation: -45 });
+        const [position, setPosition] = useState({ x: 0, y: 0, rotation: 0 });
         const [trailPath, setTrailPath] = useState("");
 
         useEffect(() => {
@@ -85,48 +84,35 @@ export default function RocketPage() {
 
             const containerWidth = gameContainerRef.current.offsetWidth;
             const containerHeight = gameContainerRef.current.offsetHeight;
-            const startX = 20;
-            const startY = containerHeight - 50;
+            const startX = 40;
+            const startY = containerHeight - 60;
+            const endX = containerWidth;
+            const endY = 0;
 
             const getRocketPosition = () => {
                 if (gameState === 'waiting' || gameState === 'crashed' || multiplier < 1.01) {
                     return { x: startX, y: startY, rotation: -45 };
                 }
 
-                const progress = multiplier - 1;
-                const centerTargetX = containerWidth / 2;
-                const centerTargetY = containerHeight / 2;
+                const progress = Math.min((multiplier - 1) / 4, 1); // Normalize progress, max out at 5x for positioning
+                const curvePower = 0.5; // Controls the curve of the path, 1 is linear
                 
-                let x, y, rotation;
+                const t = Math.pow(progress, curvePower);
 
-                if (multiplier < VERTICAL_THRESHOLD) {
-                    const pathProgress = progress / (VERTICAL_THRESHOLD - 1);
-                    x = startX + (centerTargetX - startX) * pathProgress;
-                    y = startY - (startY - centerTargetY) * pathProgress;
-                    rotation = -45;
-                } else {
-                    const postThresholdProgress = multiplier - VERTICAL_THRESHOLD;
-                    x = centerTargetX;
-                    y = centerTargetY - (postThresholdProgress * 25);
-                    rotation = 0;
-                }
+                const x = startX + (endX - startX) * t;
+                const y = startY - (startY - endY) * Math.pow(progress, 1.5);
+                const rotation = -45 + (45 * progress);
+                
                 return { x, y, rotation };
             };
-
+            
             const getTrailPath = (newPos: { x: number, y: number }) => {
-                if (multiplier < 1.02) return `M ${startX} ${startY}`;
-
-                let path = `M ${startX} ${startY}`;
-                const centerTargetX = containerWidth / 2;
-                const centerTargetY = containerHeight / 2;
-
-                if (multiplier < VERTICAL_THRESHOLD) {
-                    path += ` L ${newPos.x} ${newPos.y}`;
-                } else {
-                    path += ` L ${centerTargetX} ${centerTargetY}`;
-                    path += ` L ${newPos.x} ${newPos.y}`;
+                const height = gameContainerRef.current?.offsetHeight ?? 0;
+                 if (gameState === 'waiting' || gameState === 'crashed' || multiplier < 1.01) {
+                    return `M ${startX-20} ${height} L ${startX+20} ${height} L ${startX+20} ${height-40} C ${startX+20} ${height-40} ${startX} ${height-20} ${startX-20} ${height} Z`;
                 }
-                return path;
+
+                return `M ${startX-20} ${height} L ${newPos.x+20} ${height} L ${newPos.x+20} ${newPos.y} C ${newPos.x+20} ${newPos.y+50} ${newPos.x-50} ${height} ${startX-20} ${height} Z`;
             };
 
             const newPos = getRocketPosition();
@@ -143,70 +129,74 @@ export default function RocketPage() {
             transition: 'all 0.1s linear',
             willChange: 'transform, left, top',
             opacity: gameState === 'crashed' ? 0 : 1,
+            width: '120px', // Increased size
+            height: '120px' // Increased size
         };
     
         return (
-            <div ref={gameContainerRef} className="h-64 flex flex-col items-center justify-center relative w-full overflow-hidden rounded-lg border bg-card/20">
-                {/* Background Animation */}
-                 <div className="absolute inset-0 z-0">
-                    <div className="star-field">
-                        <div className="star-sm"></div>
-                        <div className="star-md"></div>
-                        <div className="star-lg"></div>
-                        <div className="planet-1"></div>
-                        <div className="planet-2"></div>
-                        <div className="planet-3"></div>
-                    </div>
+            <div ref={gameContainerRef} className="h-96 flex flex-col items-center justify-center relative w-full overflow-hidden rounded-lg border bg-gray-900">
+                {/* Background Stars */}
+                 <div className="absolute inset-0 z-0 opacity-50">
+                    <div id="stars"></div>
+                    <div id="stars2"></div>
+                    <div id="stars3"></div>
                 </div>
                  <style>
                     {`
-                        @keyframes stars-sm-anim { from { transform: translateY(0px); } to { transform: translateY(-200px); } }
-                        @keyframes stars-md-anim { from { transform: translateY(0px); } to { transform: translateY(-300px); } }
-                        @keyframes stars-lg-anim { from { transform: translateY(0px); } to { transform: translateY(-400px); } }
-                        
-                        .star-field { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; }
-                        .star-sm { position: absolute; width: 2px; height: 2px; background: white; border-radius: 50%; box-shadow: 100px 50px white, 200px 150px white, 300px 80px white, 400px 20px white, 50px 180px white; animation: stars-sm-anim 100s linear infinite; }
-                        .star-md { position: absolute; width: 3px; height: 3px; background: white; border-radius: 50%; box-shadow: 150px 100px white, 250px 30px white, 350px 120px white, 450px 90px white, 80px 10px white; animation: stars-md-anim 80s linear infinite; }
-                        .star-lg { position: absolute; width: 4px; height: 4px; background: white; border-radius: 50%; box-shadow: 120px 70px white, 220px 160px white, 320px 50px white, 420px 130px white, 20px 150px white; animation: stars-lg-anim 60s linear infinite; }
-                        
-                        .planet-1, .planet-2, .planet-3 { position: absolute; border-radius: 50%; background: linear-gradient(135deg, hsl(var(--primary) / 0.5), hsl(var(--accent) / 0.5)); animation: move-planet 20s linear infinite; }
-                        .planet-1 { width: 80px; height: 80px; left: 10%; top: 20%; animation-duration: 25s; }
-                        .planet-2 { width: 50px; height: 50px; left: 70%; top: 60%; animation-duration: 35s; animation-delay: -10s; background: linear-gradient(135deg, hsl(var(--chart-2) / 0.5), hsl(var(--chart-4) / 0.5)); }
-                        .planet-3 { width: 20px; height: 20px; left: 40%; top: 80%; animation-duration: 45s; animation-delay: -20s; }
-
-                        @keyframes move-planet { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(20px, -30px) scale(1.1); } 100% { transform: translate(0, 0) scale(1); } }
-                        
-                        @keyframes shake {
-                            0% { transform: translate(-50%, -50%) rotate(${position.rotation}deg) scale(1); }
-                            25% { transform: translate(-50%, -50%) rotate(${position.rotation - 0.5}deg) scale(1.02); }
-                            50% { transform: translate(-50%, -50%) rotate(${position.rotation}deg) scale(1); }
-                            75% { transform: translate(-50%, -50%) rotate(${position.rotation + 0.5}deg) scale(0.98); }
-                            100% { transform: translate(-50%, -50%) rotate(${position.rotation}deg) scale(1); }
+                        @keyframes animStar { from { transform: translateY(0px); } to { transform: translateY(-2000px); } }
+                        #stars, #stars2, #stars3 {
+                          position: absolute;
+                          top: 0;
+                          left: 0;
+                          right: 0;
+                          bottom: 0;
+                          width: 100%;
+                          height: 100%;
+                          display: block;
+                          background: transparent;
                         }
-                        .rocket-shake {
-                            animation: shake 0.3s linear infinite;
+                        #stars {
+                          background-image: radial-gradient(1px 1px at 20px 30px, #eee, rgba(0,0,0,0)), radial-gradient(1px 1px at 40px 70px, #fff, rgba(0,0,0,0)), radial-gradient(1px 1px at 50px 160px, #ddd, rgba(0,0,0,0)), radial-gradient(1px 1px at 90px 40px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 160px 120px, #ddd, rgba(0,0,0,0));
+                          background-repeat: repeat;
+                          background-size: 200px 200px;
+                          animation: animStar 50s linear infinite;
                         }
-
-                        @keyframes trail-draw { to { stroke-dashoffset: 0; } }
-                        .rocket-trail {
-                            stroke-dasharray: 1000;
-                            stroke-dashoffset: 1000;
-                            animation: trail-draw 1s linear forwards;
+                        #stars2 {
+                           background-image: radial-gradient(1px 1px at 40px 20px, #eee, rgba(0,0,0,0)), radial-gradient(1px 1px at 80px 60px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 120px 140px, #ddd, rgba(0,0,0,0));
+                           background-repeat: repeat;
+                           background-size: 250px 250px;
+                           animation: animStar 100s linear infinite;
                         }
+                        #stars3 {
+                           background-image: radial-gradient(1px 1px at 50px 50px, #eee, rgba(0,0,0,0)), radial-gradient(2px 2px at 100px 100px, #fff, rgba(0,0,0,0)), radial-gradient(2px 2px at 180px 20px, #ddd, rgba(0,0,0,0));
+                           background-repeat: repeat;
+                           background-size: 300px 300px;
+                           animation: animStar 150s linear infinite;
+                        }
+                        @keyframes shake { 0% { transform: translate(-50%, -50%) rotate(${position.rotation}deg) } 25% { transform: translate(-51%, -49%) rotate(${position.rotation - 0.2}deg) } 50% { transform: translate(-50%, -50%) rotate(${position.rotation}deg) } 75% { transform: translate(-49%, -51%) rotate(${position.rotation + 0.2}deg) } 100% { transform: translate(-50%, -50%) rotate(${position.rotation}deg) } }
+                        .rocket-shake { animation: shake 0.3s linear infinite; }
                     `}
                 </style>
                 
+                {/* Mute Button */}
+                <Button variant="ghost" size="icon" className="absolute top-4 right-4 z-30" onClick={() => setIsMuted(!isMuted)}>
+                    {isMuted ? <VolumeX className="h-6 w-6 text-white" /> : <Volume2 className="h-6 w-6 text-white" />}
+                </Button>
+
                 {/* Rocket Trail */}
                 <svg className="absolute inset-0 w-full h-full z-10">
                     <path
-                        className="rocket-trail"
                         d={trailPath}
-                        stroke="hsl(var(--primary))"
-                        strokeWidth="3"
-                        fill="none"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                        fill="url(#trailGradient)"
+                        stroke="hsl(var(--primary) / 0.5)"
+                        strokeWidth="1"
                     />
+                    <defs>
+                        <linearGradient id="trailGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="hsl(var(--primary) / 0)" />
+                            <stop offset="100%" stopColor="hsl(var(--primary) / 0.4)" />
+                        </linearGradient>
+                    </defs>
                 </svg>
 
                 {/* Rocket Image */}
@@ -214,19 +204,19 @@ export default function RocketPage() {
                     className={cn("z-20", { 'rocket-shake': gameState === 'playing' })}
                      style={rocketStyle}
                 >
-                    <div className="relative w-20 h-20 sm:w-24 sm:h-24">
+                    <div className="relative w-full h-full">
                          <Image src="https://i.ibb.co/93bWYZZf/3f7ad183-dda1-4dda-996c-69961a4fabdc-removebg-preview.png" alt="Rocket" layout="fill" objectFit="contain" />
                     </div>
                 </div>
 
                 {/* Multiplier Text */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-30">
+                <div className="absolute top-1/2 left-10 -translate-y-1/2 text-left z-30">
                     {gameState === 'crashed' ? (
-                        <h1 className="text-7xl font-bold text-red-500 animate-in fade-in-0 zoom-in-75">
+                        <h1 className="text-6xl sm:text-8xl font-bold text-red-500 animate-in fade-in-0 zoom-in-75">
                            x{multiplier.toFixed(2)}
                         </h1>
                     ) : (
-                         <h1 className="text-7xl font-bold text-white [text-shadow:0_0_15px_hsl(var(--primary))]">
+                         <h1 className="text-6xl sm:text-8xl font-bold text-white [text-shadow:0_0_20px_hsl(var(--primary))]">
                            x{multiplier.toFixed(2)}
                          </h1>
                     )}
@@ -234,9 +224,9 @@ export default function RocketPage() {
 
                 {/* Countdown Timer */}
                  {gameState === 'waiting' && (
-                     <div className="absolute top-10 text-center z-30">
+                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-30 bg-black/30 p-4 rounded-xl">
                         <p className="text-lg text-muted-foreground">Starting in...</p>
-                        <p className="text-4xl font-bold">{countdown}</p>
+                        <p className="text-5xl font-bold text-white">{countdown}</p>
                      </div>
                  )}
             </div>
@@ -404,3 +394,5 @@ export default function RocketPage() {
 const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
     return <div className={cn("px-3 py-1 rounded-md text-sm font-bold", className)} {...props} />
 }
+
+    
