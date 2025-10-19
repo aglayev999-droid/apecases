@@ -80,7 +80,7 @@ const Reel = ({ items, onSpinEnd, isFast }: { items: Item[], onSpinEnd: (prize: 
 
     return (
         <div className="relative w-full">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5L22 15H2L12 5Z"/></svg></div>
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 19L2 9H22L12 19Z"/></svg></div>
             <div className="overflow-hidden w-full" ref={emblaRef}>
                 <div className="flex">
                     {items.map((item, index) => (
@@ -92,7 +92,7 @@ const Reel = ({ items, onSpinEnd, isFast }: { items: Item[], onSpinEnd: (prize: 
                     ))}
                 </div>
             </div>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 19L2 9H22L12 19Z"/></svg></div>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5L22 15H2L12 5Z"/></svg></div>
         </div>
     );
 };
@@ -171,16 +171,12 @@ export default function CasePage() {
               showAlert({ title: "Not enough stars", description: `You need ${totalCost} stars to open ${numSpins} cases.` });
               return;
             }
-            updateBalance(-totalCost);
-            updateSpending(totalCost);
         }
         
         setIsSpinning(true);
         setIsFastSpin(isFast);
         wonItemsRef.current = [];
         
-        if (isFree) setLastFreeCaseOpen(new Date());
-
         const prizes: Item[] = [];
         for (let i = 0; i < numSpins; i++) {
             const prize = selectItem(caseData, allItems);
@@ -201,21 +197,46 @@ export default function CasePage() {
             newReelItems[targetIndex] = prize;
             return newReelItems;
         });
+        
+        // This is now moved to onSpinEnd to happen after animation
+        // updateBalance(-totalCost);
+        // updateSpending(totalCost);
+        // if (isFree) setLastFreeCaseOpen(new Date());
 
         setReels(newReels);
 
-    }, [caseData, user, updateBalance, updateSpending, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning, spinMultiplier]);
+    }, [caseData, user, showAlert, caseItems, allItems, lastFreeCaseOpen, isSpinning, spinMultiplier]);
     
     const onSpinEnd = useCallback((prize: Item) => {
-        wonItemsRef.current.push(prize);
-
-        const numSpins = caseData?.price === 0 ? 1 : spinMultiplier;
+        wonItemsRef.current = [...wonItemsRef.current, prize];
         
+        if (!caseData) return;
+
+        const isFree = caseData.price === 0;
+        const numSpins = isFree ? 1 : spinMultiplier;
+        
+        // Only trigger when all reels have finished
         if (wonItemsRef.current.length === numSpins) {
+            
+            // Perform state updates after animation
+            const totalCost = caseData.price * numSpins;
+            if (!isFree && user) {
+                if (user.balance.stars >= totalCost) {
+                    updateBalance(-totalCost);
+                    updateSpending(totalCost);
+                } else {
+                    console.error("Insufficient funds after spin.");
+                    setIsSpinning(false);
+                    return;
+                }
+            }
+            if (isFree) {
+                setLastFreeCaseOpen(new Date());
+            }
+
             setWonItems(wonItemsRef.current);
             setIsWinModalOpen(true);
             
-            // Award items only after animation is complete and modal is shown
             wonItemsRef.current.forEach(p => {
                 if (p.id.startsWith('item-stars-')) {
                     updateBalance(p.value);
@@ -227,7 +248,7 @@ export default function CasePage() {
             setIsSpinning(false);
             setReels([]);
         }
-    }, [spinMultiplier, addInventoryItem, updateBalance, caseData]);
+    }, [caseData, spinMultiplier, addInventoryItem, updateBalance, user, updateSpending, setLastFreeCaseOpen]);
 
 
     const handleModalOpenChange = (open: boolean) => {
@@ -295,7 +316,7 @@ export default function CasePage() {
                     ) : (
                         Array.from({ length: displayedMultiplier }).map((_, index) => (
                             <div key={index} className="relative w-full">
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5L22 15H2L12 5Z"/></svg></div>
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 19L2 9H22L12 19Z"/></svg></div>
                                 <div className="overflow-hidden w-full">
                                     <div className="flex">
                                         <div className="flex-[0_0_9rem] mx-auto">
@@ -305,7 +326,7 @@ export default function CasePage() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 19L2 9H22L12 19Z"/></svg></div>
+                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5L22 15H2L12 5Z"/></svg></div>
                             </div>
                         ))
                     )}
@@ -377,3 +398,5 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
