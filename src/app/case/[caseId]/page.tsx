@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import useEmblaCarousel from 'embla-carousel-react';
@@ -119,6 +119,8 @@ export default function CasePage() {
     const caseRef = useMemoFirebase(() => firestore && caseId ? doc(firestore, 'cases', caseId) : null, [firestore, caseId]);
     const itemsColRef = useMemoFirebase(() => firestore ? collection(firestore, 'items') : null, [firestore]);
 
+    const wonItemsRef = useRef<Item[]>([]);
+
     useEffect(() => {
         if (!firestore) return;
         const fetchCaseAndItemsData = async () => {
@@ -175,7 +177,8 @@ export default function CasePage() {
         
         setIsSpinning(true);
         setIsFastSpin(isFast);
-        setWonItems([]); // Reset won items before starting a new spin
+        wonItemsRef.current = []; // Reset won items ref
+        setWonItems([]); // Reset won items state
         if (isFree) setLastFreeCaseOpen(new Date());
 
         const prizes: Item[] = [];
@@ -204,34 +207,35 @@ export default function CasePage() {
     }, [caseData, user, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning, spinMultiplier]);
     
     const onSpinEnd = useCallback((prize: Item) => {
-        // Collect won items
-        setWonItems(prevWonItems => {
-            const newWonItems = [...prevWonItems, prize];
-            const numSpins = caseData?.price === 0 ? 1 : spinMultiplier;
+        const numSpins = caseData?.price === 0 ? 1 : spinMultiplier;
+        
+        // Prevent adding more items than expected
+        if (wonItemsRef.current.length >= numSpins) {
+            return;
+        }
 
-            // Check if all reels have finished
-            if (newWonItems.length === numSpins) {
-                 setTimeout(() => {
-                    // Show the modal
-                    setIsWinModalOpen(true);
-                    
-                    // Save items to inventory/balance
-                    newWonItems.forEach(p => {
-                        if (p.id.startsWith('item-stars-')) {
-                            updateBalance(p.value);
-                        } else {
-                            addInventoryItem(p);
-                        }
-                    });
+        wonItemsRef.current.push(prize);
 
-                    // Stop the spinning state after everything is done
-                    setIsSpinning(false);
-                    setReels([]);
-                }, 500); // Wait half a second before showing modal
-            }
-            
-            return newWonItems;
-        });
+        // Check if all reels have finished spinning
+        if (wonItemsRef.current.length === numSpins) {
+            setWonItems(wonItemsRef.current);
+            setTimeout(() => {
+                setIsWinModalOpen(true);
+                
+                // Save items to inventory/balance
+                wonItemsRef.current.forEach(p => {
+                    if (p.id.startsWith('item-stars-')) {
+                        updateBalance(p.value);
+                    } else {
+                        addInventoryItem(p);
+                    }
+                });
+
+                // Stop the spinning state after everything is done
+                setIsSpinning(false);
+                setReels([]);
+            }, 500); // Wait half a second before showing modal
+        }
     }, [spinMultiplier, addInventoryItem, updateBalance, caseData]);
 
 
@@ -239,6 +243,7 @@ export default function CasePage() {
         if (!open && !isSpinning) {
             setIsWinModalOpen(false);
             setWonItems([]);
+            wonItemsRef.current = [];
             router.push('/');
         }
     }

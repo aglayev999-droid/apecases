@@ -57,7 +57,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
     if (!item.collectionAddress) {
        showAlert({
         title: 'Withdrawal Error',
-        description: `This NFT (${item.name}) does not have a collection address configured.`,
+        description: `This item (${item.name}) does not have a collection address configured and cannot be withdrawn.`,
       });
       return;
     }
