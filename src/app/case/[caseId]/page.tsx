@@ -145,7 +145,7 @@ export default function CasePage() {
              setWonItem(prize);
         }
         
-        const spinTime = isFast ? 1000 : 5000;
+        const spinTime = isFast ? 1000 : 4000;
 
         // Animate the carousel
         const targetIndex = prizeIndexInReel + emblaApi.scrollSnapList().length * (isFast ? 1 : 3);
