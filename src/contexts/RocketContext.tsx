@@ -11,8 +11,8 @@ interface RocketContextType {
     players: RocketPlayer[];
     crashPoint: number;
     countdown: number;
-    playerBet: (userId: string, betAmount: number, avatar: string, name: string) => void;
-    playerCashOut: (userId: string) => void;
+    playerBet: (betAmount: number) => void;
+    playerCashOut: () => void;
     getPlayerStatus: (userId: string) => RocketPlayer | undefined;
 }
 
@@ -32,10 +32,15 @@ export const RocketProvider = ({ children }: { children: ReactNode }) => {
     
     const [gameState, setGameState] = useState<RocketGameState>('waiting');
     const [multiplier, setMultiplier] = useState(1.00);
-    const [crashPoint, setCrashPoint] = useState(generateCrashPoint());
+    const [crashPoint, setCrashPoint] = useState(0); // Set initially to 0
     const [countdown, setCountdown] = useState(10);
     const [history, setHistory] = useState<number[]>([]);
     const [players, setPlayers] = useState<RocketPlayer[]>([]);
+
+    useEffect(() => {
+        // Run only on the client
+        setCrashPoint(generateCrashPoint());
+    }, []);
 
     const resetGame = useCallback(() => {
         setGameState('waiting');
@@ -46,14 +51,16 @@ export const RocketProvider = ({ children }: { children: ReactNode }) => {
         setPlayers(currentPlayers => {
             const playerMap = new Map<string, RocketPlayer>();
 
-            const humanPlayer = currentPlayers.find(p => p.id === user?.id);
-            if (humanPlayer) {
-                playerMap.set(humanPlayer.id, { ...humanPlayer, bet: 0, status: 'waiting', cashedOutAt: null });
+            if(user) {
+                const humanPlayer = currentPlayers.find(p => p.id === user.id);
+                if (humanPlayer) {
+                    playerMap.set(humanPlayer.id, { ...humanPlayer, bet: 0, status: 'waiting', cashedOutAt: null });
+                }
             }
             
             return Array.from(playerMap.values());
         });
-    }, [user?.id]);
+    }, [user]);
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -78,7 +85,9 @@ export const RocketProvider = ({ children }: { children: ReactNode }) => {
                 }
             }, 100);
         } else if (gameState === 'crashed') {
-            setHistory(prev => [crashPoint, ...prev.slice(0, 9)]);
+            if (crashPoint > 0) { // Only add to history if it was a valid round
+                setHistory(prev => [crashPoint, ...prev.slice(0, 9)]);
+            }
             setPlayers(currentPlayers => currentPlayers.map(p => p.status === 'playing' ? {...p, status: 'lost' } : p));
             timer = setTimeout(resetGame, 3000);
         }
@@ -86,7 +95,7 @@ export const RocketProvider = ({ children }: { children: ReactNode }) => {
         return () => clearTimeout(timer);
     }, [gameState, countdown, multiplier, crashPoint, resetGame]);
     
-    const playerBet = useCallback((userId: string, betAmount: number, avatar: string, name: string) => {
+    const playerBet = useCallback((betAmount: number) => {
         if (gameState !== 'waiting' || !user || user.balance.stars < betAmount) {
             return;
         }
@@ -94,10 +103,10 @@ export const RocketProvider = ({ children }: { children: ReactNode }) => {
         // Update player list state
         setPlayers(currentPlayers => {
             const playerMap = new Map(currentPlayers.map(p => [p.id, p]));
-            playerMap.set(userId, {
-                id: userId,
-                name,
-                avatar,
+            playerMap.set(user.id, {
+                id: user.id,
+                name: user.name,
+                avatar: user.avatar,
                 bet: betAmount,
                 status: 'waiting',
                 cashedOutAt: null,
@@ -110,13 +119,13 @@ export const RocketProvider = ({ children }: { children: ReactNode }) => {
 
     }, [gameState, user, updateBalance]);
 
-    const playerCashOut = useCallback((userId: string) => {
+    const playerCashOut = useCallback(() => {
         if (gameState !== 'playing' || !user) return;
 
         let playerToUpdate: RocketPlayer | undefined;
         
         setPlayers(currentPlayers => {
-            const playerIndex = currentPlayers.findIndex(p => p.id === userId);
+            const playerIndex = currentPlayers.findIndex(p => p.id === user.id);
             if (playerIndex === -1 || currentPlayers[playerIndex].status !== 'playing') {
                 return currentPlayers;
             }

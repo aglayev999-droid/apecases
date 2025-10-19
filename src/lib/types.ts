@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface Item {
   id: string;
   name: string;
@@ -20,8 +22,10 @@ export interface Case {
 }
 
 export interface InventoryItem extends Item {
-  inventoryId: string;
+  // The 'id' from the top-level 'items' collection is duplicated here for convenience,
+  // but the document ID in the subcollection is the unique inventory identifier.
   status: 'won' | 'exchanged' | 'shipped';
+  wonAt: Timestamp;
 }
 
 export interface User {
@@ -34,7 +38,7 @@ export interface User {
     stars: number;
     diamonds: number;
   };
-  inventory: InventoryItem[];
+  // inventory is now a sub-collection, so it's not stored directly on the user document.
   referrals: {
     count: number;
     commissionEarned: number;

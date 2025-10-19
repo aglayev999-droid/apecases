@@ -16,7 +16,7 @@ import { Label } from '@/components/ui/label';
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
 export default function ProfilePage() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
   const { showAlert } = useAlertDialog();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -44,7 +44,7 @@ export default function ProfilePage() {
   };
 
 
-  if (!user) {
+  if (isUserLoading || !user) {
     return (
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row items-center gap-6">
@@ -66,7 +66,7 @@ export default function ProfilePage() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row items-center gap-6">
         <Avatar className="h-24 w-24 border-4 border-primary">
-          <AvatarImage src={DEFAULT_AVATAR} alt={user.name} />
+          <AvatarImage src={user.avatar || DEFAULT_AVATAR} alt={user.name} />
           <AvatarFallback className="text-3xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
         <div>

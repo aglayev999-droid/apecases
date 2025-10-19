@@ -6,14 +6,15 @@ import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import type { InventoryItem } from '@/lib/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function InventoryPage() {
-  const { user, removeInventoryItems, updateBalance } = useUser();
+  const { inventory, removeInventoryItems, updateBalance, isUserLoading } = useUser();
   const { showAlert } = useAlertDialog();
 
   const handleSellAll = () => {
-    if (!user) return;
-    const nonNftItems = user.inventory.filter(item => item.rarity !== 'NFT');
+    if (!inventory) return;
+    const nonNftItems = inventory.filter(item => item.rarity !== 'NFT');
     if (nonNftItems.length === 0) {
       showAlert({
         title: 'Nothing to Sell',
@@ -23,7 +24,7 @@ export default function InventoryPage() {
     }
     
     const totalValue = nonNftItems.reduce((sum, item) => sum + item.value, 0);
-    const itemIdsToSell = nonNftItems.map(item => item.inventoryId);
+    const itemIdsToSell = nonNftItems.map(item => item.id);
     
     updateBalance(totalValue);
     removeInventoryItems(itemIdsToSell);
@@ -33,8 +34,28 @@ export default function InventoryPage() {
       description: `You received ${totalValue} stars.`,
     });
   };
+  
+  if (isUserLoading) {
+      return (
+         <div className="space-y-4">
+            <div className="flex justify-between items-center">
+                <Skeleton className="h-8 w-32" />
+                <Skeleton className="h-9 w-24" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                {[...Array(4)].map((_, i) => (
+                    <div key={i} className="flex flex-col gap-2">
+                        <Skeleton className="aspect-square w-full" />
+                        <Skeleton className="h-5 w-2/3" />
+                        <Skeleton className="h-9 w-full" />
+                    </div>
+                ))}
+            </div>
+        </div>
+      )
+  }
 
-  if (!user || user.inventory.length === 0) {
+  if (!inventory || inventory.length === 0) {
     return <EmptyInventory />;
   }
 
@@ -46,8 +67,8 @@ export default function InventoryPage() {
       </div>
       
       <div className="grid grid-cols-2 gap-4">
-        {user.inventory.map((item: InventoryItem) => (
-          <InventoryCard key={item.inventoryId} item={item} />
+        {inventory.map((item: InventoryItem) => (
+          <InventoryCard key={item.id} item={item} />
         ))}
       </div>
     </div>

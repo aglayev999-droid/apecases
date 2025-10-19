@@ -2,6 +2,7 @@ import type { Item, Case, User, LeaderboardEntry } from './types';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
+// ALL_ITEMS will now be fetched from Firestore, but we can keep it here as a fallback or for reference
 export const ALL_ITEMS: Item[] = [
   { id: 'item-stars-5', name: '5 Stars', rarity: 'Common', image: 'https://i.ibb.co/WN2md4DV/stars.png', imageHint: 'stars currency', value: 5, description: 'A small amount of stars.' },
   { id: 'item-stars-7', name: '7 Stars', rarity: 'Common', image: 'https://i.ibb.co/WN2md4DV/stars.png', imageHint: 'stars currency', value: 7, description: 'A small amount of stars.' },
@@ -19,90 +20,15 @@ export const ALL_ITEMS: Item[] = [
   { id: 'item-nft-10348', name: 'Hex Pot', rarity: 'NFT', image: 'https://i.ibb.co/C2t4X1g/hex-pot.png', imageHint: 'hexagon pot', value: 500, description: 'A mysterious hexagonal artifact radiating energy.', animationUrl: 'https://player.vimeo.com/video/1128573918?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1' },
 ];
 
-export const MOCK_CASES: Case[] = [
-  {
-    id: 'case-free-2',
-    name: 'Free box',
-    price: 0,
-    image: 'https://i.ibb.co/jZZBNxLD/free-box.png',
-    imageHint: 'gift box gingerbread',
-    freeCooldownSeconds: 86400, // 24 hours
-    items: [
-      { itemId: 'item-stars-5', probability: 0.4 },
-      { itemId: 'item-stars-7', probability: 0.25 },
-      { itemId: 'item-stars-10', probability: 0.15 },
-      { itemId: 'item-stars-15', probability: 0.1 },
-      { itemId: 'item-stars-20', probability: 0.07 },
-      { itemId: 'item-stars-50', probability: 0.03 },
-    ],
-  },
-  {
-    id: 'case-floor-8',
-    name: 'FLOOR CASE',
-    price: 180,
-    image: 'https://i.ibb.co/twnxRfvP/floor.png',
-    imageHint: 'glowing chest',
-    items: [
-      { itemId: 'item-sword-1', probability: 0.4 },
-      { itemId: 'item-shield-1', probability: 0.3 },
-      { itemId: 'item-helmet-1', probability: 0.15 },
-      { itemId: 'item-armor-1', probability: 0.1 },
-      { itemId: 'item-nft-1', probability: 0.05 },
-    ],
-  },
-  {
-    id: 'case-labubu-10',
-    name: 'LABUBU CASE',
-    price: 240,
-    image: 'https://i.ibb.co/20Fh8RKz/labubu.png',
-    imageHint: 'epic treasure',
-    items: [
-      { itemId: 'item-shield-1', probability: 0.28 },
-      { itemId: 'item-helmet-1', probability: 0.28 },
-      { itemId: 'item-armor-1', probability: 0.24 },
-      { itemId: 'item-boots-1', probability: 0.1 },
-      { itemId: 'item-nft-1', probability: 0.05 },
-      { itemId: 'item-nft-10348', probability: 0.05 },
-    ],
-  },
-  {
-    id: 'case-snoop-7',
-    name: 'SNOOP DOG CASE',
-    price: 180,
-    image: 'https://i.ibb.co/F4V0dGX3/Apex-Case.png',
-    imageHint: 'legendary artifact',
-    items: [
-      { itemId: 'item-sword-1', probability: 0.7 },
-      { itemId: 'item-shield-1', probability: 0.2 },
-      { itemId: 'item-helmet-1', probability: 0.09 },
-      { "itemId": "item-nft-1", probability: 0.01 },
-    ],
-  },
-];
+// MOCK_CASES and MOCK_USER are deprecated and will be fetched from Firestore
+export const MOCK_CASES: Case[] = [];
+export const MOCK_USER: User | null = null;
 
-export const MOCK_USER: User = {
-  id: 'user-123',
-  telegramId: '987654321',
-  name: 'Cipher',
-  username: 'cipher_dev',
-  avatar: DEFAULT_AVATAR,
-  balance: {
-    stars: 25000,
-    diamonds: 0,
-  },
-  inventory: [],
-  referrals: {
-    count: 0,
-    commissionEarned: 0,
-    code: 'CIPHER-ALPHA',
-  },
-  weeklySpending: 0,
-};
 
 export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { rank: 1, user: { name: 'Ghost', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 150000 },
   { rank: 2, user: { name: 'Viper', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 125000 },
-  { rank: 3, user: { name: 'Cipher', avatar: DEFAULT_AVATAR }, spent: MOCK_USER.weeklySpending },
+  { rank: 3, user: { name: 'Cipher', avatar: DEFAULT_AVATAR }, spent: 105000 },
   { rank: 4, user: { name: 'Rogue', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 98000 },
   { rank: 5, user: { name: 'Spectre', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 76000 },
   { rank: 6, user: { name: 'Nomad', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 54000 },

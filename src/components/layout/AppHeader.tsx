@@ -7,13 +7,15 @@ import Link from 'next/link';
 import { TonConnectButton } from '@tonconnect/ui-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Image from 'next/image';
+import { Skeleton } from '../ui/skeleton';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
 export default function AppHeader() {
-  const { user } = useUser();
+  const { user, isUserLoading } = useUser();
 
   const formatNumber = (num: number) => {
+    if (num === undefined || num === null) return '...';
     return new Intl.NumberFormat('en-US').format(num);
   };
 
@@ -21,11 +23,16 @@ export default function AppHeader() {
     <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-sm">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center gap-2">
-          {user && (
+          {isUserLoading ? (
+             <div className="flex items-center gap-2">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <Skeleton className="h-8 w-24 rounded-full" />
+             </div>
+          ) : user && (
             <div className="flex items-center gap-2">
                <Link href="/profile">
                   <Avatar className="h-10 w-10 border-2 border-primary">
-                      <AvatarImage src={DEFAULT_AVATAR} alt={user.name} />
+                      <AvatarImage src={user.avatar || DEFAULT_AVATAR} alt={user.name} />
                       <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
                   </Avatar>
                </Link>

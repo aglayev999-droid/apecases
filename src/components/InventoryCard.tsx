@@ -32,7 +32,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
 
   const handleSell = () => {
     updateBalance(item.value);
-    removeInventoryItem(item.inventoryId);
+    removeInventoryItem(item.id);
     showAlert({
       title: 'Item Sold!',
       description: `You sold ${item.name} for ${item.value} stars.`,
@@ -59,15 +59,14 @@ export function InventoryCard({ item }: InventoryCardProps) {
       const queueRef = collection(firestore, 'withdrawal_queue');
       await addDoc(queueRef, {
         user_wallet_address: wallet.account.address,
-        nft_id: item.id, // Assuming item.id is the Token ID
+        nft_id: item.id, // item.id is the Token ID from the 'items' collection
         nft_contract_address: 'YOUR_NFT_CONTRACT_ADDRESS_HERE', // IMPORTANT: Replace with actual contract address
         status: 'pending',
         timestamp: serverTimestamp(),
       });
 
-      // Optimistically remove from inventory, or wait for backend confirmation
-      // For now, we remove it immediately.
-      removeInventoryItem(item.inventoryId);
+      // Remove from inventory after successfully queuing for withdrawal
+      removeInventoryItem(item.id);
 
       showAlert({
         title: 'Withdrawal Request Sent',

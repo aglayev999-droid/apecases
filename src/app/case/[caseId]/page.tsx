@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, Trash2, X, Gift } from 'lucide-react';
+import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,9 +13,9 @@ import { Dialog, DialogContent, DialogClose, DialogTitle } from '@/components/ui
 import { useUser } from '@/contexts/UserContext';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import type { Case, Item } from '@/lib/types';
-import { ALL_ITEMS, MOCK_CASES } from '@/lib/data';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { useFirestore, useMemoFirebase } from '@/firebase';
 
 const RARITY_PROPERTIES = {
     Common: {
@@ -49,28 +50,28 @@ const RARITY_PROPERTIES = {
     },
 };
 
-const selectItem = (currentCase: Case): Item => {
+const selectItem = (currentCase: Case, allItems: Item[]): Item | undefined => {
     const rand = Math.random();
     let cumulativeProbability = 0;
     for (const { itemId, probability } of currentCase.items) {
         cumulativeProbability += probability;
         if (rand < cumulativeProbability) {
-            const foundItem = ALL_ITEMS.find(i => i.id === itemId);
-            if (foundItem) {
-                return foundItem;
-            }
+            return allItems.find(i => i.id === itemId);
         }
     }
     // Fallback to a random item from the case if something goes wrong
     const fallbackItemId = currentCase.items[Math.floor(Math.random() * currentCase.items.length)].itemId;
-    return ALL_ITEMS.find(i => i.id === fallbackItemId)!;
+    return allItems.find(i => i.id === fallbackItemId);
 };
 
 export default function CasePage() {
     const params = useParams();
     const router = useRouter();
     const caseId = params.caseId as string;
+    const firestore = useFirestore();
 
+    const [caseData, setCaseData] = useState<Case | null>(null);
+    const [allItems, setAllItems] = useState<Item[]>([]);
     const [isSpinning, setIsSpinning] = useState(false);
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
@@ -78,14 +79,44 @@ export default function CasePage() {
     const { showAlert } = useAlertDialog();
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
     const [reelItems, setReelItems] = useState<Item[]>([]);
+    const [caseItems, setCaseItems] = useState<Item[]>([]);
 
-    const caseData = useMemo(() => MOCK_CASES.find(c => c.id === caseId), [caseId]);
+    const caseRef = useMemoFirebase(() => 
+        firestore && caseId ? doc(firestore, 'cases', caseId) : null
+    , [firestore, caseId]);
+    
+    const itemsColRef = useMemoFirebase(() =>
+        firestore ? collection(firestore, 'items') : null
+    , [firestore]);
 
     useEffect(() => {
-        if (!caseData) return;
-        const caseItems = caseData.items
-            .map(i => ALL_ITEMS.find(item => item.id === i.itemId))
-            .filter((item): item is Item => !!item);
+        if (!caseRef || !itemsColRef) return;
+        const fetchCaseAndItemsData = async () => {
+            const itemsSnapshot = await getDocs(itemsColRef);
+            const itemsList = itemsSnapshot.docs.map(d => ({ ...d.data(), id: d.id } as Item));
+            setAllItems(itemsList);
+
+            const caseSnap = await getDoc(caseRef);
+
+            if (caseSnap.exists()) {
+                const caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
+                setCaseData(caseResult);
+                
+                const currentCaseItems = caseResult.items
+                    .map(i => itemsList.find(item => item.id === i.itemId))
+                    .filter((item): item is Item => !!item);
+                setCaseItems(currentCaseItems);
+
+            } else {
+                console.error("Case not found!");
+            }
+        };
+
+        fetchCaseAndItemsData();
+    }, [caseRef, itemsColRef]);
+    
+    useEffect(() => {
+        if (caseItems.length === 0) return;
         
         const shuffleArray = (array: Item[]) => {
             for (let i = array.length - 1; i > 0; i--) {
@@ -98,10 +129,10 @@ export default function CasePage() {
         const extendedItems = [...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems];
         setReelItems(shuffleArray(extendedItems));
         
-    }, [caseData]);
+    }, [caseItems]);
     
     const handleSpin = useCallback((isFast: boolean = false) => {
-        if (isSpinning || !caseData || !user || !emblaApi || reelItems.length === 0) return;
+        if (isSpinning || !caseData || !user || !emblaApi || reelItems.length === 0 || allItems.length === 0) return;
         
         const isFree = caseData.price === 0;
         
@@ -130,26 +161,28 @@ export default function CasePage() {
             setLastFreeCaseOpen(new Date());
         }
 
-        const prize = selectItem(caseData);
+        const prize = selectItem(caseData, allItems);
+        if (!prize) {
+            console.error("Could not select a prize.");
+            setIsSpinning(false);
+            return;
+        }
+
         let prizeIndexInReel = reelItems.findIndex((item, index) => item?.id === prize.id && index > reelItems.length / 3);
         if (prizeIndexInReel === -1) {
           prizeIndexInReel = reelItems.findIndex(item => item?.id === prize.id);
         }
         
         if (prizeIndexInReel === -1) {
-            console.error("Prize item not found in reel items array.");
-            const fallbackPrize = reelItems[Math.floor(Math.random() * reelItems.length)];
-            prizeIndexInReel = reelItems.indexOf(fallbackPrize);
-            setWonItem(fallbackPrize);
-        } else {
-             setWonItem(prize);
+            console.error("Prize item not found in reel items array. Adding it.");
+            const newReelItems = [...reelItems, prize];
+            setReelItems(newReelItems);
+            prizeIndexInReel = newReelItems.length - 1;
         }
         
         const spinTime = isFast ? 1000 : 4000;
 
-        // Animate the carousel
-        const targetIndex = prizeIndexInReel + emblaApi.scrollSnapList().length * (isFast ? 1 : 3);
-        emblaApi.scrollTo(targetIndex, false, { duration: spinTime / 1000 });
+        emblaApi.scrollTo(prizeIndexInReel, false);
         
         const onSpinEnd = () => {
             setIsSpinning(false);
@@ -165,13 +198,10 @@ export default function CasePage() {
             }
         };
 
-        // Use a timeout to trigger actions after the spin animation
-        setTimeout(() => {
-            onSpinEnd();
-        }, spinTime);
+        setTimeout(onSpinEnd, spinTime);
 
 
-    }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, reelItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
+    }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, reelItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
 
     const closeModal = () => {
         setIsWinModalOpen(false);
@@ -196,7 +226,7 @@ export default function CasePage() {
     if (!caseData) {
         return (
             <div className="flex items-center justify-center h-full">
-                <p>Case not found.</p>
+                <p>Loading case...</p>
             </div>
         );
     }
@@ -223,8 +253,7 @@ export default function CasePage() {
             </AccordionTrigger>
             <AccordionContent>
                 <div className="grid grid-cols-3 gap-2">
-                    {caseData.items.map(({itemId}) => {
-                        const item = ALL_ITEMS.find(i => i.id === itemId);
+                    {caseItems.map(item => {
                         if (!item) return null;
                         return (
                             <Card key={item.id} className={cn("p-2 border-2", RARITY_PROPERTIES[item.rarity].border)}>

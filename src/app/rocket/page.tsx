@@ -159,23 +159,21 @@ const GameScreen = React.memo(({ gameState, multiplier, countdown, isMuted, setI
 
             {/* Rocket & Explosion */}
              <div
-                className={cn("z-20")}
+                className={cn("z-20", gameState === 'playing' ? 'visible' : 'invisible')}
                 style={rocketStyle}
             >
                 <div className="relative w-full h-full">
-                     {gameState === 'crashed' && (
-                         <Image src="https://i.ibb.co/bX6GfqY/e1e1a556-9e1f-4709-a78b-1a98625906a2-removebg-preview.png" alt="Explosion" layout="fill" objectFit="contain" />
-                     )}
-                     {gameState === 'playing' && (
-                        <Image src="https://i.ibb.co/93bWYZZ/3f7ad183-dda1-4dda-996c-69961a4fabdc-removebg-preview.png" alt="Rocket" layout="fill" objectFit="contain" />
-                     )}
+                    <Image src="https://i.ibb.co/93bWYZZ/3f7ad183-dda1-4dda-996c-69961a4fabdc-removebg-preview.png" alt="Rocket" layout="fill" objectFit="contain" />
                 </div>
             </div>
 
             {/* Multiplier/Status Text */}
             {gameState === 'crashed' ? (
-                <div className="absolute inset-0 flex items-center justify-center z-30">
-                    <h1 className="text-8xl font-bold text-red-500 animate-in fade-in-0 zoom-in-75">
+                 <div className="absolute inset-0 flex flex-col items-center justify-center z-30">
+                    <div className="relative w-48 h-48">
+                         <Image src="https://i.ibb.co/bX6GfqY/e1e1a556-9e1f-4709-a78b-1a98625906a2-removebg-preview.png" alt="Explosion" layout="fill" objectFit="contain" />
+                    </div>
+                    <h1 className="text-8xl font-bold text-red-500 animate-in fade-in-0 zoom-in-75 -mt-8">
                         x{multiplier.toFixed(2)}
                     </h1>
                 </div>
@@ -375,14 +373,14 @@ export default function RocketPage() {
             return;
         }
         if (gameState === 'waiting') {
-            playerBet(user.id, parsedBetAmount, user.avatar, user.name);
-            showAlert({ title: "You bet 25 stars" });
+            playerBet(parsedBetAmount);
+            showAlert({ title: `You bet ${parsedBetAmount} stars` });
         }
     }, [user, betAmount, gameState, playerBet, showAlert]);
 
     const handleCashOut = useCallback(() => {
         if (!user || gameState !== 'playing' || playerStatus?.status !== 'playing') return;
-        playerCashOut(user.id);
+        playerCashOut();
     }, [user, gameState, playerStatus, playerCashOut]);
 
 
