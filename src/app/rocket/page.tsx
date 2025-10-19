@@ -66,7 +66,7 @@ export default function RocketPage() {
         }
         if (gameState === 'waiting') {
             playerBet(user.id, parsedBetAmount, user.avatar, user.name);
-            showAlert({ title: "Bet placed!", description: `You bet ${parsedBetAmount} stars.` });
+            showAlert({ title: "You bet 25 stars" });
         }
     };
 
@@ -78,7 +78,6 @@ export default function RocketPage() {
     const GameScreen = () => {
         const gameContainerRef = useRef<HTMLDivElement>(null);
         const [position, setPosition] = useState({ x: 0, y: 0, rotation: 0 });
-        const [trailPath, setTrailPath] = useState("");
 
         useEffect(() => {
             if (!gameContainerRef.current) return;
@@ -89,38 +88,21 @@ export default function RocketPage() {
             const startY = containerHeight - 60;
             
             const getRocketPosition = () => {
-                if (gameState === 'waiting' || gameState === 'crashed' || multiplier < 1.01) {
-                    return { x: startX, y: startY, rotation: -45 };
+                if (gameState === 'waiting' || gameState === 'crashed') {
+                    return { x: startX, y: startY, rotation: 0 };
                 }
 
-                const progress = Math.min((multiplier - 1) / 4, 1);
-
-                const curvePower = 0.5;
-                const t = Math.pow(progress, curvePower);
-
-                const x = startX + (containerWidth - startX) * t;
-                const y = startY - (startY) * Math.pow(progress, 1.5);
+                // Ensure progress stays between 0 and 1, even with high multipliers
+                const progress = Math.min((multiplier - 1) / 4, 1); // Capped at 5x for positioning
                 
-                const boundedX = Math.min(x, containerWidth - 60);
-                const boundedY = Math.max(y, 60);
-
-                const rotation = -45 + (45 * progress);
+                const x = startX + (containerWidth - startX - 80) * progress; // Leave some margin on the right
+                const y = startY - (startY * 0.2) * progress; // Slight upward movement
                 
-                return { x: boundedX, y: boundedY, rotation };
+                return { x, y, rotation: 0 };
             };
             
-            const getTrailPath = (newPos: { x: number, y: number }) => {
-                const height = gameContainerRef.current?.offsetHeight ?? 0;
-                 if (gameState === 'waiting' || gameState === 'crashed' || multiplier < 1.01) {
-                    return `M ${startX-20} ${height} L ${startX+20} ${height} L ${startX+20} ${height-40} C ${startX+20} ${height-40} ${startX} ${height-20} ${startX-20} ${height} Z`;
-                }
-
-                return `M ${startX-20} ${height} L ${newPos.x+20} ${height} L ${newPos.x+20} ${newPos.y} C ${newPos.x+20} ${newPos.y+50} ${newPos.x-50} ${height} ${startX-20} ${height} Z`;
-            };
-
             const newPos = getRocketPosition();
             setPosition(newPos);
-            setTrailPath(getTrailPath(newPos));
 
         }, [multiplier, gameState]);
 
@@ -178,21 +160,6 @@ export default function RocketPage() {
                     {isMuted ? <VolumeX className="h-6 w-6 text-white" /> : <Volume2 className="h-6 w-6 text-white" />}
                 </Button>
 
-                {/* Rocket Trail */}
-                <svg className="absolute inset-0 w-full h-full z-10">
-                    <path
-                        d={trailPath}
-                        fill="url(#trailGradient)"
-                        stroke="hsl(var(--primary) / 0.5)"
-                        strokeWidth="1"
-                    />
-                    <defs>
-                        <linearGradient id="trailGradient" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="hsl(var(--primary) / 0)" />
-                            <stop offset="100%" stopColor="hsl(var(--primary) / 0.4)" />
-                        </linearGradient>
-                    </defs>
-                </svg>
 
                 {/* Rocket Image */}
                  <div
@@ -222,8 +189,8 @@ export default function RocketPage() {
                         <p className="text-8xl font-bold">{countdown}</p>
                      </div>
                 ) : (
-                    <div className="absolute top-1/2 left-10 -translate-y-1/2 text-left z-30">
-                        <h1 className="text-6xl sm:text-8xl font-bold text-white">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-30">
+                        <h1 className="text-8xl font-bold text-white">
                             x{multiplier.toFixed(2)}
                         </h1>
                     </div>
@@ -406,5 +373,7 @@ const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
 
 
 
+
+    
 
     
