@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { TonConnectProvider } from '@/contexts/TonConnectProvider';
 import { FirebaseClientProvider } from '@/firebase';
 import { AlertDialogProvider } from '@/contexts/AlertDialogContext';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -26,24 +27,31 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
-      <body className={cn("font-body antialiased", inter.variable)} suppressHydrationWarning>
-        <FirebaseClientProvider>
-          <TonConnectProvider>
-            <AlertDialogProvider>
-              <UserProvider>
-                <div className="flex flex-col min-h-screen">
-                  <AppHeader />
-                  <main className="flex-grow container mx-auto px-4 pt-8 pb-28 md:pb-8 max-w-2xl">
-                    {children}
-                  </main>
-                  <BottomNav />
-                </div>
-                <Toaster />
-              </UserProvider>
-            </AlertDialogProvider>
-          </TonConnectProvider>
-        </FirebaseClientProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={cn("font-body antialiased font-bold", inter.variable)} suppressHydrationWarning>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <FirebaseClientProvider>
+            <TonConnectProvider>
+              <AlertDialogProvider>
+                <UserProvider>
+                  <div className="flex flex-col min-h-screen">
+                    <AppHeader />
+                    <main className="flex-grow container mx-auto px-4 pt-8 pb-28 md:pb-8 max-w-2xl">
+                      {children}
+                    </main>
+                    <BottomNav />
+                  </div>
+                  <Toaster />
+                </UserProvider>
+              </AlertDialogProvider>
+            </TonConnectProvider>
+          </FirebaseClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -62,7 +62,7 @@ export default function BottomNav() {
                         isActive ? 'text-primary' : 'text-muted-foreground'
                     )} />
                     <span className={cn(
-                        'text-xs font-medium',
+                        'text-xs font-bold',
                         isActive ? 'text-primary' : 'text-muted-foreground'
                         )}>{item.label}</span>
                 </div>

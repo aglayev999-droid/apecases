@@ -162,10 +162,6 @@ export default function CasePage() {
                 
                 if (prize.id.startsWith('item-stars-')) {
                     updateBalance(prize.value, 0);
-                    showAlert({
-                        title: `You won ${prize.name}!`,
-                        description: `Added ${prize.value} stars to your balance.`,
-                    });
                 } else {
                     addInventoryItem(prize);
                 }
@@ -224,9 +220,9 @@ export default function CasePage() {
     const GiftsInside = () => (
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="item-1" className="border-none">
-            <AccordionTrigger className="justify-center gap-2 text-muted-foreground hover:no-underline">
+            <AccordionTrigger className="justify-center gap-2 text-muted-foreground hover:no-underline font-bold">
                 <Gift className="h-5 w-5 text-primary"/>
-                <span className="font-semibold">Gifts Inside</span>
+                <span>Gifts Inside</span>
             </AccordionTrigger>
             <AccordionContent>
                 <div className="grid grid-cols-3 gap-2">
@@ -272,7 +268,7 @@ export default function CasePage() {
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
                     </div>
                     
-                    <div className="overflow-hidden w-full" ref={emblaRef}>
+                    <div className="overflow-hidden w-full" ref={emblaRef} style={{ willChange: 'transform' }}>
                         <div className="flex">
                             {reelItems.length > 0 ? reelItems.map((item, index) => (
                                 <div key={index} className="flex-[0_0_9rem] mx-2">

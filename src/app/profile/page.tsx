@@ -5,40 +5,48 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Copy } from 'lucide-react';
+import { Copy, Moon, Sun } from 'lucide-react';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import Image from 'next/image';
+import { useTheme } from 'next-themes';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
-
 
 export default function ProfilePage() {
   const { user } = useUser();
   const { showAlert } = useAlertDialog();
+  const { theme, setTheme } = useTheme();
 
   const formatNumber = (num: number) => {
-    if (num === undefined || num === null) return '0'; 
+    if (num === undefined || num === null) return '0';
     return new Intl.NumberFormat('en-US').format(num);
   };
-  
+
   const copyReferralCode = () => {
-    if (!user || !user.referrals || !user.referrals.code) return; 
+    if (!user || !user.referrals || !user.referrals.code) return;
     navigator.clipboard.writeText(user.referrals.code);
     showAlert({
       title: 'Copied!',
       description: 'Referral code copied to clipboard.',
     });
   }
+  
+  const handleThemeChange = (isChecked: boolean) => {
+    setTheme(isChecked ? 'dark' : 'light');
+  };
+
 
   if (!user) {
     return (
       <div className="space-y-8">
         <div className="flex flex-col sm:flex-row items-center gap-6">
-            <Skeleton className="h-24 w-24 rounded-full" />
-            <div className="space-y-2">
-                <Skeleton className="h-8 w-48" />
-                <Skeleton className="h-6 w-64" />
-            </div>
+          <Skeleton className="h-24 w-24 rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-6 w-64" />
+          </div>
         </div>
         <div className="grid md:grid-cols-2 gap-8">
           <Skeleton className="h-64 w-full" />
@@ -63,6 +71,27 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+      
+       <div className="grid md:grid-cols-2 gap-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="theme-switch" className="flex items-center gap-2">
+                  {theme === 'dark' ? <Moon className="h-5 w-5"/> : <Sun className="h-5 w-5" />}
+                  <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
+                </Label>
+                <Switch
+                  id="theme-switch"
+                  checked={theme === 'dark'}
+                  onCheckedChange={handleThemeChange}
+                />
+              </div>
+            </CardContent>
+          </Card>
+      </div>
 
       <div className="grid md:grid-cols-2 gap-8">
         <Card>
@@ -70,7 +99,7 @@ export default function ProfilePage() {
             <CardTitle>Balances</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg bg-card-foreground/5">
+            <div className="flex items-center justify-between p-4 rounded-lg bg-card-foreground/5 dark:bg-card-foreground/5">
               <div className="flex items-center gap-3">
                 <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={32} height={32} className="h-8 w-8 object-contain" />
                 <span className="text-lg font-bold">Stars</span>
@@ -79,7 +108,7 @@ export default function ProfilePage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader>
             <CardTitle>Referral Program</CardTitle>
@@ -106,6 +135,6 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       </div>
-    </div> 
+    </div>
   );
 }
