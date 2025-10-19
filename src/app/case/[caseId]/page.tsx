@@ -46,6 +46,57 @@ const selectItem = (currentCase: Case, allItems: Item[]): Item | undefined => {
     return allItems.find(i => i.id === fallbackItemId);
 };
 
+const Reel = ({ items, onSpinEnd, isFast }: { items: Item[], onSpinEnd: (prize: Item) => void, isFast: boolean }) => {
+    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
+
+    useEffect(() => {
+        if (!emblaApi) return;
+        emblaApi.reInit();
+    }, [items, emblaApi]);
+
+    useEffect(() => {
+        if (!emblaApi || items.length < 100) return;
+
+        const spin = async () => {
+            const spinTime = isFast ? 1000 : 5000;
+            const targetIndex = 75; // The prize
+            
+            emblaApi.scrollTo(0, true);
+            await new Promise(resolve => setTimeout(resolve, 50));
+            
+            const container = emblaApi.containerNode();
+            if (container) container.style.transition = `transform ${spinTime}ms ease-out`;
+            
+            emblaApi.scrollTo(targetIndex);
+
+            await new Promise(resolve => setTimeout(resolve, spinTime));
+            if (container) container.style.transition = '';
+
+            onSpinEnd(items[targetIndex]);
+        };
+
+        spin();
+    }, [emblaApi, items, isFast, onSpinEnd]);
+
+    return (
+        <div className="relative w-full">
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5L22 15H2L12 5Z"/></svg></div>
+            <div className="overflow-hidden w-full" ref={emblaRef}>
+                <div className="flex">
+                    {items.map((item, index) => (
+                        <div key={index} className="flex-[0_0_9rem] mx-2">
+                            <Card className={cn("p-2 border-2 bg-card/50 transition-all duration-300 opacity-50", item ? RARITY_PROPERTIES[item.rarity].border : 'border-gray-500')}>
+                                <div className="aspect-square relative">{item && <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" data-ai-hint={item.imageHint}/>}</div>
+                            </Card>
+                        </div>
+                    ))}
+                </div>
+            </div>
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 19L2 9H22L12 19Z"/></svg></div>
+        </div>
+    );
+};
+
 export default function CasePage() {
     const params = useParams();
     const router = useRouter();
@@ -55,15 +106,16 @@ export default function CasePage() {
     const [caseData, setCaseData] = useState<Case | null>(null);
     const [allItems, setAllItems] = useState<Item[]>([]);
     const [isSpinning, setIsSpinning] = useState(false);
+    const [isFastSpin, setIsFastSpin] = useState(false);
     const [wonItems, setWonItems] = useState<Item[]>([]);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
     const { user, updateBalance, addInventoryItem, updateSpending, setLastFreeCaseOpen, lastFreeCaseOpen } = useUser();
     const { showAlert } = useAlertDialog();
-    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
-    const [reelItems, setReelItems] = useState<Item[]>([]);
+    
+    const [reels, setReels] = useState<Item[][]>([]);
     const [caseItems, setCaseItems] = useState<Item[]>([]);
     const [spinMultiplier, setSpinMultiplier] = useState(1);
-
+    
     const caseRef = useMemoFirebase(() => firestore && caseId ? doc(firestore, 'cases', caseId) : null, [firestore, caseId]);
     const itemsColRef = useMemoFirebase(() => firestore ? collection(firestore, 'items') : null, [firestore]);
 
@@ -96,14 +148,8 @@ export default function CasePage() {
         fetchCaseAndItemsData();
     }, [caseId, firestore, caseRef, itemsColRef]);
     
-    useEffect(() => {
-        if (caseItems.length === 0) return;
-        const initialReel = Array.from({ length: 100 }, () => caseItems[Math.floor(Math.random() * caseItems.length)]);
-        setReelItems(initialReel);
-    }, [caseItems]);
-    
     const handleSpin = useCallback(async (isFast: boolean = false) => {
-        if (isSpinning || !caseData || !user || !emblaApi || caseItems.length === 0 || allItems.length === 0) return;
+        if (isSpinning || !caseData || !user || caseItems.length === 0 || allItems.length === 0) return;
 
         const isFree = caseData.price === 0;
         const numSpins = isFree ? 1 : spinMultiplier;
@@ -128,6 +174,7 @@ export default function CasePage() {
         }
         
         setIsSpinning(true);
+        setIsFastSpin(isFast);
         setWonItems([]);
         if (isFree) setLastFreeCaseOpen(new Date());
 
@@ -144,49 +191,44 @@ export default function CasePage() {
         }
 
         const reelLength = 100;
-        const targetIndex = 75; // The final item shown in the reel
-        const spinTime = isFast ? 1000 : 5000;
-        const pauseBetweenSpins = 500;
+        const targetIndex = 75;
 
-        for (let i = 0; i < prizes.length; i++) {
-            const prize = prizes[i];
-            
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
+        const newReels = prizes.map(prize => {
             let newReelItems = Array.from({ length: reelLength }, () => caseItems[Math.floor(Math.random() * caseItems.length)]);
             newReelItems[targetIndex] = prize;
-            setReelItems(newReelItems);
-
-            if (emblaApi) {
-                emblaApi.reInit();
-                emblaApi.scrollTo(0, true); 
-                
-                const container = emblaApi.containerNode();
-                if (container) container.style.transition = `transform ${spinTime}ms ease-out`;
-
-                emblaApi.scrollTo(targetIndex); 
-
-                await new Promise(resolve => setTimeout(resolve, spinTime + (i === prizes.length -1 ? pauseBetweenSpins : 0)));
-                if (container) container.style.transition = '';
-            }
-        }
-        
-        setIsSpinning(false);
-        setWonItems(prizes);
-        setIsWinModalOpen(true);
-        
-        prizes.forEach(prize => {
-            if (prize.id.startsWith('item-stars-')) {
-                updateBalance(prize.value);
-            } else {
-                addInventoryItem(prize);
-            }
+            return newReelItems;
         });
 
-    }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning, spinMultiplier]);
+        setReels(newReels);
+
+    }, [caseData, user, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning, spinMultiplier]);
+    
+    const onSpinEnd = useCallback((prize: Item) => {
+        setWonItems(prev => {
+            const newWonItems = [...prev, prize];
+            if (newWonItems.length === reels.length) {
+                setTimeout(() => {
+                    setIsSpinning(false);
+                    setReels([]);
+                    setIsWinModalOpen(true);
+                    
+                    newWonItems.forEach(p => {
+                        if (p.id.startsWith('item-stars-')) {
+                            updateBalance(p.value);
+                        } else {
+                            addInventoryItem(p);
+                        }
+                    });
+
+                }, 500); // Wait half a second before showing modal
+            }
+            return newWonItems;
+        });
+    }, [reels.length, addInventoryItem, updateBalance]);
+
 
     const handleModalOpenChange = (open: boolean) => {
-        if (!open) {
+        if (!open && !isSpinning) {
             setIsWinModalOpen(false);
             setWonItems([]);
             router.push('/');
@@ -218,6 +260,7 @@ export default function CasePage() {
     }
     
     const totalWonValue = wonItems.reduce((sum, item) => item.value, 0);
+    const displayedMultiplier = isFree ? 1 : spinMultiplier;
 
     return (
         <div className="flex flex-col h-full">
@@ -226,31 +269,39 @@ export default function CasePage() {
                 <h1 className="text-xl font-bold">Roulette</h1>
                 <div className="flex items-center gap-2">
                     {[2, 3].map(multi => (
-                        <Button key={multi} variant={spinMultiplier === multi ? 'default' : 'outline'} className="w-10 h-10 p-0 font-bold" onClick={() => setSpinMultiplier(multi)}>x{multi}</Button>
+                        <Button key={multi} variant={spinMultiplier === multi ? 'default' : 'outline'} className="w-10 h-10 p-0 font-bold" onClick={() => setSpinMultiplier(multi)} disabled={isSpinning || isFree}>x{multi}</Button>
                     ))}
-                    <Button variant="destructive" size="icon" className="w-10 h-10" onClick={() => setSpinMultiplier(1)}><Trash2 className="h-5 w-5"/></Button>
+                    <Button variant="destructive" size="icon" className="w-10 h-10" onClick={() => setSpinMultiplier(1)} disabled={isSpinning || isFree}><Trash2 className="h-5 w-5"/></Button>
                 </div>
             </div>
 
             <div className="flex-grow flex flex-col justify-between">
-                 <div className="flex-grow flex flex-col items-center justify-center relative">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5L22 15H2L12 5Z"/></svg></div>
-                    <div className="overflow-hidden w-full" ref={emblaRef}>
-                        <div className="flex">
-                            {reelItems.map((item, index) => (
-                                <div key={index} className="flex-[0_0_9rem] mx-2">
-                                    <Card className={cn("p-2 border-2 bg-card/50 transition-all duration-300", item ? RARITY_PROPERTIES[item.rarity].border : 'border-gray-500', isSpinning ? 'opacity-70 scale-95' : 'opacity-50')}>
-                                        <div className="aspect-square relative">{item && <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" data-ai-hint={item.imageHint}/>}</div>
-                                    </Card>
+                <div className="flex-grow flex flex-col items-center justify-center relative space-y-4">
+                    {isSpinning ? (
+                        reels.map((reelItems, index) => (
+                            <Reel key={index} items={reelItems} onSpinEnd={onSpinEnd} isFast={isFastSpin} />
+                        ))
+                    ) : (
+                        Array.from({ length: displayedMultiplier }).map((_, index) => (
+                            <div key={index} className="relative w-full">
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 5L22 15H2L12 5Z"/></svg></div>
+                                <div className="overflow-hidden w-full">
+                                    <div className="flex">
+                                        <div className="flex-[0_0_9rem] mx-auto">
+                                            <Card className="p-2 border-2 bg-card/50 border-gray-500">
+                                                <div className="aspect-square relative"><Image src={caseData.image} alt={caseData.name} fill sizes="10vw" className="object-contain" data-ai-hint={caseData.imageHint}/></div>
+                                            </Card>
+                                        </div>
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 19L2 9H22L12 19Z"/></svg></div>
+                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-primary z-10"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 19L2 9H22L12 19Z"/></svg></div>
+                            </div>
+                        ))
+                    )}
                 </div>
 
                 <div className="mt-auto pt-8">
-                    <Button onClick={() => handleSpin(false)} onDoubleClick={() => handleSpin(true)} disabled={isSpinning || !canAfford || reelItems.length === 0} className="w-full h-16 text-xl" size="lg">
+                    <Button onClick={() => handleSpin(false)} onDoubleClick={() => handleSpin(true)} disabled={isSpinning || !canAfford} className="w-full h-16 text-xl" size="lg">
                        <div className="flex flex-col">
                             <div className="flex items-center justify-center gap-2">
                                 <span>{isFree ? 'Spin' : `Spin x${spinMultiplier} for ${totalCost}`}</span>
@@ -284,7 +335,7 @@ export default function CasePage() {
             </div>
 
             <Dialog open={isWinModalOpen} onOpenChange={handleModalOpenChange}>
-                <DialogContent className="sm:max-w-md w-[90vw] p-0 border-0 bg-transparent shadow-none" onInteractOutside={(e) => { if (isWinModalOpen) e.preventDefault(); }}>
+                <DialogContent className="sm:max-w-md w-[90vw] p-0 border-0 bg-transparent shadow-none" onInteractOutside={(e) => { if (isWinModalOpen || isSpinning) e.preventDefault(); }}>
                      {wonItems.length > 0 && (
                         <div className="text-center space-y-4 p-4 sm:p-6 bg-card rounded-lg relative">
                            <button onClick={() => handleModalOpenChange(false)} className="absolute right-2 top-2 p-1 rounded-full bg-background/50 hover:bg-background/80"><X className="h-4 w-4" /></button>
