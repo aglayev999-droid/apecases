@@ -270,6 +270,13 @@ export default function CasePage() {
         });
         closeModalAndRedirect();
     };
+    
+    const handleComingSoon = () => {
+        showAlert({
+            title: 'Tez Kunda!',
+            description: 'Bu funksiya ustida ish olib bormoqdamiz va tez orada taqdim etamiz.',
+        });
+    }
 
     const handleGoToInventory = () => {
         // Set state to close modal but redirect is handled by onOpenChange
@@ -338,9 +345,9 @@ export default function CasePage() {
                 </Button>
                 <h1 className="text-xl font-bold">Roulette</h1>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" className="w-10 h-10 p-0 font-bold">x2</Button>
-                    <Button variant="outline" className="w-10 h-10 p-0 font-bold">x3</Button>
-                    <Button variant="destructive" size="icon" className="w-10 h-10">
+                    <Button variant="outline" className="w-10 h-10 p-0 font-bold" onClick={handleComingSoon}>x2</Button>
+                    <Button variant="outline" className="w-10 h-10 p-0 font-bold" onClick={handleComingSoon}>x3</Button>
+                    <Button variant="destructive" size="icon" className="w-10 h-10" onClick={handleComingSoon}>
                         <Trash2 className="h-5 w-5"/>
                     </Button>
                 </div>
