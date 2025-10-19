@@ -65,6 +65,15 @@ const selectItem = (currentCase: Case, allItems: Item[]): Item | undefined => {
     return allItems.find(i => i.id === fallbackItemId);
 };
 
+const shuffleArray = (array: any[]) => {
+    if (typeof window === 'undefined') return array;
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+};
+
 export default function CasePage() {
     const params = useParams();
     const router = useRouter();
@@ -93,6 +102,7 @@ export default function CasePage() {
     useEffect(() => {
         if (!firestore) return;
         const fetchCaseAndItemsData = async () => {
+            if (!itemsColRef || !caseRef) return;
             const itemsSnapshot = await getDocs(itemsColRef);
             let itemsList: Item[];
 
@@ -103,7 +113,7 @@ export default function CasePage() {
             }
             setAllItems(itemsList);
 
-            const caseSnap = await getDoc(caseRef!);
+            const caseSnap = await getDoc(caseRef);
             let caseResult: Case | null = null;
 
             if (caseSnap.exists()) {
@@ -132,24 +142,13 @@ export default function CasePage() {
     
     useEffect(() => {
         if (caseItems.length === 0) return;
-        
-        const shuffleArray = (array: Item[]) => {
-            if (typeof window !== 'undefined') {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-            }
-            return array;
-        }
-        
         const extendedItems = [...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems];
         setReelItems(shuffleArray(extendedItems));
         
     }, [caseItems]);
     
     const handleSpin = useCallback((isFast: boolean = false) => {
-        if (isSpinning || !caseData || !user || !emblaApi || reelItems.length === 0 || allItems.length === 0) return;
+        if (isSpinning || !caseData || !user || !emblaApi || caseItems.length === 0 || allItems.length === 0) return;
         
         const isFree = caseData.price === 0;
         
@@ -178,6 +177,10 @@ export default function CasePage() {
             setLastFreeCaseOpen(new Date());
         }
 
+        // Shuffle the reel for every spin
+        const newReelItems = shuffleArray([...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems]);
+        setReelItems(newReelItems);
+
         const prize = selectItem(caseData, allItems);
         if (!prize) {
             console.error("Could not select a prize.");
@@ -185,21 +188,29 @@ export default function CasePage() {
             return;
         }
 
-        let prizeIndexInReel = reelItems.findIndex((item, index) => item?.id === prize.id && index > reelItems.length / 3);
+        let prizeIndexInReel = newReelItems.findIndex((item, index) => item?.id === prize.id && index > newReelItems.length / 3);
         if (prizeIndexInReel === -1) {
-          prizeIndexInReel = reelItems.findIndex(item => item?.id === prize.id);
+          prizeIndexInReel = newReelItems.findIndex(item => item?.id === prize.id);
         }
         
         if (prizeIndexInReel === -1) {
             console.error("Prize item not found in reel items array. Adding it.");
-            const newReelItems = [...reelItems, prize];
-            setReelItems(newReelItems);
-            prizeIndexInReel = newReelItems.length - 1;
+            // This should ideally not happen if caseItems is correct
+            const finalReelItems = [...newReelItems, prize];
+            setReelItems(finalReelItems);
+            prizeIndexInReel = finalReelItems.length - 1;
         }
         
         const spinTime = isFast ? 1000 : 4000;
 
-        emblaApi.scrollTo(prizeIndexInReel, false);
+        // Give React time to re-render the shuffled reel before scrolling
+        setTimeout(() => {
+            if (emblaApi) {
+                emblaApi.reInit(); // Re-initialize embla to recognize new slide order
+                emblaApi.scrollTo(prizeIndexInReel, false);
+            }
+        }, 100);
+
         
         const onSpinEnd = () => {
             setIsSpinning(false);
@@ -215,10 +226,10 @@ export default function CasePage() {
             }
         };
 
-        setTimeout(onSpinEnd, spinTime);
+        setTimeout(onSpinEnd, spinTime + 100);
 
 
-    }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, reelItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
+    }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
 
     const closeModal = () => {
         setIsWinModalOpen(false);
