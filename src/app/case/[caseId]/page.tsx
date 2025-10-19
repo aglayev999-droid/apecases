@@ -210,13 +210,6 @@ export default function CasePage() {
                 const engine = emblaApi.internalEngine();
                 const scrollSnaps = emblaApi.scrollSnapList();
                 
-                // Calculate the target scroll position. We might need to add loops worth of scroll to make it spin longer
-                const loops = 3;
-                const targetScroll = scrollSnaps[targetIndex] + (engine.scrollBody.length() * loops);
-                
-                const transitionDuration = isFast ? 1000 : 5000;
-                engine.scrollBody.duration = transitionDuration;
-                
                 // Animate the scroll to the pre-determined target index.
                 emblaApi.scrollTo(targetIndex); 
 
@@ -232,7 +225,7 @@ export default function CasePage() {
                     } else {
                         addInventoryItem(logicalPrize);
                     }
-                }, transitionDuration + 500); // Add a small buffer after animation ends
+                }, 5500); // Add a small buffer after animation ends
             }
         }, 100);
 
@@ -331,7 +324,7 @@ export default function CasePage() {
                     </div>
                     
                     <div className="overflow-hidden w-full" ref={emblaRef}>
-                        <div className="flex">
+                        <div className="flex" style={isSpinning ? { transition: 'transform 5s ease-out' } : {}}>
                             {reelItems.length > 0 ? reelItems.map((item, index) => (
                                 <div key={index} className="flex-[0_0_9rem] mx-2">
                                     <Card className={cn(
