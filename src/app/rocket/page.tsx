@@ -80,13 +80,14 @@ const GameScreen = React.memo(({ gameState, multiplier, countdown, isMuted, setI
     }, [multiplier, gameState]);
 
     useEffect(() => {
-        if (gameState === 'playing') {
-            if (gameContainerRef.current) {
-                const containerHeight = gameContainerRef.current.offsetHeight;
-                const startX = 40;
-                const startY = containerHeight - 60;
-                setTrailPath(`M ${startX} ${startY}`);
-            }
+        if (gameState === 'playing' && gameContainerRef.current) {
+            const containerHeight = gameContainerRef.current.offsetHeight;
+            const startX = 40;
+            const startY = containerHeight - 60;
+            setTrailPath(`M ${startX} ${startY}`);
+        }
+        if (gameState === 'crashed' || gameState === 'waiting') {
+            setTrailPath('');
         }
     }, [gameState]);
 
@@ -144,15 +145,17 @@ const GameScreen = React.memo(({ gameState, multiplier, countdown, isMuted, setI
             </Button>
 
             {/* Trail */}
-             <svg className="absolute inset-0 z-10 w-full h-full">
-                 <path
-                    d={trailPath}
-                    stroke="rgba(75, 126, 255, 0.5)"
-                    strokeWidth="4"
-                    fill="none"
-                    strokeLinecap="round"
-                 />
-             </svg>
+            {gameState === 'playing' && (
+                <svg className="absolute inset-0 z-10 w-full h-full">
+                    <path
+                        d={trailPath}
+                        stroke="rgba(75, 126, 255, 0.5)"
+                        strokeWidth="4"
+                        fill="none"
+                        strokeLinecap="round"
+                    />
+                </svg>
+            )}
 
             {/* Rocket & Explosion */}
              <div
@@ -178,8 +181,8 @@ const GameScreen = React.memo(({ gameState, multiplier, countdown, isMuted, setI
                 </div>
             ) : gameState === 'waiting' ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-30 text-center text-white">
-                    <Image src="https://i.ibb.co/XZHF0G6/776f01cf-fb67-4fb6-aaab-beaa022d0f0a-removebg-preview.png" width={80} height={80} alt="1case logo" className="mb-4 h-20 w-20"/>
-                    <p className="text-lg uppercase tracking-widest text-muted-foreground">Ожидание следующего раунда</p>
+                    <h2 className="text-4xl font-bold tracking-widest text-primary">APEX</h2>
+                    <p className="text-lg uppercase tracking-widest text-muted-foreground">ОЖИДАНИЕ СЛЕДУЮЩЕГО РАУНДА</p>
                     <p className="text-8xl font-bold">{countdown}</p>
                  </div>
             ) : (
