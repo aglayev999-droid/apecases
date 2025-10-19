@@ -28,7 +28,7 @@ const generateCrashPoint = () => {
 };
 
 export const RocketProvider = ({ children }: { children: ReactNode }) => {
-    const { user, setUser } = useUser();
+    const { user, setUser, updateBalance } = useUser();
     
     const [gameState, setGameState] = useState<RocketGameState>('waiting');
     const [multiplier, setMultiplier] = useState(1.00);
@@ -87,30 +87,28 @@ export const RocketProvider = ({ children }: { children: ReactNode }) => {
     }, [gameState, countdown, multiplier, crashPoint, resetGame]);
     
     const playerBet = useCallback((userId: string, betAmount: number, avatar: string, name: string) => {
-        if (gameState !== 'waiting') return;
-        
-        setUser(currentUser => {
-            if (!currentUser || currentUser.balance.stars < betAmount) return currentUser;
+        if (gameState !== 'waiting' || !user || user.balance.stars < betAmount) {
+            return;
+        }
 
-            setPlayers(currentPlayers => {
-                const playerMap = new Map(currentPlayers.map(p => [p.id, p]));
-                playerMap.set(userId, {
-                    id: userId,
-                    name,
-                    avatar,
-                    bet: betAmount,
-                    status: 'waiting',
-                    cashedOutAt: null,
-                });
-                return Array.from(playerMap.values());
+        // Update player list state
+        setPlayers(currentPlayers => {
+            const playerMap = new Map(currentPlayers.map(p => [p.id, p]));
+            playerMap.set(userId, {
+                id: userId,
+                name,
+                avatar,
+                bet: betAmount,
+                status: 'waiting',
+                cashedOutAt: null,
             });
-            
-            return {
-                ...currentUser,
-                balance: { ...currentUser.balance, stars: currentUser.balance.stars - betAmount }
-            };
+            return Array.from(playerMap.values());
         });
-    }, [gameState, setUser]);
+
+        // Update user balance state
+        updateBalance(-betAmount, 0);
+
+    }, [gameState, user, updateBalance]);
 
     const playerCashOut = useCallback((userId: string) => {
         if (gameState !== 'playing' || !user) return;
@@ -131,18 +129,9 @@ export const RocketProvider = ({ children }: { children: ReactNode }) => {
 
         if (playerToUpdate) {
             const winnings = playerToUpdate.bet * multiplier;
-            setUser(currentUser => {
-                if (!currentUser) return null;
-                return {
-                    ...currentUser,
-                    balance: {
-                        ...currentUser.balance,
-                        stars: currentUser.balance.stars + winnings,
-                    },
-                };
-            });
+            updateBalance(winnings, 0);
         }
-    }, [gameState, multiplier, user, setUser]);
+    }, [gameState, multiplier, user, updateBalance]);
 
     const getPlayerStatus = useCallback((userId: string) => {
         return players.find(p => p.id === userId);
