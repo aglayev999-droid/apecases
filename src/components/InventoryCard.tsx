@@ -96,14 +96,16 @@ export function InventoryCard({ item }: InventoryCardProps) {
     )}>
       <CardHeader className="p-2 relative aspect-square">
         {hasAnimation ? (
-           <div style={{padding:'100% 0 0 0',position:'relative'}}>
-             <iframe 
+           <div className="w-full h-full">
+             <video 
                 src={item.animationUrl}
-                frameBorder="0" 
-                allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" 
-                style={{position:'absolute',top:0,left:0,width:'100%',height:'100%'}} 
-                title={item.name}>
-              </iframe>
+                className="w-full h-full object-cover"
+                autoPlay
+                loop
+                muted
+                playsInline
+                title={item.name}
+              />
            </div>
         ) : (
           <Image
