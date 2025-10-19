@@ -124,7 +124,7 @@ export default function CasePage() {
               showAlert({ title: "Not enough stars", description: "You don't have enough stars to open this case." });
               return;
             }
-            updateBalance(-caseData.price, 0);
+            updateBalance(-caseData.price);
             updateSpending(caseData.price);
         }
         
@@ -161,7 +161,7 @@ export default function CasePage() {
                 setIsWinModalOpen(true);
                 
                 if (prize.id.startsWith('item-stars-')) {
-                    updateBalance(prize.value, 0);
+                    updateBalance(prize.value);
                 } else {
                     addInventoryItem(prize);
                 }
@@ -183,7 +183,7 @@ export default function CasePage() {
 
     const handleSell = () => {
         if (!wonItem) return;
-        updateBalance(wonItem.value, 0);
+        updateBalance(wonItem.value);
         showAlert({
             title: `Sold: ${wonItem.name}!`,
             description: `You got ${wonItem.value} stars.`,

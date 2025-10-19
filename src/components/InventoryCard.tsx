@@ -31,7 +31,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
   const firestore = useFirestore();
 
   const handleSell = () => {
-    updateBalance(item.value, 0);
+    updateBalance(item.value);
     removeInventoryItem(item.inventoryId);
     showAlert({
       title: 'Item Sold!',
@@ -102,7 +102,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
       <CardContent className="p-2 pt-0 text-left flex-grow">
         <p className="text-sm font-semibold truncate">{item.name}</p>
         {isNft ? (
-            <p className="text-xs text-muted-foreground truncate">ID: {item.inventoryId}</p>
+            <p className="text-xs text-muted-foreground truncate">ID: {item.id.split('-').pop()}</p>
         ) : (
             <p className={cn("text-xs font-bold", RARITY_PROPERTIES[item.rarity].text)}>{item.rarity}</p>
         )}

@@ -25,7 +25,7 @@ export default function InventoryPage() {
     const totalValue = nonNftItems.reduce((sum, item) => sum + item.value, 0);
     const itemIdsToSell = nonNftItems.map(item => item.inventoryId);
     
-    updateBalance(totalValue, 0);
+    updateBalance(totalValue);
     removeInventoryItems(itemIdsToSell);
 
     showAlert({

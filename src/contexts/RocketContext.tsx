@@ -28,7 +28,7 @@ const generateCrashPoint = () => {
 };
 
 export const RocketProvider = ({ children }: { children: ReactNode }) => {
-    const { user, setUser, updateBalance } = useUser();
+    const { user, updateBalance } = useUser();
     
     const [gameState, setGameState] = useState<RocketGameState>('waiting');
     const [multiplier, setMultiplier] = useState(1.00);
@@ -106,7 +106,7 @@ export const RocketProvider = ({ children }: { children: ReactNode }) => {
         });
 
         // Update user balance state
-        updateBalance(-betAmount, 0);
+        updateBalance(-betAmount);
 
     }, [gameState, user, updateBalance]);
 
@@ -129,7 +129,7 @@ export const RocketProvider = ({ children }: { children: ReactNode }) => {
 
         if (playerToUpdate) {
             const winnings = playerToUpdate.bet * multiplier;
-            updateBalance(winnings, 0);
+            updateBalance(winnings);
         }
     }, [gameState, multiplier, user, updateBalance]);
 

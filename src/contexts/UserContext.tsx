@@ -7,7 +7,7 @@ import { MOCK_USER } from '@/lib/data';
 interface UserContextType {
   user: User | null;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  updateBalance: (stars: number, diamonds: number) => void;
+  updateBalance: (stars: number) => void;
   addInventoryItem: (item: Item) => void;
   removeInventoryItem: (inventoryId: string) => void;
   removeInventoryItems: (inventoryIds: string[]) => void;
@@ -36,14 +36,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateBalance = useCallback((stars: number, diamonds: number) => {
+  const updateBalance = useCallback((stars: number) => {
     setUser(currentUser => {
       if (!currentUser) return null;
       return {
         ...currentUser,
         balance: {
+          ...currentUser.balance,
           stars: currentUser.balance.stars + stars,
-          diamonds: currentUser.balance.diamonds + diamonds,
         },
       };
     });

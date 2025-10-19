@@ -16,6 +16,7 @@ export const ALL_ITEMS: Item[] = [
   { id: 'item-boots-1', name: 'Hermes Greaves', rarity: 'Legendary', image: 'https://i.ibb.co/PQLPj58/s5.jpg', imageHint: 'glowing boots', value: 10000, description: 'Grants unbelievable speed and agility.' },
   { id: 'item-gloves-1', name: 'Power Grips', rarity: 'Rare', image: 'https://i.ibb.co/V9ZDBJg/s6.jpg', imageHint: 'power gloves', value: 450, description: 'Enhances strength and weapon handling.' },
   { id: 'item-nft-1', name: 'CryptoKey Alpha', rarity: 'NFT', image: 'https://i.ibb.co/JmB9Z1G/s7.jpg', imageHint: 'crypto art', value: 50000, description: 'A unique, verifiable digital artifact from the Old Web.' },
+  { id: 'item-nft-10348', name: 'Hex Pot', rarity: 'NFT', image: 'https://i.ibb.co/C2t4X1g/hex-pot.png', imageHint: 'hexagon pot', value: 500, description: 'A mysterious hexagonal artifact radiating energy.' },
 ];
 
 export const MOCK_CASES: Case[] = [
@@ -56,11 +57,12 @@ export const MOCK_CASES: Case[] = [
     image: 'https://i.ibb.co/20Fh8RKz/labubu.png',
     imageHint: 'epic treasure',
     items: [
-      { itemId: 'item-shield-1', probability: 0.3 },
-      { itemId: 'item-helmet-1', probability: 0.3 },
-      { itemId: 'item-armor-1', probability: 0.25 },
+      { itemId: 'item-shield-1', probability: 0.28 },
+      { itemId: 'item-helmet-1', probability: 0.28 },
+      { itemId: 'item-armor-1', probability: 0.24 },
       { itemId: 'item-boots-1', probability: 0.1 },
       { itemId: 'item-nft-1', probability: 0.05 },
+      { itemId: 'item-nft-10348', probability: 0.05 },
     ],
   },
   {
