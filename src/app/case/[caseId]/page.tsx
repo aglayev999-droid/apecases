@@ -192,7 +192,7 @@ export default function CasePage() {
             console.error("Prize item not found in reel items array. Adding it.");
             const newReelItems = [...reelItems, prize];
             setReelItems(newReelItems);
-            prizeIndexInReel = newReelItems.length - 1;
+            prizeIndexInReel = newRee' - 1;
         }
         
         const spinTime = isFast ? 1000 : 4000;
@@ -312,8 +312,8 @@ export default function CasePage() {
             <div className="flex-grow flex flex-col justify-between">
                 {/* Roulette Reel */}
                  <div className="flex-grow flex flex-col items-center justify-center relative">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 translate-y-2 text-primary z-10">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L2 9H22L12 19Z"/></svg>
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-primary z-10">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
                     </div>
                     
                     <div className="overflow-hidden w-full" ref={emblaRef} style={{ willChange: 'transform' }}>
@@ -340,8 +340,8 @@ export default function CasePage() {
                         </div>
                     </div>
 
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 -translate-y-2 text-primary z-10">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-primary z-10">
+                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L2 9H22L12 19Z"/></svg>
                     </div>
                 </div>
 
