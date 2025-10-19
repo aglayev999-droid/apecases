@@ -78,6 +78,7 @@ export default function RocketPage() {
     const GameScreen = () => {
         const gameContainerRef = useRef<HTMLDivElement>(null);
         const [position, setPosition] = useState({ x: 0, y: 0, rotation: 0 });
+        const [trailPath, setTrailPath] = useState('');
 
         useEffect(() => {
             if (!gameContainerRef.current) return;
@@ -103,8 +104,23 @@ export default function RocketPage() {
             
             const newPos = getRocketPosition();
             setPosition(newPos);
+            
+            if (gameState === 'playing') {
+                if (!trailPath) {
+                    setTrailPath(`M ${startX} ${startY} L ${newPos.x} ${newPos.y}`);
+                } else {
+                    // To make the line grow, we append new segments.
+                    // A simple L command will just draw a line from the last point.
+                     const newPathSegment = ` L ${newPos.x} ${newPos.y}`;
+                     // To avoid making the SVG path data enormous, we can choose to rebuild it
+                     // or just append. For this game, appending is fine.
+                     setTrailPath(prev => prev + newPathSegment);
+                }
+            } else {
+                 setTrailPath(`M ${startX} ${startY}`);
+            }
 
-        }, [multiplier, gameState]);
+        }, [multiplier, gameState, trailPath]);
 
         const rocketStyle: React.CSSProperties = {
             position: 'absolute',
@@ -113,7 +129,6 @@ export default function RocketPage() {
             transform: `translate(-50%, -50%) rotate(${position.rotation}deg)`,
             transition: 'none',
             willChange: 'transform, left, top',
-            opacity: gameState === 'crashed' ? 0 : 1,
             width: '120px',
             height: '120px'
         };
@@ -160,10 +175,23 @@ export default function RocketPage() {
                     {isMuted ? <VolumeX className="h-6 w-6 text-white" /> : <Volume2 className="h-6 w-6 text-white" />}
                 </Button>
 
+                {/* Trail */}
+                 <svg className="absolute inset-0 z-10 w-full h-full">
+                     <path
+                        d={trailPath}
+                        stroke="rgba(75, 126, 255, 0.5)"
+                        strokeWidth="4"
+                        fill="none"
+                        strokeLinecap="round"
+                     />
+                 </svg>
+
 
                 {/* Rocket Image */}
                  <div
-                    className="z-20"
+                    className={cn("z-20", {
+                        "transition-all duration-100 linear": gameState === 'playing'
+                    })}
                     style={rocketStyle}
                 >
                     <div className="relative w-full h-full">
@@ -377,3 +405,4 @@ const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
     
 
     
+
