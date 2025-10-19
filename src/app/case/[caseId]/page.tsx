@@ -175,7 +175,7 @@ export default function CasePage() {
         
         setIsSpinning(true);
         setIsFastSpin(isFast);
-        setWonItems([]);
+        setWonItems([]); // Reset won items before starting a new spin
         if (isFree) setLastFreeCaseOpen(new Date());
 
         const prizes: Item[] = [];
@@ -204,15 +204,18 @@ export default function CasePage() {
     }, [caseData, user, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning, spinMultiplier]);
     
     const onSpinEnd = useCallback((prize: Item) => {
+        // Collect won items
         setWonItems(prevWonItems => {
             const newWonItems = [...prevWonItems, prize];
+            const numSpins = caseData?.price === 0 ? 1 : spinMultiplier;
 
-            if (newWonItems.length === spinMultiplier) {
-                setTimeout(() => {
-                    setIsSpinning(false);
-                    setReels([]);
+            // Check if all reels have finished
+            if (newWonItems.length === numSpins) {
+                 setTimeout(() => {
+                    // Show the modal
                     setIsWinModalOpen(true);
                     
+                    // Save items to inventory/balance
                     newWonItems.forEach(p => {
                         if (p.id.startsWith('item-stars-')) {
                             updateBalance(p.value);
@@ -221,11 +224,15 @@ export default function CasePage() {
                         }
                     });
 
+                    // Stop the spinning state after everything is done
+                    setIsSpinning(false);
+                    setReels([]);
                 }, 500); // Wait half a second before showing modal
             }
+            
             return newWonItems;
         });
-    }, [spinMultiplier, addInventoryItem, updateBalance]);
+    }, [spinMultiplier, addInventoryItem, updateBalance, caseData]);
 
 
     const handleModalOpenChange = (open: boolean) => {
@@ -338,7 +345,7 @@ export default function CasePage() {
             </div>
 
             <Dialog open={isWinModalOpen} onOpenChange={handleModalOpenChange}>
-                <DialogContent className="sm:max-w-md w-[90vw] p-0 border-0 bg-transparent shadow-none" onInteractOutside={(e) => { if (isWinModalOpen || isSpinning) e.preventDefault(); }}>
+                <DialogContent className="sm:max-w-md w-[90vw] p-0 border-0 bg-transparent shadow-none" onInteractOutside={(e) => { if (isSpinning) e.preventDefault(); }}>
                      {wonItems.length > 0 && (
                         <div className="text-center space-y-4 p-4 sm:p-6 bg-card rounded-lg relative">
                            <button onClick={() => handleModalOpenChange(false)} className="absolute right-2 top-2 p-1 rounded-full bg-background/50 hover:bg-background/80"><X className="h-4 w-4" /></button>
