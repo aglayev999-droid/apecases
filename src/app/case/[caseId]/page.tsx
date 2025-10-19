@@ -150,7 +150,7 @@ export default function CasePage() {
     
     const handleSpin = useCallback(async (isFast: boolean = false) => {
         if (isSpinning || !caseData || !user || caseItems.length === 0 || allItems.length === 0) return;
-
+        
         const isFree = caseData.price === 0;
         const numSpins = isFree ? 1 : spinMultiplier;
         const totalCost = caseData.price * numSpins;
@@ -204,9 +204,10 @@ export default function CasePage() {
     }, [caseData, user, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning, spinMultiplier]);
     
     const onSpinEnd = useCallback((prize: Item) => {
-        setWonItems(prev => {
-            const newWonItems = [...prev, prize];
-            if (newWonItems.length === reels.length) {
+        setWonItems(prevWonItems => {
+            const newWonItems = [...prevWonItems, prize];
+
+            if (newWonItems.length === spinMultiplier) {
                 setTimeout(() => {
                     setIsSpinning(false);
                     setReels([]);
@@ -224,7 +225,7 @@ export default function CasePage() {
             }
             return newWonItems;
         });
-    }, [reels.length, addInventoryItem, updateBalance]);
+    }, [spinMultiplier, addInventoryItem, updateBalance]);
 
 
     const handleModalOpenChange = (open: boolean) => {
