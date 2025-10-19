@@ -245,11 +245,21 @@ export default function CasePage() {
     }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
 
 
-    const closeModal = () => {
+    const closeModalAndRedirect = () => {
         setIsWinModalOpen(false);
         setWonItem(null);
         router.push('/');
     }
+    
+    const handleModalOpenChange = (open: boolean) => {
+        if (!open) {
+            // This will trigger when the dialog is closed by any means (X button, overlay click)
+            closeModalAndRedirect();
+        } else {
+            setIsWinModalOpen(true);
+        }
+    }
+
 
     const handleSell = () => {
         if (!wonItem) return;
@@ -258,11 +268,13 @@ export default function CasePage() {
             title: `Sold: ${wonItem.name}!`,
             description: `You got ${wonItem.value} stars.`,
         });
-        closeModal();
+        closeModalAndRedirect();
     };
 
     const handleGoToInventory = () => {
-        closeModal();
+        // Set state to close modal but redirect is handled by onOpenChange
+        setIsWinModalOpen(false); 
+        // Redirect immediately
         router.push('/inventory');
     };
 
@@ -395,7 +407,7 @@ export default function CasePage() {
             </div>
 
             {/* Win Modal */}
-            <Dialog open={isWinModalOpen} onOpenChange={setIsWinModalOpen}>
+            <Dialog open={isWinModalOpen} onOpenChange={handleModalOpenChange}>
                 <DialogContent className="sm:max-w-[425px] p-0 border-0 bg-transparent shadow-none" onInteractOutside={(e) => {
                     if (isWinModalOpen) {
                         e.preventDefault();
@@ -413,7 +425,7 @@ export default function CasePage() {
                                 <p className={cn("font-semibold", RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.rarity}</p>
                             </div>
                             { wonItem.id.startsWith('item-stars-') ? (
-                                <Button variant="default" size="lg" className="w-full" onClick={closeModal}>
+                                <Button variant="default" size="lg" className="w-full" onClick={closeModalAndRedirect}>
                                     Awesome!
                                 </Button>
                             ) : (
@@ -435,5 +447,3 @@ export default function CasePage() {
         </div>
     );
 }
-
-    
