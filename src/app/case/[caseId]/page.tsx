@@ -76,7 +76,7 @@ export default function CasePage() {
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
     const { user, updateBalance, addInventoryItem, updateSpending, setLastFreeCaseOpen, lastFreeCaseOpen } = useUser();
     const { showAlert } = useAlertDialog();
-    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center', duration: 50 });
+    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
     const [reelItems, setReelItems] = useState<Item[]>([]);
 
     const caseData = useMemo(() => MOCK_CASES.find(c => c.id === caseId), [caseId]);
@@ -147,10 +147,9 @@ export default function CasePage() {
         
         const spinTime = isFast ? 1000 : 5000;
 
-        // Start animation - this part can be a simple CSS transition or a JS-based animation loop
-        // For Embla, we can just scroll to a random-ish target
+        // Animate the carousel
         const targetIndex = prizeIndexInReel + emblaApi.scrollSnapList().length * (isFast ? 1 : 3);
-        emblaApi.scrollTo(targetIndex, false);
+        emblaApi.scrollTo(targetIndex, false, { duration: spinTime / 1000 });
         
         const onSpinEnd = () => {
             setIsSpinning(false);
@@ -166,7 +165,7 @@ export default function CasePage() {
             }
         };
 
-        // Use a timeout to simulate the spin duration
+        // Use a timeout to trigger actions after the spin animation
         setTimeout(() => {
             onSpinEnd();
         }, spinTime);
