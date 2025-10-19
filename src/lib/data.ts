@@ -4,6 +4,11 @@ const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce3004
 
 // ALL_ITEMS will now be fetched from Firestore, but we can keep it here as a fallback or for reference
 export const ALL_ITEMS: Item[] = [
+  // Stars (not real items, just for winning currency)
+  { id: 'item-stars-25', name: '25 Stars', rarity: 'Common', image: 'https://i.ibb.co/WN2md4DV/stars.png', imageHint: 'gold stars', value: 25, description: 'A handful of shiny stars.' },
+  { id: 'item-stars-50', name: '50 Stars', rarity: 'Common', image: 'https://i.ibb.co/WN2md4DV/stars.png', imageHint: 'gold stars', value: 50, description: 'A small pouch of stars.' },
+  { id: 'item-stars-100', name: '100 Stars', rarity: 'Uncommon', image: 'https://i.ibb.co/WN2md4DV/stars.png', imageHint: 'gold stars', value: 100, description: 'A bag of stars.' },
+
   // Common
   { id: 'item-gift', name: 'Gift', rarity: 'Common', image: 'https://i.ibb.co/WvnMSb5J/000-1.png', imageHint: 'red gift box', value: 25, description: 'A small, mysterious gift.' },
   { id: 'item-champagne', name: 'Champagne', rarity: 'Common', image: 'https://i.ibb.co/m54YJrg8/shampain.png', imageHint: 'champagne bottle', value: 50, description: 'A bottle of celebratory champagne.' },
@@ -26,8 +31,9 @@ export const ALL_ITEMS: Item[] = [
   { id: 'item-evil-eye', name: 'Evil Eye (Random)', rarity: 'Legendary', image: 'https://i.ibb.co/yvsRNdc/evil.png', imageHint: 'eyeball art', value: 846, description: 'A powerful and protective evil eye charm.' },
 
   // NFT
-  { id: 'item-nft-ape', name: 'Bored Ape NFT', rarity: 'NFT', image: 'https://i.ibb.co/Y0p2k1j/bored-ape.png', imageHint: 'bored ape nft', value: 10000, description: 'A unique Bored Ape NFT. Super rare!' },
-  { id: 'item-nft-punk', name: 'CryptoPunk NFT', rarity: 'NFT', image: 'https://i.ibb.co/L6WvXQ4/cryptopunk.png', imageHint: 'cryptopunk nft', value: 15000, description: 'A legendary CryptoPunk NFT.' },
+  { id: 'item-nft-ape-1', name: 'Ape NFT #1', rarity: 'NFT', image: 'https://i.ibb.co/Y0p2k1j/bored-ape.png', imageHint: 'bored ape nft', value: 10000, description: 'A unique Bored Ape NFT. Super rare!' },
+  { id: 'item-nft-punk-1', name: 'Punk NFT #1', rarity: 'NFT', image: 'https://i.ibb.co/L6WvXQ4/cryptopunk.png', imageHint: 'cryptopunk nft', value: 15000, description: 'A legendary CryptoPunk NFT.' },
+  { id: 'item-nft-cat-1', name: 'CryptoCat NFT', rarity: 'NFT', image: 'https://i.ibb.co/bF9FpXp/pixel-cat.png', imageHint: 'pixel cat nft', value: 12000, description: 'A cool and pixelated cat NFT.' },
 ];
 
 export const MOCK_CASES: Case[] = [
@@ -38,65 +44,67 @@ export const MOCK_CASES: Case[] = [
       image: 'https://i.ibb.co/jZZBNxLD/free-box.png',
       imageHint: 'red apex case',
       items: [
-        { itemId: 'item-gift', probability: 0.8 },
-        { itemId: 'item-champagne', probability: 0.15 },
-        { itemId: 'item-cup', probability: 0.05 },
+        { itemId: 'item-stars-25', probability: 0.7 },
+        { itemId: 'item-gift', probability: 0.2 },
+        { itemId: 'item-champagne', probability: 0.08 },
+        { itemId: 'item-cup', probability: 0.02 },
       ],
       freeCooldownSeconds: 86400, // 24 hours
     },
     {
       id: 'case-floor-8',
       name: 'FLOOR CASE',
-      price: 180,
+      price: 249,
       image: 'https://i.ibb.co/twnxRfvP/floor.png',
       imageHint: 'blue apex case',
       items: [
-        { itemId: 'item-gift', probability: 0.44 },
-        { itemId: 'item-champagne', probability: 0.3 },
+        { itemId: 'item-stars-50', probability: 0.5 },
+        { itemId: 'item-champagne', probability: 0.25 },
         { itemId: 'item-cup', probability: 0.15 },
-        { itemId: 'item-diamond', probability: 0.08 },
-        { itemId: 'item-ring', probability: 0.02 },
-        { itemId: 'item-desk-calendar-random', probability: 0.01 },
+        { itemId: 'item-diamond', probability: 0.07 },
+        { itemId: 'item-ring', probability: 0.03 },
       ],
     },
      {
       id: 'case-labubu-10',
       name: 'LABUBU CASE',
-      price: 450,
+      price: 459,
       image: 'https://i.ibb.co/20Fh8RKz/labubu.png',
       imageHint: 'green labubu case',
       items: [
-        { itemId: 'item-diamond', probability: 0.4 },
-        { itemId: 'item-ring', probability: 0.3 },
-        { itemId: 'item-desk-calendar-random', probability: 0.15 },
-        { itemId: 'item-lol-pop-random', probability: 0.1 },
-        { itemId: 'item-tama-gadget', probability: 0.05 },
+        { itemId: 'item-stars-100', probability: 0.4 },
+        { itemId: 'item-diamond', probability: 0.3 },
+        { itemId: 'item-ring', probability: 0.15 },
+        { itemId: 'item-desk-calendar-random', probability: 0.1 },
+        { itemId: 'item-lol-pop-random', probability: 0.05 },
       ],
     },
     {
       id: 'case-snoop-7',
       name: 'SNOOP DOGG CASE',
-      price: 1000,
+      price: 799,
       image: 'https://i.ibb.co/F4V0dGX3/Apex-Case.png',
       imageHint: 'purple snoop dogg case',
       items: [
-        { itemId: 'item-witch-hat', probability: 0.4 },
-        { itemId: 'item-spy-agaric', probability: 0.3 },
-        { itemId: 'item-evil-eye', probability: 0.25 },
-        { itemId: 'item-nft-ape', probability: 0.05 },
+        { itemId: 'item-desk-calendar-random', probability: 0.4 },
+        { itemId: 'item-lol-pop-random', probability: 0.3 },
+        { itemId: 'item-tama-gadget', probability: 0.2 },
+        { itemId: 'item-witch-hat', probability: 0.08 },
+        { itemId: 'item-nft-ape-1', probability: 0.02 },
       ],
     },
      {
       id: 'case-legendary-1',
       name: 'LEGENDARY',
-      price: 5000,
+      price: 4999,
       image: 'https://i.ibb.co/f2kC2gr/legend-case.png',
       imageHint: 'golden legendary case',
       items: [
         { itemId: 'item-spy-agaric', probability: 0.5 },
         { itemId: 'item-evil-eye', probability: 0.3 },
-        { itemId: 'item-nft-ape', probability: 0.15 },
-        { itemId: 'item-nft-punk', probability: 0.05 },
+        { itemId: 'item-nft-ape-1', probability: 0.12 },
+        { itemId: 'item-nft-punk-1', probability: 0.05 },
+        { itemId: 'item-nft-cat-1', probability: 0.03 },
       ],
     },
 ];
