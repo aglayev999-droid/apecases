@@ -95,14 +95,9 @@ export default function CasePage() {
             return array;
         }
         
-        if (typeof window !== 'undefined') {
-          const extendedItems = [...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems];
-          setReelItems(shuffleArray(extendedItems));
-        } else {
-           const extendedItems = [...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems];
-           setReelItems(extendedItems);
-        }
-
+        const extendedItems = [...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems];
+        setReelItems(shuffleArray(extendedItems));
+        
     }, [caseData]);
     
     const handleSpin = useCallback((isFast: boolean = false) => {
@@ -150,13 +145,16 @@ export default function CasePage() {
              setWonItem(prize);
         }
         
-        const spinTime = isFast ? 1000 : 4000 + Math.random() * 1000;
+        const spinTime = isFast ? 1000 : 5000;
 
-        emblaApi.scrollTo(prizeIndexInReel, false);
+        // Start animation - this part can be a simple CSS transition or a JS-based animation loop
+        // For Embla, we can just scroll to a random-ish target
+        const targetIndex = prizeIndexInReel + emblaApi.scrollSnapList().length * (isFast ? 1 : 3);
+        emblaApi.scrollTo(targetIndex, false);
         
         const onSpinEnd = () => {
             setIsSpinning(false);
-            if (prize) { // Make sure prize is set before opening modal
+            if (prize) {
                 setWonItem(prize);
                 setIsWinModalOpen(true);
                 
