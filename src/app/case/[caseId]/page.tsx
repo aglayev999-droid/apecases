@@ -181,7 +181,6 @@ export default function CasePage() {
             setLastFreeCaseOpen(new Date());
         }
 
-        // --- NEW BUG FIX LOGIC ---
         // 1. Select the logical prize first, based on probability. This is the TRUE prize.
         const logicalPrize = selectItem(caseData, allItems);
         if (!logicalPrize) {
@@ -191,52 +190,51 @@ export default function CasePage() {
         }
 
         // 2. Create a new, freshly shuffled reel for this spin.
-        // We create a long reel (e.g., 100 items) to ensure a smooth visual spin.
         let newReelItems = [];
-        for (let i = 0; i < 100; i++) {
+        const reelLength = 100;
+        for (let i = 0; i < reelLength; i++) {
             newReelItems.push(caseItems[Math.floor(Math.random() * caseItems.length)]);
         }
 
         // 3. Deterministically place the TRUE prize at a specific target index.
-        // This index should be far enough along the reel to allow for a nice spinning animation.
-        // Let's use index 75 as our landing spot.
         const targetIndex = 75;
         newReelItems[targetIndex] = logicalPrize;
         
         // 4. Set the new reel for rendering.
         setReelItems(newReelItems);
         
-        const spinTime = isFast ? 1000 : 5000;
-
-        // 5. Use a short timeout to allow React to render the new reel before we start the animation.
+        // This is a short timeout to allow React to render the new reel before we start the animation.
         setTimeout(() => {
             if (emblaApi) {
-                // Re-initialize the carousel with the new items and options.
-                emblaApi.reInit({
-                    loop: true, 
-                    align: 'center'
-                });
+                emblaApi.reInit();
+                const engine = emblaApi.internalEngine();
+                const scrollSnaps = emblaApi.scrollSnapList();
                 
-                // 6. Animate the scroll to the PRE-DETERMINED target index.
-                emblaApi.scrollTo(targetIndex, false); 
+                // Calculate the target scroll position. We might need to add loops worth of scroll to make it spin longer
+                const loops = 3;
+                const targetScroll = scrollSnaps[targetIndex] + (engine.scrollBody.length() * loops);
+                
+                const transitionDuration = isFast ? 1000 : 5000;
+                engine.scrollBody.duration = transitionDuration;
+                
+                // Animate the scroll to the pre-determined target index.
+                emblaApi.scrollTo(targetIndex); 
+
+                // Schedule the 'spin end' logic.
+                setTimeout(() => {
+                    setIsSpinning(false);
+                    // The prize to show is the `logicalPrize` we decided on at the very beginning.
+                    setWonItem(logicalPrize);
+                    setIsWinModalOpen(true);
+                    
+                    if (logicalPrize.id.startsWith('item-stars-')) {
+                        updateBalance(logicalPrize.value);
+                    } else {
+                        addInventoryItem(logicalPrize);
+                    }
+                }, transitionDuration + 500); // Add a small buffer after animation ends
             }
         }, 100);
-
-        // 7. Schedule the 'spin end' logic.
-        setTimeout(() => {
-            setIsSpinning(false);
-            // 8. The prize to show is the `logicalPrize` we decided on at the very beginning.
-            // This is now guaranteed to match what the animation landed on.
-            setWonItem(logicalPrize);
-            setIsWinModalOpen(true);
-            
-            // 9. Update user balance or inventory.
-            if (logicalPrize.id.startsWith('item-stars-')) {
-                updateBalance(logicalPrize.value);
-            } else {
-                addInventoryItem(logicalPrize);
-            }
-        }, spinTime + 500); // Add a small buffer after animation ends
 
     }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
 
@@ -332,8 +330,8 @@ export default function CasePage() {
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
                     </div>
                     
-                    <div className="overflow-hidden w-full" ref={emblaRef} style={{ willChange: 'transform' }}>
-                        <div className="flex" style={{ transition: isSpinning ? 'transform 5s cubic-bezier(0.25, 0.1, 0.25, 1)' : 'none' }}>
+                    <div className="overflow-hidden w-full" ref={emblaRef}>
+                        <div className="flex">
                             {reelItems.length > 0 ? reelItems.map((item, index) => (
                                 <div key={index} className="flex-[0_0_9rem] mx-2">
                                     <Card className={cn(
