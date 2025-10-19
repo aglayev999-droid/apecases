@@ -173,8 +173,6 @@ export default function RocketPage() {
                            background-size: 300px 300px;
                            animation: animStar 150s linear infinite;
                         }
-                        @keyframes shake { 0% { transform: translate(-50%, -50%) rotate(${position.rotation}deg) } 25% { transform: translate(-51%, -49%) rotate(${position.rotation - 0.2}deg) } 50% { transform: translate(-50%, -50%) rotate(${position.rotation}deg) } 75% { transform: translate(-49%, -51%) rotate(${position.rotation + 0.2}deg) } 100% { transform: translate(-50%, -50%) rotate(${position.rotation}deg) } }
-                        .rocket-shake { animation: shake 0.3s linear infinite; }
                     `}
                 </style>
                 
@@ -201,7 +199,7 @@ export default function RocketPage() {
 
                 {/* Rocket Image */}
                 <div 
-                    className={cn("z-20", { 'rocket-shake': gameState === 'playing' })}
+                    className="z-20"
                      style={rocketStyle}
                 >
                     <div className="relative w-full h-full">
@@ -216,7 +214,7 @@ export default function RocketPage() {
                            x{multiplier.toFixed(2)}
                         </h1>
                     ) : (
-                         <h1 className="text-6xl sm:text-8xl font-bold text-white [text-shadow:0_0_20px_hsl(var(--primary))]">
+                         <h1 className="text-6xl sm:text-8xl font-bold text-white">
                            x{multiplier.toFixed(2)}
                          </h1>
                     )}
