@@ -151,27 +151,6 @@ export default function CasePage() {
         
     }, [caseItems]);
     
-    useEffect(() => {
-        if (!emblaApi) return;
-        
-        const applyTransition = () => {
-            const engine = emblaApi.internalEngine();
-            engine.translate.toggleActive(false); // Disable internal translation
-            const container = emblaApi.containerNode();
-            if (container) {
-                container.style.transition = 'transform 5s ease-out';
-            }
-        };
-
-        emblaApi.on('init', applyTransition);
-        emblaApi.on('reInit', applyTransition);
-
-        return () => {
-             emblaApi.off('init', applyTransition);
-             emblaApi.off('reInit', applyTransition);
-        };
-    }, [emblaApi]);
-
     const handleSpin = useCallback((isFast: boolean = false) => {
         if (isSpinning || !caseData || !user || !emblaApi || caseItems.length === 0 || allItems.length === 0) return;
         
@@ -233,14 +212,11 @@ export default function CasePage() {
         setTimeout(() => {
             if (emblaApi) {
                 // Re-initialize the carousel with the new items and options.
-                emblaApi.reInit();
+                emblaApi.reInit({
+                    loop: true, 
+                    align: 'center'
+                });
                 
-                const container = emblaApi.containerNode();
-                if(container) {
-                    // Make sure the transition is set for the animation
-                    container.style.transition = `transform ${spinTime / 1000}s cubic-bezier(0.25, 0.1, 0.25, 1)`;
-                }
-
                 // 6. Animate the scroll to the PRE-DETERMINED target index.
                 emblaApi.scrollTo(targetIndex, false); 
             }
@@ -263,6 +239,7 @@ export default function CasePage() {
         }, spinTime + 500); // Add a small buffer after animation ends
 
     }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, caseItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
+
 
     const closeModal = () => {
         setIsWinModalOpen(false);
@@ -356,7 +333,7 @@ export default function CasePage() {
                     </div>
                     
                     <div className="overflow-hidden w-full" ref={emblaRef} style={{ willChange: 'transform' }}>
-                        <div className="flex">
+                        <div className="flex" style={{ transition: isSpinning ? 'transform 5s cubic-bezier(0.25, 0.1, 0.25, 1)' : 'none' }}>
                             {reelItems.length > 0 ? reelItems.map((item, index) => (
                                 <div key={index} className="flex-[0_0_9rem] mx-2">
                                     <Card className={cn(
