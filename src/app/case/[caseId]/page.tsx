@@ -59,14 +59,18 @@ const selectItem = (currentCase: Case, allItems: Item[]): Item | undefined => {
     }
     const rand = Math.random();
     let cumulativeProbability = 0;
-    for (const { itemId, probability } of currentCase.items) {
+    
+    // Sort items by probability to ensure fairness
+    const sortedCaseItems = [...currentCase.items].sort((a, b) => a.probability - b.probability);
+
+    for (const { itemId, probability } of sortedCaseItems) {
         cumulativeProbability += probability;
         if (rand < cumulativeProbability) {
             const foundItem = allItems.find(i => i.id === itemId);
             if (foundItem) return foundItem;
         }
     }
-    // Fallback to a random item from the case if something goes wrong
+    // Fallback in case of rounding errors or misconfigured probabilities
     const fallbackItemId = currentCase.items[Math.floor(Math.random() * currentCase.items.length)].itemId;
     return allItems.find(i => i.id === fallbackItemId);
 };
@@ -208,11 +212,7 @@ export default function CasePage() {
                 // Go to a non-animated "start" position to ensure there's enough room to spin forward
                 emblaApi.scrollTo(0, true); 
                 
-                const engine = emblaApi.internalEngine();
                 const spinTime = isFast ? 1000 : 5000;
-                
-                // Animate the scroll to the pre-determined target index.
-                emblaApi.scrollTo(targetIndex); 
                 
                 // Manually set transition duration on the container
                 const container = emblaApi.containerNode();
@@ -220,6 +220,9 @@ export default function CasePage() {
                     container.style.transition = `transform ${spinTime}ms ease-out`;
                 }
 
+                // Animate the scroll to the pre-determined target index.
+                emblaApi.scrollTo(targetIndex); 
+                
                 // Schedule the 'spin end' logic.
                 setTimeout(() => {
                     setIsSpinning(false);
@@ -230,6 +233,9 @@ export default function CasePage() {
                         updateBalance(logicalPrize.value);
                     } else {
                         addInventoryItem(logicalPrize);
+                    }
+                    if (container) {
+                        container.style.transition = '';
                     }
                 }, spinTime + 500); // Add a small buffer after animation ends
             }
