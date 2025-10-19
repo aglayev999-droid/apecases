@@ -11,7 +11,6 @@ export interface Item {
   animationUrl?: string;
   isUpgradable?: boolean;
   isTargetable?: boolean;
-  collectionAddress?: string; // For withdrawable NFTs
 }
 
 export interface Case {
@@ -72,21 +71,13 @@ export interface RocketPlayer {
   cashedOutAt: number | null;
 }
 
-// Case Battle Types
-export interface BattlePlayer {
-    userId: string;
-    items: string[]; // array of inventory item IDs
-    totalValue: number;
-    avatar: string;
-    name: string;
-}
-
-export interface CaseBattle {
+export interface RocketGame {
     id: string;
-    status: 'waiting' | 'active' | 'finished' | 'cancelled';
-    players: BattlePlayer[];
-    cases: string[]; // Array of case IDs
-    winnerId?: string;
-    createdAt: Timestamp;
-    finishedAt?: Timestamp;
+    gameState: RocketGameState;
+    multiplier: number;
+    crashPoint: number;
+    roundStartTime: Timestamp | any;
+    players: RocketPlayer[];
+    history: number[];
+    countdown: number; // This is a derived property, not stored in DB
 }
