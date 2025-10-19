@@ -275,7 +275,7 @@ export default function CasePage() {
                         return (
                             <Card key={item.id} className={cn("p-2 border-2", RARITY_PROPERTIES[item.rarity].border)}>
                                 <div className="aspect-square relative">
-                                    <Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain" data-ai-hint={item.imageHint}/>
+                                    <Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain p-2" data-ai-hint={item.imageHint}/>
                                 </div>
                             </Card>
                         )
@@ -409,5 +409,3 @@ export default function CasePage() {
         </div>
     );
 }
-
-    
