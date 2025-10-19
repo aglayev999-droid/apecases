@@ -198,29 +198,44 @@ export default function CasePage() {
             setLastFreeCaseOpen(new Date());
         }
 
-        // Shuffle the reel for every spin
-        const newReelItems = shuffleArray([...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems]);
-        setReelItems(newReelItems);
-
-        const prize = selectItem(caseData, allItems);
-        if (!prize) {
+        // --- BUG FIX LOGIC ---
+        // 1. Generate the logical prize first
+        const logicalPrize = selectItem(caseData, allItems);
+        if (!logicalPrize) {
             console.error("Could not select a prize.");
             setIsSpinning(false);
             return;
         }
 
-        let prizeIndexInReel = newReelItems.findIndex((item, index) => item?.id === prize.id && index > newReelItems.length / 3);
-        if (prizeIndexInReel === -1) {
-          prizeIndexInReel = newReelItems.findIndex(item => item?.id === prize.id);
+        // 2. Create a new shuffled reel.
+        const newReelItems = shuffleArray([...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems]);
+
+        // 3. Find a specific, deterministic index for the prize to land on.
+        // We'll aim for somewhere in the middle-to-end of the reel for a better visual.
+        let prizeIndexInReel = -1;
+        const preferredStartIndex = Math.floor(newReelItems.length / 2);
+
+        for (let i = preferredStartIndex; i < newReelItems.length; i++) {
+            if (newReelItems[i]?.id === logicalPrize.id) {
+                prizeIndexInReel = i;
+                break;
+            }
         }
         
+        // If not found in the latter half, find the first occurrence.
         if (prizeIndexInReel === -1) {
-            console.error("Prize item not found in reel items array. Adding it.");
-            // This should ideally not happen if caseItems is correct
-            const finalReelItems = [...newReelItems, prize];
-            setReelItems(finalReelItems);
-            prizeIndexInReel = finalReelItems.length - 1;
+          prizeIndexInReel = newReelItems.findIndex(item => item?.id === logicalPrize.id);
         }
+
+        // If still not found (should be impossible but as a fallback), add it and use that index.
+         if (prizeIndexInReel === -1) {
+            console.error("Prize item not found in reel items array. Adding it.");
+            newReelItems.push(logicalPrize);
+            prizeIndexInReel = newReelItems.length - 1;
+        }
+        
+        // 4. Set the new reel for rendering
+        setReelItems(newReelItems);
         
         const spinTime = isFast ? 1000 : 5000;
 
@@ -231,7 +246,9 @@ export default function CasePage() {
                 if(container) {
                     container.style.transition = `transform ${spinTime / 1000}s ease-out`;
                 }
+                // Re-initialize to make sure the carousel knows about the new items
                 emblaApi.reInit();
+                // 5. Scroll to the PRE-DETERMINED index.
                 emblaApi.scrollTo(prizeIndexInReel, false);
             }
         }, 100);
@@ -239,15 +256,14 @@ export default function CasePage() {
         
         const onSpinEnd = () => {
             setIsSpinning(false);
-            if (prize) {
-                setWonItem(prize);
-                setIsWinModalOpen(true);
-                
-                if (prize.id.startsWith('item-stars-')) {
-                    updateBalance(prize.value);
-                } else {
-                    addInventoryItem(prize);
-                }
+            // 6. The prize is already the correct one determined at the start.
+            setWonItem(logicalPrize);
+            setIsWinModalOpen(true);
+            
+            if (logicalPrize.id.startsWith('item-stars-')) {
+                updateBalance(logicalPrize.value);
+            } else {
+                addInventoryItem(logicalPrize);
             }
         };
 
