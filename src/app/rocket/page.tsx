@@ -96,7 +96,7 @@ export default function RocketPage() {
 
                 // Normalize progress from 0 to 1 based on multiplier, but don't cap it.
                 // The visual path will cap at progress = 1, but the logic continues.
-                const progress = (multiplier - 1) / 4; 
+                const progress = Math.min((multiplier - 1) / 4, 1); 
                 const visualProgress = Math.min(progress, 1); // Cap visual movement at progress 1
 
                 const curvePower = 0.5;
@@ -211,17 +211,20 @@ export default function RocketPage() {
                 </div>
 
                 {/* Multiplier Text */}
-                <div className="absolute top-1/2 left-10 -translate-y-1/2 text-left z-30">
-                    {gameState === 'crashed' ? (
-                        <h1 className="text-6xl sm:text-8xl font-bold text-red-500 animate-in fade-in-0 zoom-in-75">
-                           x{multiplier.toFixed(2)}
+                {gameState === 'crashed' ? (
+                    <div className="absolute inset-0 flex items-center justify-center z-30">
+                        <h1 className="text-8xl font-bold text-red-500 animate-in fade-in-0 zoom-in-75">
+                            x{multiplier.toFixed(2)}
                         </h1>
-                    ) : (
-                         <h1 className="text-6xl sm:text-8xl font-bold text-white">
-                           x{multiplier.toFixed(2)}
-                         </h1>
-                    )}
-                </div>
+                    </div>
+                ) : (
+                    <div className="absolute top-1/2 left-10 -translate-y-1/2 text-left z-30">
+                        <h1 className="text-6xl sm:text-8xl font-bold text-white">
+                            x{multiplier.toFixed(2)}
+                        </h1>
+                    </div>
+                )}
+
 
                 {/* Countdown Timer */}
                  {gameState === 'waiting' && (
@@ -397,5 +400,6 @@ const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
 }
 
     
+
 
 
