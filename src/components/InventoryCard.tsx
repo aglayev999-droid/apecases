@@ -43,7 +43,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
     if (!wallet) {
       showAlert({
         title: 'Wallet Not Connected',
-        description: 'Please connect your TON wallet to withdraw an NFT.',
+        description: 'Please connect your TON wallet to withdraw an item.',
       });
       return;
     }
@@ -87,7 +87,6 @@ export function InventoryCard({ item }: InventoryCardProps) {
     }
   };
 
-  const isWithdrawable = !!item.collectionAddress;
   const hasAnimation = !!item.animationUrl;
 
   return (
@@ -122,21 +121,14 @@ export function InventoryCard({ item }: InventoryCardProps) {
         <p className={cn("text-xs font-bold", RARITY_PROPERTIES[item.rarity].text)}>{item.rarity}</p>
       </CardContent>
       <CardFooter className="p-2 flex flex-col gap-2">
-        {isWithdrawable ? (
-            <div className="w-full grid grid-cols-2 gap-2">
-                <Button variant="destructive" size="sm" onClick={handleSell}>
-                    Sell for {item.value}
-                </Button>
-                <Button variant="default" size="sm" onClick={handleWithdraw}>
-                    Withdraw
-                </Button>
-            </div>
-        ) : (
-          <Button variant="secondary" size="sm" className="w-full" onClick={handleSell}>
-            Sell for {item.value} 
-            <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
-          </Button>
-        )}
+         <div className="w-full grid grid-cols-2 gap-2">
+            <Button variant="destructive" size="sm" onClick={handleSell}>
+                Sell for {item.value}
+            </Button>
+            <Button variant="default" size="sm" onClick={handleWithdraw} disabled={!item.collectionAddress}>
+                Withdraw
+            </Button>
+        </div>
       </CardFooter>
     </Card>
   );

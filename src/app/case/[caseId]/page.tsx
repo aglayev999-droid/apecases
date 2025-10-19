@@ -177,8 +177,8 @@ export default function CasePage() {
         
         setIsSpinning(true);
         setIsFastSpin(isFast);
-        wonItemsRef.current = []; // Reset won items ref
-        setWonItems([]); // Reset won items state
+        wonItemsRef.current = [];
+        setWonItems([]); 
         if (isFree) setLastFreeCaseOpen(new Date());
 
         const prizes: Item[] = [];
@@ -209,20 +209,15 @@ export default function CasePage() {
     const onSpinEnd = useCallback((prize: Item) => {
         const numSpins = caseData?.price === 0 ? 1 : spinMultiplier;
         
-        // Prevent adding more items than expected
-        if (wonItemsRef.current.length >= numSpins) {
-            return;
+        if (wonItemsRef.current.length < numSpins) {
+           wonItemsRef.current.push(prize);
         }
-
-        wonItemsRef.current.push(prize);
-
-        // Check if all reels have finished spinning
+        
         if (wonItemsRef.current.length === numSpins) {
             setWonItems(wonItemsRef.current);
             setTimeout(() => {
                 setIsWinModalOpen(true);
                 
-                // Save items to inventory/balance
                 wonItemsRef.current.forEach(p => {
                     if (p.id.startsWith('item-stars-')) {
                         updateBalance(p.value);
@@ -231,10 +226,9 @@ export default function CasePage() {
                     }
                 });
 
-                // Stop the spinning state after everything is done
                 setIsSpinning(false);
                 setReels([]);
-            }, 500); // Wait half a second before showing modal
+            }, 500);
         }
     }, [spinMultiplier, addInventoryItem, updateBalance, caseData]);
 
