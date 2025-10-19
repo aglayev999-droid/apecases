@@ -13,7 +13,7 @@ const navItems = [
   { href: '/', label: 'Cases', icon: Box, isMain: true },
   { href: '/rocket', label: 'Rocket', icon: Rocket, isBeta: true },
   { href: '/upgrade', label: 'Upgrade', icon: DiamondIcon, isBeta: true },
-  { href: '/leaderboard', label: 'Rating', icon: BarChart3 },
+  { href: '/leaderboard', label: 'Rating', icon: BarChart3D },
 ];
 
 const mainButtonIndex = navItems.findIndex(item => item.isMain);
@@ -32,7 +32,7 @@ export default function BottomNav() {
       <div className="container mx-auto max-w-md px-2">
         <div className="grid h-20 grid-cols-7 items-center">
           {navItems.map((item, index) => {
-            const isActive = pathname === item.href;
+            const isActive = item.href === '/' ? pathname === item.href : pathname.startsWith(item.href);
 
             if (item.isMain) {
               return (
@@ -65,10 +65,12 @@ export default function BottomNav() {
                   isActive ? 'bg-primary/20' : ''
                 )}>
                   {item.isBeta && <span className="absolute top-0 right-0 text-[8px] bg-accent text-accent-foreground px-1 rounded-full">beta</span>}
+                  
                   <item.icon className={cn(
-                    'h-6 w-6',
-                    isActive ? 'text-primary' : 'text-muted-foreground'
+                      'h-6 w-6',
+                      isActive ? 'text-primary' : 'text-muted-foreground'
                   )} />
+
                   <span className={cn(
                     'text-xs font-bold',
                     isActive ? 'text-primary' : 'text-muted-foreground'
