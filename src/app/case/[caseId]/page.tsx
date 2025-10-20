@@ -20,7 +20,7 @@ import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const ROULETTE_ITEMS_COUNT = 50; // Total items in the reel
-const WINNING_ITEM_INDEX = ROULETTE_ITEMS_COUNT - 5; // Prize will be placed around here
+const WINNING_ITEM_INDEX = ROULETTE_ITEMS_COUNT - 5; // The prize will be placed at this index
 
 export default function CasePage() {
     const params = useParams();
@@ -36,18 +36,18 @@ export default function CasePage() {
     const [rouletteOffset, setRouletteOffset] = useState(0);
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
-    const [rouletteItemWidth, setRouletteItemWidth] = useState(112); // Default: w-24 (96px) + gap-4 (16px)
+    const [rouletteItemWidth, setRouletteItemWidth] = useState(112); // w-24 (96px) + gap-4 (16px) is a good default
 
     const rouletteContainerRef = useRef<HTMLDivElement>(null);
 
     const { user, isUserLoading, updateBalance, addInventoryItem } = useUser();
     const { showAlert } = useAlertDialog();
     
-    // --- Data Fetching and Initial Setup ---
-    
+    // --- Data Fetching and Initial Reel Setup ---
+
     // Generates a random reel from the available items
     const generateInitialReel = useCallback((items: Item[]): Item[] => {
-        if (items.length === 0) return [];
+        if (!items || items.length === 0) return [];
         const reel: Item[] = [];
         for (let i = 0; i < ROULETTE_ITEMS_COUNT; i++) {
             reel.push(items[Math.floor(Math.random() * items.length)]);
@@ -59,16 +59,8 @@ export default function CasePage() {
         const fetchCaseAndItemsData = async () => {
             if (!caseId) return;
 
-            // 1. Fetch Case Data
-            let caseResult: Case | null = MOCK_CASES.find(c => c.id === caseId) || null;
-            if (firestore) {
-                try {
-                    const caseSnap = await getDoc(doc(firestore, 'cases', caseId));
-                    if (caseSnap.exists()) {
-                        caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
-                    }
-                } catch (e) { console.error("Error fetching case from FS:", e); }
-            }
+            // 1. Fetch Case Data from mock data (or Firestore)
+            const caseResult: Case | null = MOCK_CASES.find(c => c.id === caseId) || null;
             
             if (!caseResult) {
                 showAlert({title: "Error", description: "Case not found."});
@@ -77,44 +69,47 @@ export default function CasePage() {
             }
             setCaseData(caseResult);
 
-            // 2. Hydrate Case Items from All Items list
+            // 2. Hydrate Case Items from the global MOCK_ITEMS list
             const currentCaseItems = caseResult.items
                 .map(i => MOCK_ITEMS.find(item => item.id === i.itemId))
                 .filter((item): item is Item => !!item)
                 .sort((a, b) => a.value - b.value);
             
-            if(currentCaseItems.length === 0){
+            if (currentCaseItems.length === 0) {
                 showAlert({title: "Error", description: "No items found in this case."});
                 return;
             }
             setCaseItems(currentCaseItems);
-            
-            // 3. Generate the initial roulette reel ONLY after items are loaded
-            setRouletteItems(generateInitialReel(currentCaseItems));
         };
 
         fetchCaseAndItemsData();
-    }, [caseId, firestore, router, showAlert, generateInitialReel]);
+    }, [caseId, router, showAlert]);
+
+    // This useEffect is crucial. It runs ONLY when caseItems has been successfully populated.
+    // It generates the initial, visible roulette reel.
+    useEffect(() => {
+        if (caseItems.length > 0) {
+            setRouletteItems(generateInitialReel(caseItems));
+        }
+    }, [caseItems, generateInitialReel]);
     
-     // --- Responsive Item Width Calculation ---
+    // --- Responsive Item Width Calculation ---
     useEffect(() => {
         const calculateItemWidth = () => {
-            const isSmallScreen = window.innerWidth < 640; // sm breakpoint
+            const isSmallScreen = window.innerWidth < 640; // sm breakpoint in tailwind
             const itemBaseWidth = isSmallScreen ? 96 : 128; // w-24 or sm:w-32
             const gap = 16; // gap-4
             setRouletteItemWidth(itemBaseWidth + gap);
         };
 
-        calculateItemWidth();
+        calculateItemWidth(); // Initial calculation
         window.addEventListener('resize', calculateItemWidth);
         return () => window.removeEventListener('resize', calculateItemWidth);
     }, []);
 
-
     // --- Spin Logic ---
-
     const handleSpin = useCallback(async (isFast: boolean) => {
-        if (isSpinning || !caseData || !user || caseItems.length === 0 || rouletteItemWidth === 0) return;
+        if (isSpinning || !caseData || !user || caseItems.length === 0) return;
 
         if (user.balance.stars < caseData.price) {
             showAlert({ title: "Insufficient funds", description: "You do not have enough stars to open this case." });
@@ -123,13 +118,13 @@ export default function CasePage() {
 
         setIsFastSpin(isFast);
         setIsSpinning(true);
-        setRouletteOffset(0); // Reset position before spin
+        setRouletteOffset(0); // Reset position before spin for a smooth start
 
-        // --- Prize Selection Logic ---
+        // --- 1. Determine the Prize ---
         const randomNumber = Math.random();
         let cumulativeProbability = 0;
         let prize: Item | undefined;
-        // Sort by probability to ensure fairness
+        // Sort items by probability to ensure fair selection
         const sortedCaseItemsByProb = [...caseData.items].sort((a, b) => a.probability - b.probability);
         for (const caseItem of sortedCaseItemsByProb) {
             cumulativeProbability += caseItem.probability;
@@ -138,37 +133,39 @@ export default function CasePage() {
                 break;
             }
         }
-        // Fallback prize if something goes wrong
+        // Fallback prize if something goes wrong with probabilities
         if (!prize) {
             prize = caseItems[0]; 
         }
-        // --- End Prize Selection ---
         
+        // --- 2. Update Backend/Context State ---
         updateBalance(-caseData.price);
         addInventoryItem(prize);
         setWonItem(prize);
 
-        // Generate a new reel with the prize in the winning position
+        // --- 3. Generate New Reel with Prize in the Winning Spot ---
         const newReel = Array.from({ length: ROULETTE_ITEMS_COUNT }, () => 
             caseItems[Math.floor(Math.random() * caseItems.length)]
         );
         newReel[WINNING_ITEM_INDEX] = prize; 
         setRouletteItems(newReel);
         
-        // Let the state update and DOM re-render with the new reel
+        // --- 4. Calculate Animation and Start it ---
+        // We need a short delay to allow React to re-render the new reel before the animation starts
         setTimeout(() => {
             const containerWidth = rouletteContainerRef.current?.offsetWidth || 0;
-            // Calculate a random "jitter" to make the final position less predictable
+            // Calculate a random "jitter" to make the final position less predictable, but still within the winning item
             const jitter = (Math.random() - 0.5) * rouletteItemWidth * 0.8;
             // Calculate the exact offset to center the winning item under the pointer
             const targetOffset = (WINNING_ITEM_INDEX * rouletteItemWidth) - (containerWidth / 2) + (rouletteItemWidth / 2) + jitter;
             
             setRouletteOffset(targetOffset);
 
+            // --- 5. Show Win Modal After Animation ---
             const animationDuration = isFast ? 2000 : 5000;
             setTimeout(() => {
                 setIsWinModalOpen(true);
-            }, animationDuration + 500); 
+            }, animationDuration + 500); // Add a small buffer after animation
         }, 100);
 
     }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, rouletteItemWidth]);
@@ -183,6 +180,7 @@ export default function CasePage() {
         setWonItem(null);
     }
     
+    // Loading State
     if (!caseData || isUserLoading || caseItems.length === 0 || rouletteItems.length === 0) {
         return (
             <div className="flex flex-col h-full">
@@ -193,8 +191,8 @@ export default function CasePage() {
                     <Skeleton className="h-6 w-32" />
                     <div className="w-10"></div>
                 </div>
-                 <div className="flex items-center justify-center h-full">
-                    <p>Loading case...</p>
+                 <div className="flex-grow flex items-center justify-center">
+                    <p className="text-muted-foreground">Loading case...</p>
                 </div>
             </div>
         );
@@ -210,7 +208,7 @@ export default function CasePage() {
           <AccordionContent className="bg-card/80 p-4 rounded-b-lg">
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
               {caseItems.map(item => (
-                  <Card key={item.id} className="p-1.5 flex flex-col items-center justify-between border-2 bg-transparent">
+                  <Card key={item.id} className="p-1.5 flex flex-col items-center justify-between border-0 bg-transparent">
                     <div className="aspect-square relative w-full h-full">
                       <Image src={item.image} alt={item.name} fill sizes="15vw" className="object-contain p-1" data-ai-hint={item.imageHint} />
                     </div>
@@ -258,7 +256,7 @@ export default function CasePage() {
                                     key={`${item.id}-${index}`}
                                     className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32"
                                 >
-                                     <Card className="p-2 flex flex-col items-center justify-center w-full h-full border-2 bg-card/80">
+                                     <Card className="p-2 flex flex-col items-center justify-center w-full h-full border-0 bg-card/80">
                                         <div className="aspect-square relative w-20 h-20 sm:w-24 sm:h-24">
                                             <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain" data-ai-hint={item.imageHint} />
                                         </div>
@@ -302,7 +300,7 @@ export default function CasePage() {
                     </DialogHeader>
                     {wonItem && (
                      <div className="flex flex-col items-center gap-4 py-4">
-                        <Card className="p-4 flex flex-col items-center justify-center w-40 h-40 border-2 shadow-lg bg-card">
+                        <Card className="p-4 flex flex-col items-center justify-center w-40 h-40 border-0 shadow-lg bg-card">
                            <div className="aspect-square relative w-32 h-32">
                                <Image src={wonItem.image} alt={wonItem.name} fill sizes="30vw" className="object-contain drop-shadow-lg" data-ai-hint={wonItem.imageHint} />
                            </div>
@@ -329,3 +327,4 @@ export default function CasePage() {
     );
 }
 
+    
