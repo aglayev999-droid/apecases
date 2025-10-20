@@ -20,8 +20,8 @@ export const ALL_ITEMS: Item[] = [
   
   // Uncommon
   { id: 'item-ring', name: 'Ring', rarity: 'Uncommon', image: 'https://i.ibb.co/hxy5rG61/ring.png', imageHint: 'silver diamond ring', value: 100, description: 'A beautiful silver ring.' },
-  { id: 'item-lol-pop-random', name: 'Lol Pop (Random)', rarity: 'Uncommon', image: 'https://i.ibb.co/chQrQb4J/desk.png', imageHint: 'swirl lollipop', value: 360, description: 'A colorful lollipop.' },
-  { id: 'item-candy-cane-random', name: 'Candy Cane (Random)', rarity: 'Uncommon', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'candy cane with bow', value: 380, description: 'A festive candy cane with a bow.' },
+  { id: 'item-lol-pop-random', name: 'Lol Pop (Random)', rarity: 'Uncommon', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'swirl lollipop', value: 360, description: 'A colorful lollipop.' },
+  { id: 'item-candy-cane-random', name: 'Candy Cane (Random)', rarity: 'Uncommon', image: 'https://i.ibb.co/bRrhpVKL/9ac8f934df67fea7-removebg-preview.png', imageHint: 'candy cane with bow', value: 380, description: 'A festive candy cane with a bow.' },
   { id: 'item-desk-calendar-random', name: 'Desk Calendar (Random)', rarity: 'Uncommon', image: 'https://i.ibb.co/chQrQb4J/desk.png', imageHint: 'desk calendar', value: 426, description: 'A fun desk calendar.', animationUrl: 'https://player.vimeo.com/video/1128782666?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1' },
   
   // Rare
@@ -47,7 +47,7 @@ export const ALL_ITEMS: Item[] = [
   { id: 'item-ginger-cookie-white-gold', name: 'Ginger Cookie White Gold', rarity: 'Legendary', image: 'https://i.ibb.co/sXXQnrY/spy.png', imageHint: 'gingerbread man', value: 1122, description: 'A white gold ginger cookie.' },
   { id: 'item-candy-cane-hex-pot', name: 'Candy Cane Hex Pot', rarity: 'Legendary', image: 'https://i.ibb.co/bRrhpVKL/9ac8f934df67fea7-removebg-preview.png', imageHint: 'cauldron with candy', value: 1192, description: 'A hex pot full of candy canes.' },
   { id: 'item-spy-agaric-robocap', name: 'Spy Agaric RoboCap', rarity: 'Legendary', image: 'https://i.ibb.co/nMHVqgnM/witch.png', imageHint: 'robot mushroom', value: 1238, description: 'A robotic spy agaric.' },
-  { id: 'item-sakura-flower-crimsonia', name: 'Sakura Flower Crimsonia', rarity: 'Legendary', image: 'https://i.ibb.co/chQrQb4J/desk.png', imageHint: 'red sakura flower', value: 1240, description: 'A crimson sakura flower.' },
+  { id: 'item-sakura-flower-crimsonia', name: 'Sakura Flower Crimsonia', rarity: 'Legendary', image: 'https://placehold.co/100x100/1e1e1e/fff?text=?', imageHint: 'red sakura flower', value: 1240, description: 'A crimson sakura flower.' },
   { id: 'item-lol-pop-mortal-sin', name: 'Lol Pop Mortal Sin', rarity: 'Legendary', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'red black lollipop', value: 1344, description: 'A mortal sin lollipop.' },
   { id: 'item-jack-in-the-box-random', name: 'Jack-in-the-Box (Random)', rarity: 'Rare', image: 'https://i.ibb.co/yvsRNdc/evil.png', imageHint: 'jack in the box', value: 576, description: 'A surprising jack-in-the-box.' },
   { id: 'item-candy-cane-sticky-sweet', name: 'Candy Cane Sticky Sweet', rarity: 'Rare', image: 'https://i.ibb.co/bRrhpVKL/9ac8f934df67fea7-removebg-preview.png', imageHint: 'green sticky candy cane', value: 594, description: 'A sticky and sweet candy cane.' },
@@ -164,6 +164,8 @@ export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { rank: 9, user: { name: 'Fury', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 15000 },
   { rank: 10, user: { name: 'Wraith', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 8000 },
 ];
+
+    
 
     
 
