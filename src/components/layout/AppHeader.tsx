@@ -2,50 +2,93 @@
 
 import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import Link from 'next/link';
-import { TonConnectButton } from '@tonconnect/ui-react';
+import { TonConnectButton, useTonWallet } from '@tonconnect/ui-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Image from 'next/image';
 import { Skeleton } from '../ui/skeleton';
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
-const starPackages = [
-    { amount: 1000, priceTon: 0.1 },
-    { amount: 5000, priceTon: 0.45 },
-    { amount: 10000, priceTon: 0.8 },
-    { amount: 25000, priceTon: 1.8 },
-];
+const starPackages = [200, 500, 1000, 2500, 5000];
 
 const BalanceTopUpDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (open: boolean) => void }) => {
+    const { user } = useUser();
+    const [amount, setAmount] = useState('');
+
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle className="text-center text-2xl font-bold">Top Up Balance</DialogTitle>
-                    <DialogDescription className="text-center">
-                        Select a package to buy Stars with TON.
+            <DialogContent className="max-w-sm p-4">
+                <DialogHeader className="text-center items-center -mb-2">
+                    <DialogTitle className="text-xl font-bold">Выберите способ пополнения</DialogTitle>
+                    <DialogDescription>
+                        Введите сумму для пополнения
                     </DialogDescription>
+                    <DialogClose className="absolute right-2 top-2 p-1">
+                        <X className="h-5 w-5" />
+                    </DialogClose>
                 </DialogHeader>
-                <div className="grid grid-cols-2 gap-4 py-4">
-                    {starPackages.map((pkg) => (
-                        <Card key={pkg.amount} className="p-4 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted">
-                            <div className="flex items-center gap-2">
-                                <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />
-                                <span className="text-xl font-bold">{pkg.amount.toLocaleString()}</span>
-                            </div>
-                            <div className="flex items-center gap-1.5 text-primary font-semibold mt-2">
-                               <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-5 h-5"><path d="M10.424 16.5414L15.3533 5.45874C15.5457 5.04949 16.2052 5.04949 16.3976 5.45874L21.3269 16.5414C21.5476 17.0014 21.1896 17.5 20.6693 17.5H11.0822C10.5619 17.5 10.2039 17.0014 10.4246 16.5414" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path><path d="M15.876 17.5L18.4355 22.0412C18.6562 22.5012 18.2982 23 17.7779 23H8.1908C7.67051 23 7.31251 22.5012 7.53321 22.0412L10.0927 17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path><path d="M10.0927 17.5L7.53321 12.9588C7.31251 12.4988 7.67051 12 8.1908 12H17.7779C18.2982 12 18.6562 12.4988 18.4355 12.9588L15.876 17.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path><path d="M15.876 17.5H10.0927" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"></path></svg>
-                               <span>{pkg.priceTon} TON</span>
-                            </div>
-                        </Card>
-                    ))}
-                </div>
-                 <Button disabled className="w-full">Purchase (Coming Soon)</Button>
+                <Tabs defaultValue="stars" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="stars">STARS ★</TabsTrigger>
+                        <TabsTrigger value="ton" disabled>TON ♦</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="stars" className="space-y-4 pt-4">
+                        <div className="relative">
+                            <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 object-contain" />
+                            <Input 
+                                type="number"
+                                placeholder="Сумма"
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                                className="pl-10 text-base"
+                            />
+                        </div>
+
+                        <div className='text-right text-sm text-muted-foreground'>
+                            Баланс: {user?.balance.stars.toLocaleString() || 0} ★
+                        </div>
+
+                        <div className="flex justify-between items-center gap-1">
+                            {starPackages.map((pkg) => (
+                                <Button 
+                                    key={pkg}
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1"
+                                    onClick={() => setAmount(String(pkg))}
+                                >
+                                    {pkg} ★
+                                </Button>
+                            ))}
+                        </div>
+
+                        <Button disabled className="w-full h-12 text-base">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-5 w-5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                            Пополнить
+                        </Button>
+
+                        <div className="flex items-center gap-4">
+                            <div className="flex-grow border-t border-dashed"></div>
+                            <span className="text-muted-foreground text-sm">ИЛИ</span>
+                            <div className="flex-grow border-t border-dashed"></div>
+                        </div>
+
+                        <Button variant="secondary" className="w-full h-12 text-base" onClick={() => window.open('https://t.me/onecase_relayer', '_blank')}>
+                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-5 w-5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                           Подарки
+                           <span className="text-muted-foreground text-xs ml-1">(Отправьте подарок)</span>
+                        </Button>
+
+                    </TabsContent>
+                </Tabs>
             </DialogContent>
         </Dialog>
     )
