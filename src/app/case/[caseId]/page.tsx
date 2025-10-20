@@ -307,13 +307,21 @@ export default function CasePage() {
                 <span>Подарки внутри</span>
             </AccordionTrigger>
             <AccordionContent>
-                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                     {caseItems.map(item => {
                         if (!item) return null;
+                        const isStars = item.id.startsWith('item-stars-');
                         return (
-                            <Card key={item.id} className={cn("p-1 border-2", RARITY_PROPERTIES[item.rarity].border)}>
-                                <div className="aspect-square relative">
-                                    <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain" data-ai-hint={item.imageHint}/>
+                            <Card key={item.id} className={cn("p-1.5 flex flex-col border-2", RARITY_PROPERTIES[item.rarity].border)}>
+                                <div className="aspect-square relative w-full">
+                                    <Image src={item.image} alt={item.name} fill sizes="15vw" className="object-contain" data-ai-hint={item.imageHint}/>
+                                </div>
+                                <div className="text-center mt-1">
+                                    <p className="text-xs font-bold truncate">{item.name}</p>
+                                    <div className="flex items-center justify-center gap-1 text-xs">
+                                        <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12} className="h-3 w-3 object-contain" />
+                                        <span className={cn('font-semibold', isStars ? 'text-yellow-400' : 'text-muted-foreground')}>{item.value}</span>
+                                    </div>
                                 </div>
                             </Card>
                         )
@@ -358,16 +366,16 @@ export default function CasePage() {
             <div className="flex-grow flex flex-col justify-between">
                 {/* Roulette Reel */}
                  <div className="flex-grow flex flex-col items-center justify-center relative my-4">
-                    <div className="absolute top-1/4 -translate-y-1/2 left-1/2 -translate-x-1/2 text-white z-10">
+                     <div className="absolute top-[30%] -translate-y-1/2 left-1/2 -translate-x-1/2 text-white z-10">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
                     </div>
                     
                     <div className="overflow-hidden w-full" ref={emblaRef}>
                         <div className="flex">
                             {reelItems.length > 0 ? reelItems.map((item, index) => (
-                                <div key={index} className="flex-[0_0_6.5rem] mx-1.5">
+                                <div key={index} className="flex-[0_0_6rem] mx-1">
                                     <Card className={cn(
-                                        "p-2 border-2 bg-card/50 transition-all duration-300", 
+                                        "p-1.5 border-2 bg-card/50 transition-all duration-300", 
                                         item ? RARITY_PROPERTIES[item.rarity].border : 'border-gray-500',
                                     )}>
                                         <div className="aspect-square relative">
@@ -376,8 +384,8 @@ export default function CasePage() {
                                     </Card>
                                 </div>
                             )) : (
-                                <div className="flex-[0_0_6.5rem] mx-1.5">
-                                    <Card className="p-2 border-2 bg-card/50">
+                                <div className="flex-[0_0_6rem] mx-1">
+                                    <Card className="p-1.5 border-2 bg-card/50">
                                          <div className="aspect-square relative" />
                                     </Card>
                                 </div>
@@ -385,7 +393,7 @@ export default function CasePage() {
                         </div>
                     </div>
 
-                    <div className="absolute bottom-1/4 translate-y-1/2 left-1/2 -translate-x-1/2 text-white z-10">
+                    <div className="absolute bottom-[30%] translate-y-1/2 left-1/2 -translate-x-1/2 text-white z-10">
                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L2 9H22L12 19Z"/></svg>
                     </div>
                 </div>
@@ -445,3 +453,5 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
