@@ -230,16 +230,6 @@ export default function CasePage() {
         setWonItem(null);
     }
 
-    const handleSell = () => {
-        if (!wonItem) return;
-        updateBalance(wonItem.value);
-        showAlert({
-            title: `Sold: ${wonItem.name}!`,
-            description: `You got ${wonItem.value} stars.`,
-        });
-        closeModal();
-    };
-
     const handleGoToInventory = () => {
         closeModal();
         router.push('/inventory');
@@ -290,6 +280,19 @@ export default function CasePage() {
           </AccordionItem>
         </Accordion>
     );
+    
+    const PrizeDisplay = ({ item }: { item: Item }) => {
+        const isStars = item.id.startsWith('item-stars-');
+        
+        return (
+            <Card className="bg-card/70 w-48 h-48 flex flex-col items-center justify-center p-4">
+                 <div className="relative w-28 h-28">
+                    <Image src={item.image} alt={item.name} fill sizes="50vw" className="object-contain" data-ai-hint={item.imageHint} />
+                </div>
+                {isStars && <span className="text-3xl font-bold mt-2 text-yellow-400">{item.value}</span>}
+            </Card>
+        )
+    }
 
     return (
         <div className="flex flex-col h-full">
@@ -370,47 +373,32 @@ export default function CasePage() {
 
             {/* Win Modal */}
             <Dialog open={isWinModalOpen} onOpenChange={setIsWinModalOpen}>
-                <DialogContent className="sm:max-w-[425px] p-0 border-0 bg-transparent shadow-none" onInteractOutside={(e) => {
-                    if (isWinModalOpen) {
-                        e.preventDefault();
-                    }
-                }}>
+                <DialogContent 
+                    className="w-screen h-screen max-w-full max-h-full sm:w-full sm:h-full bg-background/90 backdrop-blur-sm p-4 flex flex-col justify-center items-center border-0" 
+                    onInteractOutside={(e) => e.preventDefault()}
+                >
                      {wonItem && (
-                        <div className="text-center space-y-4 p-6 bg-card rounded-lg relative">
-                             <DialogTitle className="sr-only">You Won!</DialogTitle>
-                             <DialogClose asChild>
-                                <button onClick={closeModal} className="absolute top-2 right-2 p-1 rounded-full bg-background/50 hover:bg-background">
-                                    <X className="h-5 w-5 text-muted-foreground" />
-                                </button>
-                            </DialogClose>
-
-                            <div className="relative w-48 h-48 mx-auto">
-                                <Image src={wonItem.image} alt={wonItem.name} fill sizes="50vw" className="object-contain" data-ai-hint={wonItem.imageHint} />
-                            </div>
+                        <div className="text-center flex flex-col items-center justify-center gap-6">
+                            <Button variant="ghost" size="icon" className="absolute top-4 left-4" onClick={closeModal}>
+                                <ChevronLeft className="h-6 w-6" />
+                            </Button>
+                             
+                            <PrizeDisplay item={wonItem} />
+                           
                             <div>
-                                <h3 className="text-xl font-bold">You won: <span className={cn(RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.name}</span></h3>
-                                <p className={cn("font-semibold", RARITY_PROPERTIES[wonItem.rarity].text)}>{wonItem.rarity}</p>
+                                <h2 className="text-2xl font-bold">Поздравляем с победой!</h2>
+                                <p className="text-muted-foreground">
+                                    Все выигранные призы вы можете увидеть у себя в <Button variant="link" className="p-0 h-auto" onClick={handleGoToInventory}>инвентаре</Button>.
+                                </p>
                             </div>
-                            { wonItem.id.startsWith('item-stars-') ? (
-                                <Button variant="default" size="lg" className="w-full" onClick={closeModal}>
-                                    Awesome!
-                                </Button>
-                            ) : (
-                                <div className="grid grid-cols-2 gap-4 pt-4">
-                                    <Button variant="destructive" size="lg" onClick={handleSell}>
-                                        Sell {wonItem.value}
-                                        <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain ml-2" />
-                                    </Button>
-                                    <Button variant="default" size="lg" onClick={handleGoToInventory}>
-                                        Go to inventory
-                                    </Button>
-                                </div>
-                            )}
+                            
+                            <Button size="lg" className="w-64 h-12 text-lg" onClick={closeModal}>
+                                Получить приз
+                            </Button>
                         </div>
                      )}
                 </DialogContent>
             </Dialog>
-
         </div>
     );
 }
