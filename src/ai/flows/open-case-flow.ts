@@ -1,7 +1,7 @@
 'use server';
-import { runTransaction, doc, getDoc, increment, collection, serverTimestamp } from 'firebase-admin/firestore';
 import { firestore } from '@/firebase/server'; // Use server-side admin firestore
 import type { User, Case, Item } from '@/lib/types';
+import { increment, serverTimestamp } from 'firebase-admin/firestore';
 
 
 async function selectPrize(caseData: Case): Promise<string> {
@@ -41,7 +41,7 @@ export async function openCase(input: { caseId: string; userId: string }): Promi
             }
 
             const userData = userDoc.data() as User;
-            const caseData = caseDoc.data() as Case;
+            const caseData = { ...caseDoc.data(), id: caseDoc.id } as Case;
             
             const casePrice = caseData.price || 0;
 
@@ -60,25 +60,26 @@ export async function openCase(input: { caseId: string; userId: string }): Promi
             }
 
             const prizeData = { ...prizeDoc.data(), id: prizeDoc.id } as Item;
-
-            // Perform updates
-            transaction.update(userRef, {
+            
+            const updates: { [key: string]: any } = {
                 'balance.stars': increment(-casePrice),
-                weeklySpending: increment(casePrice)
-            });
+                'weeklySpending': increment(casePrice)
+            };
 
             if (prizeData.id.startsWith('item-stars-')) {
-                // If the prize is stars, update balance directly
-                transaction.update(userRef, { 'balance.stars': increment(prizeData.value) });
-            } else {
-                // Otherwise, add to inventory
+                updates['balance.stars'] = increment(prizeData.value - casePrice);
+            }
+
+            transaction.update(userRef, updates);
+
+            if (!prizeData.id.startsWith('item-stars-')) {
                 const inventoryRef = userRef.collection('inventory').doc();
-                // We only store a reference or key data, not the full item object in inventory
                  const inventoryItem = {
                     itemId: prizeData.id,
                     name: prizeData.name,
                     rarity: prizeData.rarity,
                     image: prizeData.image,
+                    imageHint: prizeData.imageHint,
                     value: prizeData.value,
                     description: prizeData.description || '',
                     animationUrl: prizeData.animationUrl || '',

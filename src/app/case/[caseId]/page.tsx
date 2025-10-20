@@ -13,8 +13,8 @@ import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import type { Case, Item } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { useFirestore, useMemoFirebase } from '@/firebase';
-import { doc, getDocs, collection, getDoc } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { openCase } from '@/ai/flows/open-case-flow';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -46,7 +46,7 @@ export default function CasePage() {
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
 
-    const { user, updateBalance, isUserLoading } = useUser();
+    const { user, addInventoryItem, updateBalance, isUserLoading } = useUser();
     const { showAlert } = useAlertDialog();
 
     const generateInitialReel = useCallback((items: Item[]) => {
@@ -59,36 +59,46 @@ export default function CasePage() {
     }, []);
 
     useEffect(() => {
-        if (!firestore || !caseId) return;
         const fetchCaseAndItemsData = async () => {
             try {
-                const itemsSnapshot = await getDocs(collection(firestore, 'items'));
-                const allItems = itemsSnapshot.empty ? MOCK_ITEMS : itemsSnapshot.docs.map(d => ({ ...d.data(), id: d.id } as Item));
-
-                const caseSnap = await getDoc(doc(firestore, 'cases', caseId));
                 let caseResult: Case | null = null;
-                if (caseSnap.exists()) {
-                    caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
-                } else {
-                    const mockCase = MOCK_CASES.find(c => c.id === caseId);
-                    if (mockCase) caseResult = mockCase;
+                const mockCase = MOCK_CASES.find(c => c.id === caseId);
+                
+                if (firestore) {
+                    const caseSnap = await getDoc(doc(firestore, 'cases', caseId));
+                    if (caseSnap.exists()) {
+                        caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
+                    } else if (mockCase) {
+                        caseResult = mockCase;
+                    }
+                } else if (mockCase) {
+                    caseResult = mockCase;
                 }
                 
                 if(caseResult) {
                     setCaseData(caseResult);
                     const currentCaseItems = caseResult.items
-                        .map(i => allItems.find(item => item.id === i.itemId))
+                        .map(i => MOCK_ITEMS.find(item => item.id === i.itemId)) // Always check against MOCK_ITEMS
                         .filter((item): item is Item => !!item)
                         .sort((a, b) => a.value - b.value);
                     setCaseItems(currentCaseItems);
-                    setRouletteItems(generateInitialReel(currentCaseItems)); // Pre-fill the roulette
+                    setRouletteItems(generateInitialReel(currentCaseItems));
                 } else {
                     showAlert({title: "Error", description: "Case not found."});
                     router.push('/');
                 }
             } catch (error) {
                 console.error("Error fetching case data:", error);
-                // Fallback to mock data already set
+                 const mockCase = MOCK_CASES.find(c => c.id === caseId);
+                 if (mockCase) {
+                     setCaseData(mockCase);
+                     const currentCaseItems = mockCase.items
+                        .map(i => MOCK_ITEMS.find(item => item.id === i.itemId))
+                        .filter((item): item is Item => !!item)
+                        .sort((a, b) => a.value - b.value);
+                    setCaseItems(currentCaseItems);
+                    setRouletteItems(generateInitialReel(currentCaseItems));
+                 }
             }
         };
 
@@ -101,17 +111,16 @@ export default function CasePage() {
         for (let i = 0; i < ROULETTE_ITEMS_COUNT; i++) {
             reel.push(caseItems[Math.floor(Math.random() * caseItems.length)]);
         }
-        // Place the winning item at a predictable position (e.g., 3rd from the end)
         reel[ROULETTE_ITEMS_COUNT - 4] = prize;
         setRouletteItems(reel);
         return reel;
     }, [caseItems]);
     
-    const handleSpin = useCallback(async (isFast: boolean = false) => {
+    const handleSpin = useCallback(async (isFast: boolean) => {
         if (isSpinning || !caseData || !user || caseItems.length === 0) return;
 
         if (user.balance.stars < caseData.price) {
-            showAlert({ title: "Error", description: "Not enough stars." });
+            showAlert({ title: "Insufficient funds", description: "You do not have enough stars to open this case." });
             return;
         }
         
@@ -123,33 +132,37 @@ export default function CasePage() {
         const { prize, error } = await openCase({ caseId: caseData.id, userId: user.id });
 
         if (error || !prize) {
-            showAlert({ title: "Error", description: error || "Could not determine prize." });
+            showAlert({ title: "Error Opening Case", description: error || "Could not determine prize. Please try again." });
             setIsSpinning(false);
             return;
         }
 
+        // The balance update is now handled on the server, but we might need to reflect it on the client
+        // The UserProvider listener will eventually catch this, but for immediate feedback:
+        const cost = caseData.price;
+        const gain = prize.id.startsWith('item-stars-') ? prize.value : 0;
+        updateBalance(gain - cost);
+        
+        if (!prize.id.startsWith('item-stars-')) {
+            addInventoryItem(prize);
+        }
+
         generateRouletteReel(prize);
         
-        // Calculate the target position
         const winningItemIndex = ROULETTE_ITEMS_COUNT - 4;
         const targetOffset = (winningItemIndex * ROULETTE_ITEM_WIDTH) - (ROULETTE_ITEM_WIDTH * 2.5) + (Math.random() * ROULETTE_ITEM_WIDTH);
         
-        // Short delay to allow React to render the new reel
         setTimeout(() => {
             setRouletteOffset(targetOffset);
         }, 100);
 
-        // Wait for animation to finish
         const animationDuration = isFast ? 2000 : 5000;
         setTimeout(() => {
             setWonItem(prize);
             setIsWinModalOpen(true);
-            if (prize.id.startsWith('item-stars-')) {
-                updateBalance(prize.value);
-            }
         }, animationDuration);
 
-    }, [caseData, user, caseItems, isSpinning, updateBalance, showAlert, generateRouletteReel]);
+    }, [caseData, user, caseItems, isSpinning, updateBalance, showAlert, generateRouletteReel, addInventoryItem]);
 
     const closeModal = () => {
         setIsWinModalOpen(false);
@@ -211,7 +224,6 @@ export default function CasePage() {
 
     return (
         <div className="flex flex-col h-full text-white">
-            {/* Header */}
             <div className="flex items-center justify-between mb-4 flex-shrink-0">
                 <Button variant="ghost" size="icon" onClick={() => router.back()}>
                     <ChevronLeft className="h-6 w-6" />
@@ -220,11 +232,8 @@ export default function CasePage() {
                 <div className="w-10"></div>
             </div>
 
-            {/* Main content */}
             <div className="flex-grow flex flex-col items-center justify-center">
-                {/* Roulette */}
                 <div className="relative w-full flex flex-col items-center justify-center my-8">
-                    {/* Top Marker */}
                     <div className="w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-white mb-2 z-10"></div>
                     
                     <div className="w-full h-36 overflow-hidden">
@@ -247,11 +256,9 @@ export default function CasePage() {
                         </div>
                     </div>
                     
-                    {/* Bottom Marker */}
                     <div className="w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-white mt-2 z-10"></div>
                 </div>
 
-                {/* Controls */}
                 <div className="w-full mt-auto flex-shrink-0 px-4">
                      <Button 
                         onClick={() => handleSpin(false)}
@@ -274,7 +281,6 @@ export default function CasePage() {
                 </div>
             </div>
 
-            {/* Win Modal */}
             <Dialog open={isWinModalOpen} onOpenChange={(isOpen) => !isOpen && closeModal()}>
                  <DialogContent className="max-w-xs" onInteractOutside={(e) => e.preventDefault()}>
                     <DialogHeader>
