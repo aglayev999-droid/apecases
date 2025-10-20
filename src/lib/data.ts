@@ -44,11 +44,14 @@ export const ALL_ITEMS: Item[] = [
   { id: 'item-cupid-charm', name: 'Cupid Charm', rarity: 'Legendary', image: 'https://i.ibb.co/C3q5PhcK/Diamond-Ring-2.png', imageHint: 'cupid charm', value: 2000, description: 'A charming cupid charm.', isUpgradable: true, isTargetable: true },
   { id: 'item-diamond-ring', name: 'Diamond Ring', rarity: 'Legendary', image: 'https://i.ibb.co/xKYxXh8d/Diamond-Ring-1.png', imageHint: 'diamond ring', value: 4000, description: 'A stunning diamond ring.', isUpgradable: true, isTargetable: true },
   { id: 'item-toy-bear', name: 'Toy Bear', rarity: 'Legendary', image: 'https://i.ibb.co/ccF1j4pZ/Toy-BEar.png', imageHint: 'toy bear', value: 4100, description: 'A cuddly toy bear.', isUpgradable: true, isTargetable: true },
-
+  { id: 'item-bonded-ring', name: 'Bonded Ring', rarity: 'Legendary', image: 'https://i.ibb.co/tBS4Lbx/bonded-ring.png', imageHint: 'luxury gold ring', value: 8700, description: 'A ring signifying a powerful bond.', isUpgradable: true, isTargetable: true },
+  { id: 'item-scared-cat', name: 'Scared Cat', rarity: 'Legendary', image: 'https://i.ibb.co/yQfC4sK/scared-cat.png', imageHint: 'surprised black cat', value: 10000, description: 'This cat has seen things.', isUpgradable: true, isTargetable: true },
+  
   // NFT
   { id: 'item-nft-helmet-1', name: 'Cyber Helmet', rarity: 'NFT', image: 'https://i.ibb.co/hYDLm1c/cyber-helmet.png', imageHint: 'cyber helmet', value: 10000, description: 'A rare cybernetic helmet. Part of the first collection.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0', animationUrl: 'https://cdn.pixabay.com/video/2024/05/29/213089_large.mp4', isUpgradable: false, isTargetable: true },
   { id: 'item-nft-sword-1', name: 'Plasma Katana', rarity: 'NFT', image: 'https://i.ibb.co/CbfcCZ2/plasma-katana.png', imageHint: 'plasma katana', value: 15000, description: 'A legendary plasma katana that hums with energy.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0', isUpgradable: false, isTargetable: true },
   { id: 'item-nft-bot-1', name: 'R-Unit 734', rarity: 'NFT', image: 'https://i.ibb.co/YXRt6T5/r-unit-734.png', imageHint: 'robot unit', value: 12000, description: 'A loyal robot companion, R-Unit 734.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0', animationUrl: 'https://cdn.pixabay.com/video/2024/02/13/200545-913410692_large.mp4', isUpgradable: false, isTargetable: true },
+  { id: 'item-nft-nail-bracelet', name: 'Nail Bracelet', rarity: 'NFT', image: 'https://i.ibb.co/b3sWzfg/nail-bracelet.png', imageHint: 'gold nail bracelet', value: 20000, description: 'An iconic bracelet in the shape of a nail.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0', isUpgradable: false, isTargetable: true },
 ];
 
 export const MOCK_CASES: Case[] = [
@@ -140,13 +143,15 @@ export const MOCK_CASES: Case[] = [
       image: 'https://i.ibb.co/93nbm8ky/a6f998b1-e6a7-4e6a-9b04-29b0fa661313-removebg-preview.png',
       imageHint: 'golden legendary case',
       items: [
-        { itemId: 'item-love-potion', probability: 0.3 },
-        { itemId: 'item-cupid-charm', probability: 0.25 },
-        { itemId: 'item-diamond-ring', probability: 0.2 },
-        { itemId: 'item-toy-bear', probability: 0.15 },
-        { itemId: 'item-nft-bot-1', probability: 0.05 },
-        { itemId: 'item-nft-sword-1', probability: 0.03 },
-        { itemId: 'item-nft-helmet-1', probability: 0.02 },
+        { itemId: 'item-cupid-charm', probability: 0.45 },     // 2000
+        { itemId: 'item-diamond-ring', probability: 0.25 },    // 4000
+        { itemId: 'item-toy-bear', probability: 0.20 },        // 4100
+        { itemId: 'item-bonded-ring', probability: 0.06 },     // 8700
+        { itemId: 'item-scared-cat', probability: 0.02 },      // 10000
+        { itemId: 'item-nft-bot-1', probability: 0.01 },       // 12000
+        { itemId: 'item-nft-sword-1', probability: 0.005 },     // 15000
+        { itemId: 'item-nft-nail-bracelet', probability: 0.004 },// 20000
+        { itemId: 'item-nft-helmet-1', probability: 0.001 },    // 10000
       ],
     },
 ];
@@ -169,6 +174,8 @@ export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { rank: 9, user: { name: 'Fury', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 15000 },
   { rank: 10, user: { name: 'Wraith', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 8000 },
 ];
+
+    
 
     
 
