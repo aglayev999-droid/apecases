@@ -107,7 +107,10 @@
     "languageTitle": "Til",
     "lang_uz": "O'zbekcha",
     "lang_ru": "Русский",
-    "lang_en": "English"
+    "lang_en": "English",
+    "missionsTitle": "Missiyalar",
+    "missionUnlockBattles": "Janglarni ochish",
+    "missionUnlockBattlesDescription": "Ochish uchun jami 1000 yulduzlik keyslarni oching."
   },
   "rocketPage": {
     "waiting": "Kutish",

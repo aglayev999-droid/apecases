@@ -24,7 +24,7 @@ const ANIMATION_DURATION_MS = 5000;
 export default function CasePage() {
     const params = useParams();
     const router = useRouter();
-    const { user, isUserLoading, updateBalance, addInventoryItem } = useUser();
+    const { user, isUserLoading, updateBalance, addInventoryItem, updateStarsSpent } = useUser();
     const { showAlert } = useAlertDialog();
     const { t } = useTranslation();
 
@@ -174,12 +174,13 @@ export default function CasePage() {
         }
         
         updateBalance(-totalCost);
+        updateStarsSpent(totalCost);
         prizes.forEach(prize => addInventoryItem(prize));
         
         setWonItems(prizes);
         setIsSpinning(true);
 
-    }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, t, multiplier, getPrize]);
+    }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, t, multiplier, getPrize, updateStarsSpent]);
 
     const closeModal = () => {
         setIsWinModalOpen(false);
@@ -201,7 +202,7 @@ export default function CasePage() {
     if (!caseData || isUserLoading || caseItems.length === 0) {
         return (
             <div className="flex flex-col h-full">
-                 <div className="flex items-center justify-between mb-4 flex-shrink-0">
+                 <div className="flex items-center justify-between mb-4 flex-shrink-0 px-4">
                     <Button variant="ghost" size="icon" onClick={() => router.back()}>
                         <ChevronLeft className="h-6 w-6" />
                     </Button>
@@ -261,7 +262,7 @@ export default function CasePage() {
 
     return (
         <div className="flex flex-col h-full text-white">
-             <div className="flex items-center justify-between mb-4 flex-shrink-0">
+             <div className="flex items-center justify-between mb-4 flex-shrink-0 px-4">
                 <Button variant="ghost" size="icon" onClick={() => router.back()}>
                     <ChevronLeft className="h-6 w-6" />
                 </Button>
@@ -272,8 +273,8 @@ export default function CasePage() {
             <div className="flex-grow flex flex-col items-center justify-center">
                  <div ref={rouletteContainerRef} className="relative w-full flex flex-col items-center justify-center my-4 sm:my-8 gap-2">
                     {rouletteItems.map((reel, reelIndex) => {
-                         const showTopArrow = (multiplier < 3 && reelIndex === 0) || (multiplier === 3 && reelIndex === 0);
-                         const showBottomArrow = (multiplier < 3 && reelIndex === rouletteItems.length - 1) || (multiplier === 3 && reelIndex === rouletteItems.length - 1);
+                         const showTopArrow = (multiplier === 1) || (multiplier === 2 && reelIndex === 0) || (multiplier === 3 && reelIndex === 0);
+                         const showBottomArrow = (multiplier === 1) || (multiplier === 2 && reelIndex === 1) || (multiplier === 3 && reelIndex === 2);
                          
                         return (
                         <div key={reelIndex} className="relative w-full flex items-center justify-center">

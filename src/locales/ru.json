@@ -107,7 +107,10 @@
     "languageTitle": "Язык",
     "lang_uz": "O'zbekcha",
     "lang_ru": "Русский",
-    "lang_en": "English"
+    "lang_en": "English",
+    "missionsTitle": "Миссии",
+    "missionUnlockBattles": "Разблокировать Битвы",
+    "missionUnlockBattlesDescription": "Откройте кейсы на общую сумму 1000 звезд, чтобы разблокировать."
   },
   "rocketPage": {
     "waiting": "Ожидание",

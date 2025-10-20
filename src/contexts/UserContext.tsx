@@ -41,7 +41,7 @@ interface UserContextType {
   addInventoryItem: (item: Item) => void;
   removeInventoryItem: (inventoryId: string) => void;
   removeInventoryItems: (inventoryIds: string[]) => void;
-  updateSpending: (amount: number) => void;
+  updateStarsSpent: (amount: number) => void;
   lastFreeCaseOpen: Date | null;
   setLastFreeCaseOpen: (date: Date) => void;
   isUserLoading: boolean;
@@ -67,7 +67,7 @@ const createNewUserDocument = async (firestore: any, firebaseUser: FirebaseUser)
             avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg', // You can add logic to fetch profile photo later
             balance: { stars: 1000, diamonds: 0 },
             referrals: { count: 0, commissionEarned: 0, code: `ref-${firebaseUser.uid.slice(0, 5)}` },
-            weeklySpending: 0,
+            starsSpentOnCases: 0,
         };
     } else {
         // Fallback for when not in Telegram (e.g., web browser)
@@ -79,7 +79,7 @@ const createNewUserDocument = async (firestore: any, firebaseUser: FirebaseUser)
             avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg',
             balance: { stars: 10000, diamonds: 0 }, // Higher balance for web testing
             referrals: { count: 0, commissionEarned: 0, code: `ref-${firebaseUser.uid.slice(0, 5)}` },
-            weeklySpending: 0,
+            starsSpentOnCases: 0,
         };
     }
 
@@ -236,10 +236,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     batch.commit().catch(e => console.error("Failed to remove items:", e));
   }, [firestore, inventoryColRef]);
 
-  const updateSpending = useCallback((amount: number) => {
+  const updateStarsSpent = useCallback((amount: number) => {
     if (!userDocRef || !firestore) return;
     const batch = writeBatch(firestore);
-    batch.update(userDocRef, { weeklySpending: increment(amount) });
+    batch.update(userDocRef, { starsSpentOnCases: increment(amount) });
     batch.commit().catch(e => console.error("Failed to update spending:", e));
   }, [firestore, userDocRef]);
 
@@ -255,7 +255,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       addInventoryItem, 
       removeInventoryItem,
       removeInventoryItems,
-      updateSpending, 
+      updateStarsSpent, 
       lastFreeCaseOpen, 
       setLastFreeCaseOpen,
       isUserLoading: isAuthLoading || isUserDocLoading,

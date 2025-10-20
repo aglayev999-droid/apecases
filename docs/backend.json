@@ -34,13 +34,9 @@
           "type": "number",
           "description": "The number of users this user has referred."
         },
-        "spinsCountWeekly": {
+        "starsSpentOnCases": {
           "type": "number",
-          "description": "The number of spins the user has used this week."
-        },
-        "starsSpentWeekly": {
-          "type": "number",
-          "description": "The number of Stars the user has spent this week."
+          "description": "The total number of Stars the user has spent on opening cases."
         }
       },
       "required": [

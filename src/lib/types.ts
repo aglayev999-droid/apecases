@@ -46,7 +46,7 @@ export interface User {
     commissionEarned: number;
     code: string;
   };
-  weeklySpending: number;
+  starsSpentOnCases: number;
 }
 
 export interface LeaderboardEntry {

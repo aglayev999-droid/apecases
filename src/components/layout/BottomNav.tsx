@@ -12,16 +12,18 @@ import { useUser } from '@/contexts/UserContext';
 export default function BottomNav() {
   const pathname = usePathname();
   const { t } = useTranslation();
-  const { hasNewItems } = useUser();
+  const { user, hasNewItems } = useUser();
+
+  const battlesUnlocked = (user?.starsSpentOnCases || 0) >= 1000;
 
   const navItems = [
-    { href: '/upgrade', label: t('bottomNav.upgrade'), icon: DiamondIcon, isBeta: true },
-    { href: '/rocket', label: t('bottomNav.rocket'), icon: Rocket, isBeta: true },
-    { href: '/battles', label: t('bottomNav.battles'), icon: Swords },
-    { href: '/', label: t('bottomNav.cases'), icon: 'main', isMain: true },
-    { href: '/leaderboard', label: t('bottomNav.rating'), icon: BarChart3 },
-    { href: '/profile', label: t('bottomNav.profile'), icon: UserIcon },
-  ];
+    { href: '/upgrade', label: t('bottomNav.upgrade'), icon: DiamondIcon, isBeta: true, show: true },
+    { href: '/rocket', label: t('bottomNav.rocket'), icon: Rocket, isBeta: true, show: true },
+    { href: '/battles', label: t('bottomNav.battles'), icon: Swords, show: battlesUnlocked },
+    { href: '/', label: t('bottomNav.cases'), icon: 'main', isMain: true, show: true },
+    { href: '/leaderboard', label: t('bottomNav.rating'), icon: BarChart3, show: true },
+    { href: '/profile', label: t('bottomNav.profile'), icon: UserIcon, show: true },
+  ].filter(item => item.show);
   
   const mainButtonIndex = navItems.findIndex(item => item.isMain);
 
@@ -33,8 +35,10 @@ export default function BottomNav() {
             const isActive = item.href === '/' ? pathname === item.href : pathname.startsWith(item.href) && item.href.length > 1;
 
             if (item.isMain) {
+              // Adjust col-start based on its new position
+              const colStart = navItems.findIndex(i => i.isMain) + 1;
               return (
-                <div key={item.href} className="flex flex-col items-center justify-center -mt-6 col-start-4">
+                <div key={item.href} className="flex flex-col items-center justify-center -mt-6" style={{ gridColumnStart: colStart }}>
                   <Link href={item.href} className={cn(
                     'rounded-full p-2 transition-all transform',
                     pathname === '/' ? 'bg-primary shadow-lg' : 'bg-card border'
@@ -52,7 +56,7 @@ export default function BottomNav() {
               );
             }
 
-            const IconComponent = item.icon;
+            const IconComponent = item.icon as React.ElementType; // Cast icon to a valid component type
             const isProfile = item.href === '/profile';
 
             return (

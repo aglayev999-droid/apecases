@@ -107,7 +107,10 @@
     "languageTitle": "Language",
     "lang_uz": "O'zbekcha",
     "lang_ru": "Русский",
-    "lang_en": "English"
+    "lang_en": "English",
+    "missionsTitle": "Missions",
+    "missionUnlockBattles": "Unlock Case Battles",
+    "missionUnlockBattlesDescription": "Open cases for a total of 1,000 stars to unlock."
   },
   "rocketPage": {
     "waiting": "Waiting",

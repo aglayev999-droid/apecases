@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Copy, Moon, Sun, Settings, Check, Trash2, X, ArrowRightLeft } from 'lucide-react';
+import { Copy, Moon, Sun, Settings, Check, Trash2, X, ArrowRightLeft, Goal, Swords } from 'lucide-react';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
@@ -24,6 +24,7 @@ import { useTonWallet } from '@tonconnect/ui-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { useRouter } from 'next/navigation';
+import { Progress } from "@/components/ui/progress"
 
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
@@ -325,6 +326,49 @@ const InventorySection = () => {
   );
 }
 
+const MissionsSheet = ({ user }: { user: any }) => {
+    const { t } = useTranslation();
+    const goal = 1000;
+    const currentProgress = user?.starsSpentOnCases || 0;
+    const isCompleted = currentProgress >= goal;
+    const progressPercentage = Math.min((currentProgress / goal) * 100, 100);
+
+    return (
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="flex-shrink-0">
+                    <Goal className="h-6 w-6" />
+                </Button>
+            </SheetTrigger>
+            <SheetContent>
+                <SheetHeader>
+                    <SheetTitle>{t('profilePage.missionsTitle')}</SheetTitle>
+                </SheetHeader>
+                <div className="mt-6 space-y-6">
+                    <Card className="p-4">
+                        <div className="flex items-start gap-4">
+                            <div className={cn("p-3 rounded-lg", isCompleted ? "bg-green-500/20" : "bg-primary/20")}>
+                               <Swords className={cn("h-6 w-6", isCompleted ? "text-green-500" : "text-primary")} />
+                            </div>
+                            <div className="flex-grow">
+                                <p className="font-bold">{t('profilePage.missionUnlockBattles')}</p>
+                                <p className="text-sm text-muted-foreground">{t('profilePage.missionUnlockBattlesDescription')}</p>
+                                <Progress value={progressPercentage} className="mt-2 h-2" />
+                                <div className="flex justify-between items-center mt-1">
+                                    <span className="text-xs text-muted-foreground">
+                                        {currentProgress.toLocaleString()} / {goal.toLocaleString()} ★
+                                    </span>
+                                    {isCompleted && <Check className="h-5 w-5 text-green-500" />}
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
+                </div>
+            </SheetContent>
+        </Sheet>
+    );
+};
+
 
 export default function ProfilePage() {
   const { user, isUserLoading, setHasNewItems } = useUser();
@@ -383,6 +427,7 @@ export default function ProfilePage() {
                         <p className="text-muted-foreground text-sm">{t('profilePage.id')}: {user.telegramId}</p>
                     </div>
                 </div>
+                 <MissionsSheet user={user} />
                  <SheetTrigger asChild>
                     <Button variant="ghost" size="icon" className="flex-shrink-0">
                         <Settings className="h-6 w-6" />
