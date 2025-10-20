@@ -327,7 +327,30 @@ const InventorySection = () => {
   );
 }
 
-const MissionsSheet = ({ user }: { user: any }) => {
+export default function ProfilePage() {
+  const { user, isUserLoading, setHasNewItems } = useUser();
+  const { showAlert } = useAlertDialog();
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    setHasNewItems(false);
+  }, [setHasNewItems]);
+
+  const formatNumber = (num: number) => {
+    if (num === undefined || num === null) return '0';
+    return new Intl.NumberFormat('en-US').format(num);
+  };
+
+  const copyReferralCode = () => {
+    if (!user || !user.referrals || !user.referrals.code) return;
+    navigator.clipboard.writeText(user.referrals.code);
+    showAlert({
+      title: t('profilePage.copySuccessTitle'),
+      description: t('profilePage.copySuccessDescription'),
+    });
+  }
+  
+  const MissionsSheet = ({ user }: { user: any }) => {
     const { t } = useTranslation();
     const goal = 1000;
     const currentProgress = user?.starsSpentOnCases || 0;
@@ -368,31 +391,8 @@ const MissionsSheet = ({ user }: { user: any }) => {
             </SheetContent>
         </Sheet>
     );
-};
-
-
-export default function ProfilePage() {
-  const { user, isUserLoading, setHasNewItems } = useUser();
-  const { showAlert } = useAlertDialog();
-  const { t } = useTranslation();
-
-  useEffect(() => {
-    setHasNewItems(false);
-  }, [setHasNewItems]);
-
-  const formatNumber = (num: number) => {
-    if (num === undefined || num === null) return '0';
-    return new Intl.NumberFormat('en-US').format(num);
   };
 
-  const copyReferralCode = () => {
-    if (!user || !user.referrals || !user.referrals.code) return;
-    navigator.clipboard.writeText(user.referrals.code);
-    showAlert({
-      title: t('profilePage.copySuccessTitle'),
-      description: t('profilePage.copySuccessDescription'),
-    });
-  }
 
   if (isUserLoading || !user) {
     return (
@@ -494,5 +494,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
