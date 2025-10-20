@@ -355,7 +355,7 @@ export default function CasePage() {
             </div>
 
             {/* Main content */}
-            <div className="flex-grow flex flex-col justify-around">
+            <div className="flex-grow flex flex-col justify-between">
                 {/* Roulette Reel */}
                  <div className="flex-grow flex flex-col items-center justify-center relative my-4">
                     <div className="absolute top-1/4 -translate-y-full left-1/2 -translate-x-1/2 text-white z-10">
@@ -445,6 +445,8 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
 
     
 
