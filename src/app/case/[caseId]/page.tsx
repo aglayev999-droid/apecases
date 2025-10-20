@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -399,7 +400,7 @@ export default function CasePage() {
                 </div>
 
                 {/* Controls */}
-                <div className="w-full mt-auto">
+                <div className="w-full">
                     <Button 
                         onClick={() => handleSpin(false)}
                         onDoubleClick={() => handleSpin(true)}
