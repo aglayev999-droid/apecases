@@ -6,24 +6,92 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Copy, Moon, Sun } from 'lucide-react';
+import { Copy, Moon, Sun, Settings, ChevronRight } from 'lucide-react';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { cn } from '@/lib/utils';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
+
+const LanguageSelector = () => {
+    const [language, setLanguage] = useState('uz'); // 'uz', 'ru', 'en'
+    // In a real app, this would come from a context or i18n library
+    
+    return (
+        <div className="space-y-2">
+            <h3 className="font-semibold text-foreground">Til</h3>
+            <RadioGroup defaultValue={language} onValueChange={setLanguage}>
+                <Label className="flex items-center justify-between p-4 rounded-lg bg-card cursor-pointer hover:bg-muted">
+                    <span>O'zbekcha</span>
+                    <RadioGroupItem value="uz" id="lang-uz" />
+                </Label>
+                <Label className="flex items-center justify-between p-4 rounded-lg bg-card cursor-pointer hover:bg-muted">
+                    <span>Русский</span>
+                    <RadioGroupItem value="ru" id="lang-ru" />
+                </Label>
+                <Label className="flex items-center justify-between p-4 rounded-lg bg-card cursor-pointer hover:bg-muted">
+                    <span>English</span>
+                    <RadioGroupItem value="en" id="lang-en" />
+                </Label>
+            </RadioGroup>
+        </div>
+    )
+}
+
+const ThemeSelector = () => {
+    const { theme, setTheme } = useTheme();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+    
+    if (!mounted) {
+        return <Skeleton className="h-14 w-full" />
+    }
+
+    return (
+         <div className="space-y-2">
+            <h3 className="font-semibold text-foreground">Mavzu</h3>
+            <div 
+              className={cn(
+                "flex items-center justify-between p-4 rounded-lg cursor-pointer hover:bg-muted",
+                theme === 'light' ? 'bg-card' : 'bg-transparent'
+              )}
+              onClick={() => setTheme('light')}
+            >
+              <div className="flex items-center gap-3">
+                <Sun className="h-5 w-5" />
+                <span>Yorug'</span>
+              </div>
+              {theme === 'light' && <Check className="h-5 w-5 text-primary" />}
+            </div>
+            <div 
+              className={cn(
+                "flex items-center justify-between p-4 rounded-lg cursor-pointer hover:bg-muted",
+                theme === 'dark' ? 'bg-card' : 'bg-transparent'
+              )}
+              onClick={() => setTheme('dark')}
+            >
+              <div className="flex items-center gap-3">
+                <Moon className="h-5 w-5" />
+                <span>Qorong'u</span>
+              </div>
+              {theme === 'dark' && <Check className="h-5 w-5 text-primary" />}
+            </div>
+        </div>
+    )
+}
+
 
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
   const { showAlert } = useAlertDialog();
-  const { theme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const formatNumber = (num: number) => {
     if (num === undefined || num === null) return '0';
@@ -38,11 +106,6 @@ export default function ProfilePage() {
       description: 'Referral code copied to clipboard.',
     });
   }
-  
-  const handleThemeChange = (isChecked: boolean) => {
-    setTheme(isChecked ? 'dark' : 'light');
-  };
-
 
   if (isUserLoading || !user) {
     return (
@@ -64,51 +127,37 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col items-center text-center sm:flex-row sm:text-left sm:items-center gap-6">
-        <Avatar className="h-24 w-24 border-4 border-primary">
-          <AvatarImage src={user.avatar || DEFAULT_AVATAR} alt={user.name} />
-          <AvatarFallback className="text-3xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <div className="flex-grow">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tighter">{user.name}</h1>
-          <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
-            <a href="https://t.me/apexcasesbot" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors text-sm">@apexcasesbot</a>
-            <p className="text-muted-foreground text-sm">ID: {user.telegramId}</p>
-          </div>
-        </div>
-      </div>
+        <Sheet>
+            <div className="flex items-center gap-4">
+                <div className="flex-shrink-0">
+                    <Avatar className="h-24 w-24 border-4 border-primary">
+                        <AvatarImage src={user.avatar || DEFAULT_AVATAR} alt={user.name} />
+                        <AvatarFallback className="text-3xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                </div>
+                <div className="flex-grow">
+                    <h1 className="text-3xl md:text-4xl font-bold tracking-tighter">{user.name}</h1>
+                    <div className="flex items-center gap-2 mt-1">
+                        <p className="text-muted-foreground text-sm">ID: {user.telegramId}</p>
+                    </div>
+                </div>
+                 <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon" className="flex-shrink-0">
+                        <Settings className="h-6 w-6" />
+                    </Button>
+                </SheetTrigger>
+            </div>
+            <SheetContent>
+                <SheetHeader>
+                    <SheetTitle>Sozlamalar</SheetTitle>
+                </SheetHeader>
+                <div className="mt-6 space-y-6">
+                    <ThemeSelector />
+                    <LanguageSelector />
+                </div>
+            </SheetContent>
+        </Sheet>
       
-       <div className="grid grid-cols-1 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-xl">Settings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {!mounted ? (
-                <div className="flex items-center justify-between">
-                   <div className="flex items-center gap-2">
-                     <Skeleton className="h-5 w-5 rounded-full" />
-                     <Skeleton className="h-5 w-20" />
-                   </div>
-                   <Skeleton className="h-6 w-11 rounded-full" />
-                </div>
-              ) : (
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="theme-switch" className="flex items-center gap-2 cursor-pointer">
-                    {theme === 'dark' ? <Moon className="h-5 w-5"/> : <Sun className="h-5 w-5" />}
-                    <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
-                  </Label>
-                  <Switch
-                    id="theme-switch"
-                    checked={theme === 'dark'}
-                    onCheckedChange={handleThemeChange}
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-      </div>
-
       <div className="grid md:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
