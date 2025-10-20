@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronLeft, Gift } from 'lucide-react';
@@ -19,6 +19,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 
+
 const RARITY_PROPERTIES: { [key in Item['rarity']]: { glow: string; text: string; bg: string; border: string; } } = {
     Common: { glow: 'shadow-gray-400/50', text: 'text-gray-400', bg: 'bg-gray-800/20', border: 'border-gray-500/50' },
     Uncommon: { glow: 'shadow-green-400/60', text: 'text-green-400', bg: 'bg-green-800/20', border: 'border-green-500/50' },
@@ -30,6 +31,7 @@ const RARITY_PROPERTIES: { [key in Item['rarity']]: { glow: string; text: string
 
 const ROULETTE_ITEM_WIDTH = 144; // 128px width + 16px gap
 const ROULETTE_ITEMS_COUNT = 50; // Total items in the reel
+const WINNING_ITEM_INDEX = ROULETTE_ITEMS_COUNT - 4; // Prize will be placed here
 
 export default function CasePage() {
     const params = useParams();
@@ -58,47 +60,38 @@ export default function CasePage() {
         return reel;
     }, []);
 
+    const generateRouletteReelWithPrize = useCallback((prize: Item, currentCaseItems: Item[]) => {
+        if (currentCaseItems.length === 0) return [];
+        const reel: Item[] = [];
+        for (let i = 0; i < ROULETTE_ITEMS_COUNT; i++) {
+            reel.push(currentCaseItems[Math.floor(Math.random() * currentCaseItems.length)]);
+        }
+        reel[WINNING_ITEM_INDEX] = prize; 
+        return reel;
+    }, []);
+
     useEffect(() => {
         const fetchCaseAndItemsData = async () => {
-            try {
-                let caseResult: Case | null = null;
-                const mockCase = MOCK_CASES.find(c => c.id === caseId);
-                
-                if (mockCase) {
-                    caseResult = mockCase;
+            let caseResult: Case | null = MOCK_CASES.find(c => c.id === caseId) || null;
+            
+            if(firestore) {
+                const caseSnap = await getDoc(doc(firestore, 'cases', caseId));
+                if (caseSnap.exists()) {
+                    caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
                 }
-                
-                if(firestore) {
-                    const caseSnap = await getDoc(doc(firestore, 'cases', caseId));
-                    if (caseSnap.exists()) {
-                        caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
-                    }
-                }
-                
-                if(caseResult) {
-                    setCaseData(caseResult);
-                    const currentCaseItems = caseResult.items
-                        .map(i => MOCK_ITEMS.find(item => item.id === i.itemId))
-                        .filter((item): item is Item => !!item)
-                        .sort((a, b) => a.value - b.value);
-                    setCaseItems(currentCaseItems);
-                    setRouletteItems(generateInitialReel(currentCaseItems));
-                } else {
-                    showAlert({title: "Error", description: "Case not found."});
-                    router.push('/');
-                }
-            } catch (error) {
-                console.error("Error fetching case data:", error);
-                 const mockCase = MOCK_CASES.find(c => c.id === caseId);
-                 if (mockCase) {
-                     setCaseData(mockCase);
-                     const currentCaseItems = mockCase.items
-                        .map(i => MOCK_ITEMS.find(item => item.id === i.itemId))
-                        .filter((item): item is Item => !!item)
-                        .sort((a, b) => a.value - b.value);
-                    setCaseItems(currentCaseItems);
-                    setRouletteItems(generateInitialReel(currentCaseItems));
-                 }
+            }
+            
+            if(caseResult) {
+                setCaseData(caseResult);
+                const currentCaseItems = caseResult.items
+                    .map(i => MOCK_ITEMS.find(item => item.id === i.itemId))
+                    .filter((item): item is Item => !!item)
+                    .sort((a, b) => a.value - b.value);
+                setCaseItems(currentCaseItems);
+                setRouletteItems(generateInitialReel(currentCaseItems));
+            } else {
+                showAlert({title: "Error", description: "Case not found."});
+                router.push('/');
             }
         };
 
@@ -106,43 +99,6 @@ export default function CasePage() {
             fetchCaseAndItemsData();
         }
     }, [caseId, firestore, router, showAlert, generateInitialReel]);
-
-    const generateRouletteReel = useCallback((prize: Item) => {
-        if (caseItems.length === 0) return [];
-        const reel: Item[] = [];
-        for (let i = 0; i < ROULETTE_ITEMS_COUNT; i++) {
-            reel.push(caseItems[Math.floor(Math.random() * caseItems.length)]);
-        }
-        // Place the prize at a predictable winning position (e.g., the 47th item)
-        // The pointer is in the middle, so we want the prize to land there.
-        // The winning position will be `ROULETTE_ITEMS_COUNT - buffer`
-        reel[ROULETTE_ITEMS_COUNT - 4] = prize; 
-        return reel;
-    }, [caseItems]);
-    
-    const startRoulette = (prize: Item) => {
-        const newReel = generateRouletteReel(prize);
-        setRouletteItems(newReel);
-        setWonItem(prize);
-        
-        // Short delay to ensure state update before animation starts
-        setTimeout(() => {
-            const winningItemIndex = ROULETTE_ITEMS_COUNT - 4;
-            // Add a random "jitter" to make the stop position feel less robotic
-            const jitter = (Math.random() - 0.5) * ROULETTE_ITEM_WIDTH * 0.8;
-            // Calculate the target offset to center the winning item
-            // The formula is: (winningIndex * itemWidth) - (containerWidth / 2) + (itemWidth / 2) + jitter
-            // Since our container is effectively 3.5 items wide for centering, we can simplify:
-            const targetOffset = (winningItemIndex * ROULETTE_ITEM_WIDTH) - (ROULETTE_ITEM_WIDTH * 2.5) + jitter;
-            
-            setRouletteOffset(targetOffset);
-
-            const animationDuration = isFastSpin ? 2000 : 5000;
-            setTimeout(() => {
-                setIsWinModalOpen(true);
-            }, animationDuration + 500); // Add a small delay for animation to finish before showing modal
-        }, 100);
-    }
     
     const handleSpin = useCallback(async (isFast: boolean) => {
         if (isSpinning || !caseData || !user || caseItems.length === 0) return;
@@ -151,26 +107,16 @@ export default function CasePage() {
             showAlert({ title: "Insufficient funds", description: "You do not have enough stars to open this case." });
             return;
         }
-        
+
         setIsFastSpin(isFast);
         setIsSpinning(true);
-        setWonItem(null);
         setRouletteOffset(0);
-        // Reset the reel to its initial random state before generating the new one with the prize
-        setRouletteItems(generateInitialReel(caseItems));
 
-
-        // This is a temporary client-side only implementation.
-        // In a real app, you would call a server function here to get the prize.
-        updateBalance(-caseData.price);
-        
         // --- Prize Selection Logic ---
         const randomNumber = Math.random();
         let cumulativeProbability = 0;
         let prize: Item | undefined;
-
         const sortedCaseItems = [...caseData.items].sort((a,b) => a.probability - b.probability);
-
         for (const caseItem of sortedCaseItems) {
             cumulativeProbability += caseItem.probability;
             if (randomNumber <= cumulativeProbability) {
@@ -178,23 +124,39 @@ export default function CasePage() {
                 break;
             }
         }
-        // Fallback if something goes wrong with probability calculation
         if (!prize) {
-            prize = caseItems[caseItems.length -1];
+            prize = caseItems[caseItems.length - 1]; // Fallback
         }
         // --- End Prize Selection ---
 
         if (!prize) {
             showAlert({ title: "Error Opening Case", description: "Could not determine prize. Please try again." });
             setIsSpinning(false);
-            updateBalance(caseData.price); // Refund
             return;
         }
-
+        
+        // Update user state before animation
+        updateBalance(-caseData.price);
         addInventoryItem(prize);
-        startRoulette(prize);
+        setWonItem(prize);
 
-    }, [caseData, user, caseItems, isSpinning, showAlert, generateRouletteReel, updateBalance, addInventoryItem, isFastSpin, generateInitialReel]);
+        // Generate the reel with the chosen prize and start animation
+        const newReel = generateRouletteReelWithPrize(prize, caseItems);
+        setRouletteItems(newReel);
+        
+        setTimeout(() => {
+            const jitter = (Math.random() - 0.5) * ROULETTE_ITEM_WIDTH * 0.8;
+            const targetOffset = (WINNING_ITEM_INDEX * ROULETTE_ITEM_WIDTH) - (ROULETTE_ITEM_WIDTH * 2.5) + jitter;
+            
+            setRouletteOffset(targetOffset);
+
+            const animationDuration = isFast ? 2000 : 5000;
+            setTimeout(() => {
+                setIsWinModalOpen(true);
+            }, animationDuration + 500); 
+        }, 100);
+
+    }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, generateRouletteReelWithPrize]);
 
 
     const closeModal = () => {
@@ -203,6 +165,7 @@ export default function CasePage() {
         // Reset the reel for the next spin to a random state
         setRouletteItems(generateInitialReel(caseItems));
         setRouletteOffset(0);
+        setWonItem(null);
     }
     
     if (!caseData || isUserLoading) {
@@ -267,7 +230,7 @@ export default function CasePage() {
 
             <div className="flex-grow flex flex-col items-center justify-center">
                 <div className="relative w-full flex flex-col items-center justify-center my-8">
-                    <div className="w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-white mb-2 z-10"></div>
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-white z-10"></div>
                     
                     <div className="w-full h-36 overflow-hidden">
                         <div 
@@ -289,7 +252,7 @@ export default function CasePage() {
                         </div>
                     </div>
                     
-                    <div className="w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-white mt-2 z-10"></div>
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-white z-10"></div>
                 </div>
 
                 <div className="w-full mt-auto flex-shrink-0 px-4">
