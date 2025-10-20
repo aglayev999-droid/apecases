@@ -16,115 +16,6 @@ import { ALL_ITEMS } from '@/lib/data';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import { useTranslation } from '@/contexts/LanguageContext';
 
-const ItemSelectionModal = ({
-  isOpen,
-  onClose,
-  items,
-  selectedItems,
-  onSelect,
-  title,
-  isMultiSelect,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-  items: (Item | InventoryItem)[];
-  selectedItems: (Item | InventoryItem)[];
-  onSelect: (item: Item | InventoryItem) => void;
-  title: string;
-  isMultiSelect: boolean;
-}) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const { t } = useTranslation();
-
-  const filteredItems = useMemo(() => {
-    if (!searchQuery) return items;
-    return items.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [searchQuery, items]);
-  
-  const isSelected = (item: Item | InventoryItem) => {
-    return selectedItems.some(selected => ('inventoryId' in item && 'inventoryId' in selected) ? item.inventoryId === selected.inventoryId : item.id === selected.id);
-  }
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="flex flex-col h-[80vh] max-w-sm p-4">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        <div className="relative mb-2">
-          <Input 
-            placeholder={t('upgradePage.quickSearch')} 
-            className="pl-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        </div>
-        <ScrollArea className="flex-grow">
-          {filteredItems.length === 0 ? (
-             <div className="text-center text-muted-foreground py-10">
-                {t('upgradePage.notFound')}
-            </div>
-          ) : (
-             <div className="grid grid-cols-3 gap-2">
-                {filteredItems.map(item => (
-                  <Card 
-                      key={'inventoryId' in item ? item.inventoryId : item.id} 
-                      className={cn("p-1.5 cursor-pointer transition-all border-2", isSelected(item) ? 'border-primary' : 'border-transparent')}
-                      onClick={() => onSelect(item)}
-                  >
-                      <div className="aspect-square relative">
-                          <Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain p-1" data-ai-hint={item.imageHint}/>
-                      </div>
-                      <p className="text-xs font-bold truncate mt-1 text-center">{item.name}</p>
-                  </Card>
-                ))}
-            </div>
-          )}
-        </ScrollArea>
-         {isMultiSelect && (
-          <div className="flex-shrink-0 mt-2">
-            <Button onClick={onClose} className="w-full">
-              {t('upgradePage.confirm')}
-            </Button>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-const UpgradeResultModal = ({ isOpen, onClose, isSuccess, item }: { isOpen: boolean, onClose: () => void, isSuccess: boolean, item: Item | null }) => {
-    const { t } = useTranslation();
-    
-    if (!item) return null;
-
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-xs text-center p-0 rounded-2xl" onInteractOutside={onClose}>
-                 <DialogHeader className="p-6 pb-4">
-                    <DialogTitle className={cn("text-2xl font-bold", isSuccess ? "text-green-400" : "text-red-500")}>
-                        {isSuccess ? t('upgradePage.successTitle') : t('upgradePage.failureTitle')}
-                    </DialogTitle>
-                </DialogHeader>
-                 <div className="flex flex-col items-center gap-4 py-2 px-6">
-                    <Card className={cn("p-4 flex flex-col items-center justify-center w-40 h-40 border-0 shadow-lg", isSuccess ? "bg-green-900/20" : "bg-red-900/20")}>
-                        <div className={cn("aspect-square relative w-32 h-32", !isSuccess && "opacity-50 grayscale")}>
-                            <Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain drop-shadow-lg" data-ai-hint={item.imageHint} />
-                        </div>
-                    </Card>
-                     <div>
-                        <p className="text-lg font-bold">{item.name}</p>
-                    </div>
-                 </div>
-                 <DialogFooter className="p-4">
-                    <Button className="w-full h-12 text-base" onClick={onClose}>{t('upgradePage.continueButton')}</Button>
-                 </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-};
-
 export default function UpgradePage() {
     const { inventory, addInventoryItem, removeInventoryItems } = useUser();
     const { showAlert } = useAlertDialog();
@@ -140,6 +31,112 @@ export default function UpgradePage() {
     const [upgradeResult, setUpgradeResult] = useState<'success' | 'failure' | null>(null);
     const [showResultModal, setShowResultModal] = useState(false);
     const [spinnerRotation, setSpinnerRotation] = useState(0);
+
+    const ItemSelectionModal = ({
+      isOpen,
+      onClose,
+      items,
+      selectedItems,
+      onSelect,
+      title,
+      isMultiSelect,
+    }: {
+      isOpen: boolean;
+      onClose: () => void;
+      items: (Item | InventoryItem)[];
+      selectedItems: (Item | InventoryItem)[];
+      onSelect: (item: Item | InventoryItem) => void;
+      title: string;
+      isMultiSelect: boolean;
+    }) => {
+      const [searchQuery, setSearchQuery] = useState('');
+    
+      const filteredItems = useMemo(() => {
+        if (!searchQuery) return items;
+        return items.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
+      }, [searchQuery, items]);
+      
+      const isSelected = (item: Item | InventoryItem) => {
+        return selectedItems.some(selected => ('inventoryId' in item && 'inventoryId' in selected) ? item.inventoryId === selected.inventoryId : item.id === selected.id);
+      }
+    
+      return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+          <DialogContent className="flex flex-col h-[80vh] max-w-sm p-4">
+            <DialogHeader>
+              <DialogTitle>{title}</DialogTitle>
+            </DialogHeader>
+            <div className="relative mb-2">
+              <Input 
+                placeholder={t('upgradePage.quickSearch')} 
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            </div>
+            <ScrollArea className="flex-grow">
+              {filteredItems.length === 0 ? (
+                 <div className="text-center text-muted-foreground py-10">
+                    {t('upgradePage.notFound')}
+                </div>
+              ) : (
+                 <div className="grid grid-cols-3 gap-2">
+                    {filteredItems.map(item => (
+                      <Card 
+                          key={'inventoryId' in item ? item.inventoryId : item.id} 
+                          className={cn("p-1.5 cursor-pointer transition-all border-2", isSelected(item) ? 'border-primary' : 'border-transparent')}
+                          onClick={() => onSelect(item)}
+                      >
+                          <div className="aspect-square relative">
+                              <Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain p-1" data-ai-hint={item.imageHint}/>
+                          </div>
+                          <p className="text-xs font-bold truncate mt-1 text-center">{item.name}</p>
+                      </Card>
+                    ))}
+                </div>
+              )}
+            </ScrollArea>
+             {isMultiSelect && (
+              <div className="flex-shrink-0 mt-2">
+                <Button onClick={onClose} className="w-full">
+                  {t('upgradePage.confirm')}
+                </Button>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+      );
+    };
+    
+    const UpgradeResultModal = ({ isOpen, onClose, isSuccess, item }: { isOpen: boolean, onClose: () => void, isSuccess: boolean, item: Item | null }) => {
+        if (!item) return null;
+    
+        return (
+            <Dialog open={isOpen} onOpenChange={onClose}>
+                <DialogContent className="max-w-xs text-center p-0 rounded-2xl" onInteractOutside={onClose}>
+                     <DialogHeader className="p-6 pb-4">
+                        <DialogTitle className={cn("text-2xl font-bold", isSuccess ? "text-green-400" : "text-red-500")}>
+                            {isSuccess ? t('upgradePage.successTitle') : t('upgradePage.failureTitle')}
+                        </DialogTitle>
+                    </DialogHeader>
+                     <div className="flex flex-col items-center gap-4 py-2 px-6">
+                        <Card className={cn("p-4 flex flex-col items-center justify-center w-40 h-40 border-0 shadow-lg", isSuccess ? "bg-green-900/20" : "bg-red-900/20")}>
+                            <div className={cn("aspect-square relative w-32 h-32", !isSuccess && "opacity-50 grayscale")}>
+                                <Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain drop-shadow-lg" data-ai-hint={item.imageHint} />
+                            </div>
+                        </Card>
+                         <div>
+                            <p className="text-lg font-bold">{item.name}</p>
+                        </div>
+                     </div>
+                     <DialogFooter className="p-4">
+                        <Button className="w-full h-12 text-base" onClick={onClose}>{t('upgradePage.continueButton')}</Button>
+                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        );
+    };
 
     const upgradableItems = useMemo(() => {
         return inventory?.filter(item => item.isUpgradable) || [];
@@ -158,7 +155,6 @@ export default function UpgradePage() {
             return { chance: 0, multiplier: 0 };
         }
         const targetValue = targetItem.value;
-        // New formula: (your_value / target_value) * 100, capped at 95%
         const calculatedChance = Math.min((yourItemsValue / targetValue) * 100, 95);
         const calculatedMultiplier = targetValue / yourItemsValue;
         return { 
@@ -204,11 +200,9 @@ export default function UpgradePage() {
         let stopAngle;
 
         if (isSuccess) {
-            // Land in the green zone (0 to greenZoneAngle degrees)
             const margin = greenZoneAngle > 5 ? 2 : 0;
             stopAngle = margin + Math.random() * (greenZoneAngle - margin * 2);
         } else {
-            // Land in the red zone (greenZoneAngle to 360 degrees)
             const redZoneSize = 360 - greenZoneAngle;
             const margin = redZoneSize > 5 ? 2 : 0;
             stopAngle = greenZoneAngle + margin + Math.random() * (redZoneSize - margin * 2);
@@ -231,9 +225,9 @@ export default function UpgradePage() {
             setTimeout(() => {
                  setIsUpgrading(false);
                  setShowResultModal(true);
-            }, 1000); // Show result color for a bit
+            }, 1000);
             
-        }, 5000); // Animation duration (should match transition duration)
+        }, 5000);
     };
 
     const resetUpgrade = () => {
@@ -241,7 +235,8 @@ export default function UpgradePage() {
         setUpgradeResult(null);
         setYourItems([]);
         setTargetItem(null);
-        setSpinnerRotation(0);
+        const currentRotation = spinnerRotation % 360;
+        setSpinnerRotation(spinnerRotation - currentRotation);
     };
 
     const resultGlowClass = upgradeResult === 'success' 
@@ -260,7 +255,6 @@ export default function UpgradePage() {
                 <div className="relative flex items-center justify-center mb-6">
                     <div className="absolute left-4 text-lg font-bold text-green-400">{chance}%</div>
                      <div className="relative w-40 h-40">
-                        {/* Static Wheel background */}
                         <div 
                             className={cn(
                                 "w-full h-full rounded-full transition-all duration-500",
@@ -273,28 +267,18 @@ export default function UpgradePage() {
                             }}
                         />
                         
-                        {/* Inner mask */}
                         <div className="absolute inset-2 bg-background rounded-full" />
                         
-                        {/* Spinning Pointer */}
                         <div 
-                            className="absolute inset-0 flex items-center justify-center"
+                            className="absolute inset-0 flex items-start justify-center"
                             style={{ 
                                 transform: `rotate(${spinnerRotation}deg)`,
                                 transition: isUpgrading ? `transform 4500ms ease-out` : 'none',
                              }}
                         >
-                             <div 
-                                className="absolute h-1/2 w-1 -translate-y-1/4"
-                                style={{
-                                    clipPath: 'polygon(50% 0, 100% 25%, 100% 100%, 0 100%, 0 25%)'
-                                }}
-                             >
-                                <div className="h-full w-full bg-white shadow-lg" />
-                             </div>
+                             <div className="h-1/2 w-1 -translate-y-1 bg-white shadow-lg" style={{ clipPath: 'polygon(50% 0, 100% 20%, 100% 20%, 0 20%, 0 20%)' }}/>
                         </div>
 
-                         {/* Center Icon */}
                         <div className="absolute inset-0 flex items-center justify-center">
                            <svg 
                                 viewBox="0 0 24 24" 
@@ -412,5 +396,3 @@ export default function UpgradePage() {
         </>
     );
 }
-
-    
