@@ -47,18 +47,27 @@ export default function CasePage() {
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
     const [rouletteItemWidth, setRouletteItemWidth] = useState(144); // Default: 128px (w-32) + 16px (gap-4)
 
+    const rouletteContainerRef = useRef<HTMLDivElement>(null);
     const rouletteItemRef = useRef<HTMLDivElement>(null);
 
     const { user, isUserLoading, updateBalance, addInventoryItem } = useUser();
     const { showAlert } = useAlertDialog();
 
-    // Dynamically get the width of a roulette item
     useEffect(() => {
-        if (rouletteItemRef.current) {
-            const width = rouletteItemRef.current.offsetWidth;
-            const gap = 16; // from "gap-4"
-            setRouletteItemWidth(width + gap);
-        }
+        const calculateItemWidth = () => {
+            if (rouletteItemRef.current) {
+                const style = window.getComputedStyle(rouletteItemRef.current);
+                const width = rouletteItemRef.current.offsetWidth;
+                const marginLeft = parseFloat(style.marginLeft);
+                const marginRight = parseFloat(style.marginRight);
+                 const gap = 16; // from gap-4
+                setRouletteItemWidth(width + gap);
+            }
+        };
+
+        calculateItemWidth();
+        window.addEventListener('resize', calculateItemWidth);
+        return () => window.removeEventListener('resize', calculateItemWidth);
     }, []);
 
     const generateInitialReel = useCallback((items: Item[]) => {
@@ -72,10 +81,9 @@ export default function CasePage() {
 
     const generateRouletteReelWithPrize = useCallback((prize: Item, currentCaseItems: Item[]) => {
         if (currentCaseItems.length === 0) return [];
-        const reel: Item[] = [];
-        for (let i = 0; i < ROULETTE_ITEMS_COUNT; i++) {
-            reel.push(currentCaseItems[Math.floor(Math.random() * currentCaseItems.length)]);
-        }
+        const reel: Item[] = Array.from({ length: ROULETTE_ITEMS_COUNT }, () => 
+            currentCaseItems[Math.floor(Math.random() * currentCaseItems.length)]
+        );
         reel[WINNING_ITEM_INDEX] = prize; 
         return reel;
     }, []);
@@ -84,10 +92,12 @@ export default function CasePage() {
         const fetchCaseAndItemsData = async () => {
             let caseResult: Case | null = null;
             if (firestore) {
-                const caseSnap = await getDoc(doc(firestore, 'cases', caseId));
-                if (caseSnap.exists()) {
-                    caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
-                }
+                try {
+                    const caseSnap = await getDoc(doc(firestore, 'cases', caseId));
+                    if (caseSnap.exists()) {
+                        caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
+                    }
+                } catch (e) { console.error("Error fetching case from FS:", e); }
             }
             if (!caseResult) {
                 caseResult = MOCK_CASES.find(c => c.id === caseId) || null;
@@ -95,7 +105,7 @@ export default function CasePage() {
             
             if(caseResult) {
                 setCaseData(caseResult);
-                const currentCaseItems = caseResult.items
+                 const currentCaseItems = caseResult.items
                     .map(i => MOCK_ITEMS.find(item => item.id === i.itemId))
                     .filter((item): item is Item => !!item)
                     .sort((a, b) => a.value - b.value);
@@ -122,13 +132,13 @@ export default function CasePage() {
 
         setIsFastSpin(isFast);
         setIsSpinning(true);
-        setRouletteOffset(0);
 
         // --- Prize Selection Logic ---
         const randomNumber = Math.random();
         let cumulativeProbability = 0;
         let prize: Item | undefined;
-        const sortedCaseItems = [...caseData.items].sort((a,b) => a.probability - b.probability);
+        // Ensure probabilities sum to ~1. Sort by probability to be safe.
+        const sortedCaseItems = [...caseData.items].sort((a, b) => a.probability - b.probability);
         for (const caseItem of sortedCaseItems) {
             cumulativeProbability += caseItem.probability;
             if (randomNumber <= cumulativeProbability) {
@@ -137,7 +147,7 @@ export default function CasePage() {
             }
         }
         if (!prize) {
-            // Fallback to the least rare item if something goes wrong
+            // Fallback to the most common item if something goes wrong.
             prize = caseItems[0];
         }
         // --- End Prize Selection ---
@@ -148,7 +158,6 @@ export default function CasePage() {
             return;
         }
         
-        // This is optimistic update. In a real app, this should be confirmed by the server
         updateBalance(-caseData.price);
         addInventoryItem(prize);
         setWonItem(prize);
@@ -156,10 +165,11 @@ export default function CasePage() {
         const newReel = generateRouletteReelWithPrize(prize, caseItems);
         setRouletteItems(newReel);
         
-        // Use timeout to ensure state update is rendered before animation starts
         setTimeout(() => {
-            const containerWidth = rouletteItemRef.current?.parentElement?.parentElement?.offsetWidth || 0;
+            const containerWidth = rouletteContainerRef.current?.offsetWidth || 0;
+            // Jitter adds a random offset to make the stop position feel less robotic
             const jitter = (Math.random() - 0.5) * rouletteItemWidth * 0.8;
+            // Calculate the exact offset to center the winning item under the marker
             const targetOffset = (WINNING_ITEM_INDEX * rouletteItemWidth) - (containerWidth / 2) + (rouletteItemWidth / 2) + jitter;
             
             setRouletteOffset(targetOffset);
@@ -243,7 +253,7 @@ export default function CasePage() {
             </div>
 
             <div className="flex-grow flex flex-col items-center justify-center">
-                <div className="relative w-full flex flex-col items-center justify-center my-8">
+                <div ref={rouletteContainerRef} className="relative w-full flex flex-col items-center justify-center my-8">
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-white z-10"></div>
                     
                     <div className="w-full h-36 overflow-hidden">
@@ -316,7 +326,7 @@ export default function CasePage() {
                     <DialogDescription className="text-base text-muted-foreground px-4">
                         Все выигранные призы вы можете увидеть у себя в{' '}
                         <Link href="/inventory" className="text-primary underline" onClick={closeModal}>
-                            инвентаre
+                            инвентаре
                         </Link>
                         .
                     </DialogDescription>
