@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from 'react';
 import type { User, InventoryItem, Item } from '@/lib/types';
 import { useAuth as useFirebaseAuth, useFirestore, useDoc, useCollection, addDocumentNonBlocking, useMemoFirebase } from '@/firebase';
-import { doc, collection, writeBatch, serverTimestamp, increment, setDoc, deleteDoc } from 'firebase/firestore';
+import { doc, collection, writeBatch, serverTimestamp, increment, setDoc, deleteDoc, getDocs, query, where, limit } from 'firebase/firestore';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { Auth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { LoadingScreen } from '@/components/LoadingScreen';
@@ -26,6 +26,7 @@ declare global {
             language_code: string;
             is_premium?: boolean;
           };
+          start_param?: string;
         };
         ready: () => void;
         close: () => void;
@@ -51,34 +52,64 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+const handleReferral = async (firestore: any, referralCode: string) => {
+    if (!referralCode) return null;
+
+    const usersRef = collection(firestore, 'users');
+    const q = query(usersRef, where('referrals.code', '==', referralCode), limit(1));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+        const referrerDoc = querySnapshot.docs[0];
+        const referrerRef = doc(firestore, 'users', referrerDoc.id);
+
+        const batch = writeBatch(firestore);
+        batch.update(referrerRef, { 
+            'referrals.count': increment(1),
+            'referrals.commissionEarned': increment(2) // Referrer gets 2 stars
+        });
+        await batch.commit();
+
+        return referrerDoc.id; // Return referrer's UID
+    }
+    return null;
+};
+
+
 const createNewUserDocument = async (firestore: any, firebaseUser: FirebaseUser) => {
     const userDocRef = doc(firestore, 'users', firebaseUser.uid);
-    const tgUser = window.Telegram?.WebApp.initDataUnsafe.user;
+    const tg = window.Telegram?.WebApp.initDataUnsafe;
+    const tgUser = tg?.user;
+    const referralCode = tg?.start_param;
+
+    let invitedById = null;
+    if (referralCode) {
+        invitedById = await handleReferral(firestore, referralCode);
+    }
     
     let newUser: User;
 
     if (tgUser) {
-        // If Telegram data is available, use it
         newUser = {
             id: firebaseUser.uid,
             telegramId: String(tgUser.id),
             name: `${tgUser.first_name} ${tgUser.last_name || ''}`.trim(),
             username: tgUser.username || `tg_${tgUser.id}`,
-            avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg', // You can add logic to fetch profile photo later
+            avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg',
             balance: { stars: 1000, diamonds: 0 },
-            referrals: { count: 0, commissionEarned: 0, code: `ref-${firebaseUser.uid.slice(0, 5)}` },
+            referrals: { count: 0, commissionEarned: 0, code: `ref-${firebaseUser.uid.slice(0, 6)}` },
             starsSpentOnCases: 0,
+            ...(invitedById && { invitedById }),
         };
     } else {
-        // Fallback for when not in Telegram (e.g., web browser)
         newUser = {
             id: firebaseUser.uid,
             telegramId: `tg-web-${Math.random().toString(36).substring(2, 9)}`,
             name: 'Web User',
             username: `user${Math.floor(Math.random() * 90000) + 10000}`,
             avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg',
-            balance: { stars: 10000, diamonds: 0 }, // Higher balance for web testing
-            referrals: { count: 0, commissionEarned: 0, code: `ref-${firebaseUser.uid.slice(0, 5)}` },
+            balance: { stars: 10000, diamonds: 0 },
+            referrals: { count: 0, commissionEarned: 0, code: `ref-${firebaseUser.uid.slice(0, 6)}` },
             starsSpentOnCases: 0,
         };
     }

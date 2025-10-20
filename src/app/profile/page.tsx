@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -385,9 +383,11 @@ export default function ProfilePage() {
     return new Intl.NumberFormat('en-US').format(num);
   };
 
-  const copyReferralCode = () => {
-    if (!user || !user.referrals || !user.referrals.code) return;
-    navigator.clipboard.writeText(user.referrals.code);
+  const referralLink = user ? `https://t.me/apexcasebot?start=${user.referrals.code}` : '';
+
+  const copyReferralLink = () => {
+    if (!referralLink) return;
+    navigator.clipboard.writeText(referralLink);
     showAlert({
       title: t('profilePage.copySuccessTitle'),
       description: t('profilePage.copySuccessDescription'),
@@ -480,8 +480,8 @@ export default function ProfilePage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <input readOnly value={user.referrals.code} className="w-full bg-background border p-2 rounded-md font-mono text-sm" />
-              <Button size="icon" variant="ghost" onClick={copyReferralCode}>
+              <input readOnly value={referralLink} className="w-full bg-background border p-2 rounded-md font-mono text-sm" />
+              <Button size="icon" variant="ghost" onClick={copyReferralLink}>
                 <Copy className="h-5 w-5" />
               </Button>
             </div>
@@ -494,6 +494,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-
-    

@@ -47,6 +47,7 @@ export interface User {
     code: string;
   };
   starsSpentOnCases: number;
+  invitedById?: string;
 }
 
 export interface LeaderboardEntry {
