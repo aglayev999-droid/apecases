@@ -118,15 +118,19 @@ export const MOCK_CASES: Case[] = [
       image: 'https://i.ibb.co/F4V0dGX3/Apex-Case.png',
       imageHint: 'purple snoop dogg case',
       items: [
-        { itemId: 'item-tama-gadget', probability: 0.3 },
-        { itemId: 'item-spy-agaric', probability: 0.2 },
-        { itemId: 'item-jelly-bunny', probability: 0.15 },
-        { itemId: 'item-evil-eye', probability: 0.15 },
-        { itemId: 'item-sakura-flower', probability: 0.1 },
-        { itemId: 'item-love-potion', probability: 0.05 },
-        { itemId: 'item-cupid-charm', probability: 0.03 },
-        { itemId: 'item-diamond-ring', probability: 0.015 },
-        { itemId: 'item-toy-bear', probability: 0.005 },
+        { itemId: 'item-diamond', probability: 0.2 },
+        { itemId: 'item-desk-calendar', probability: 0.15 },
+        { itemId: 'item-candy-cane', probability: 0.15 },
+        { itemId: 'item-party-sparkler', probability: 0.1 },
+        { itemId: 'item-tama-gadget', probability: 0.1 },
+        { itemId: 'item-spy-agaric', probability: 0.09 },
+        { itemId: 'item-jelly-bunny', probability: 0.08 },
+        { itemId: 'item-evil-eye', probability: 0.05 },
+        { itemId: 'item-sakura-flower', probability: 0.04 },
+        { itemId: 'item-love-potion', probability: 0.02 },
+        { itemId: 'item-cupid-charm', probability: 0.01 },
+        { itemId: 'item-diamond-ring', probability: 0.006 },
+        { itemId: 'item-toy-bear', probability: 0.004 },
       ],
     },
      {
@@ -165,3 +169,5 @@ export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { rank: 9, user: { name: 'Fury', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 15000 },
   { rank: 10, user: { name: 'Wraith', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 8000 },
 ];
+
+    
