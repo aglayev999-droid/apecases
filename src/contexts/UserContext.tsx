@@ -45,6 +45,8 @@ interface UserContextType {
   lastFreeCaseOpen: Date | null;
   setLastFreeCaseOpen: (date: Date) => void;
   isUserLoading: boolean;
+  hasNewItems: boolean;
+  setHasNewItems: (hasNew: boolean) => void;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -147,6 +149,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     const savedDate = localStorage.getItem('lastFreeCaseOpen');
     return savedDate ? new Date(savedDate) : null;
   });
+  
+  const [hasNewItems, setHasNewItems] = useState(false);
 
   const [isAppLoading, setIsAppLoading] = useState(true);
   
@@ -213,6 +217,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       wonAt: serverTimestamp(),
     };
     addDocumentNonBlocking(inventoryColRef, newInventoryItem);
+    setHasNewItems(true);
   }, [inventoryColRef]);
 
   const removeInventoryItem = useCallback((inventoryId: string) => {
@@ -254,6 +259,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       lastFreeCaseOpen, 
       setLastFreeCaseOpen,
       isUserLoading: isAuthLoading || isUserDocLoading,
+      hasNewItems,
+      setHasNewItems
     }}>
       {children}
     </UserContext.Provider>

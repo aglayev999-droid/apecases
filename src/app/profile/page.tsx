@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -326,9 +327,13 @@ const InventorySection = () => {
 
 
 export default function ProfilePage() {
-  const { user, isUserLoading } = useUser();
+  const { user, isUserLoading, setHasNewItems } = useUser();
   const { showAlert } = useAlertDialog();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    setHasNewItems(false);
+  }, [setHasNewItems]);
 
   const formatNumber = (num: number) => {
     if (num === undefined || num === null) return '0';

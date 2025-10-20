@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -6,10 +7,12 @@ import { User as UserIcon, BarChart3, Rocket, Swords } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DiamondIcon } from '@/components/icons/DiamondIcon';
 import { useTranslation } from '@/contexts/LanguageContext';
+import { useUser } from '@/contexts/UserContext';
 
 export default function BottomNav() {
   const pathname = usePathname();
   const { t } = useTranslation();
+  const { hasNewItems } = useUser();
 
   const navItems = [
     { href: '/upgrade', label: t('bottomNav.upgrade'), icon: DiamondIcon, isBeta: true },
@@ -50,6 +53,7 @@ export default function BottomNav() {
             }
 
             const IconComponent = item.icon;
+            const isProfile = item.href === '/profile';
 
             return (
               <Link
@@ -63,6 +67,12 @@ export default function BottomNav() {
                 )}>
                   {item.isBeta && <span className="absolute top-0 right-0 text-[8px] bg-accent text-accent-foreground px-1 rounded-full">beta</span>}
                   
+                  {isProfile && hasNewItems && (
+                    <div className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                      +1
+                    </div>
+                  )}
+
                   <IconComponent className={cn(
                       'h-6 w-6',
                       isActive ? 'text-primary' : 'text-muted-foreground'
