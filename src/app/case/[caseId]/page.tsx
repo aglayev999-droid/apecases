@@ -272,17 +272,13 @@ export default function CasePage() {
             <div className="flex-grow flex flex-col items-center justify-center">
                  <div ref={rouletteContainerRef} className="relative w-full flex flex-col items-center justify-center my-4 sm:my-8 gap-2">
                     {rouletteItems.map((reel, reelIndex) => {
-                         const isFirstReel = reelIndex === 0;
-                         const isLastReel = reelIndex === rouletteItems.length - 1;
-                         const isSingleReel = rouletteItems.length === 1;
+                         const showTopArrow = (multiplier < 3 && reelIndex === 0) || (multiplier === 3 && reelIndex === 0);
+                         const showBottomArrow = (multiplier < 3 && reelIndex === rouletteItems.length - 1) || (multiplier === 3 && reelIndex === rouletteItems.length - 1);
                          
-                         const showTopArrow = isFirstReel;
-                         const showBottomArrow = isLastReel;
-
                         return (
                         <div key={reelIndex} className="relative w-full flex items-center justify-center">
-                            {showTopArrow && (
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-white z-10"></div>
+                           {showTopArrow && (
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-white z-10"></div>
                             )}
                             
                             <div className="w-full h-28 sm:h-32 md:h-36 overflow-hidden">
@@ -309,7 +305,7 @@ export default function CasePage() {
                             </div>
                             
                              {showBottomArrow && (
-                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-white z-10"></div>
+                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-b-[8px] border-l-transparent border-r-transparent border-b-white z-10"></div>
                              )}
                         </div>
                     )})}
