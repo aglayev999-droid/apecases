@@ -36,24 +36,20 @@ export default function CasePage() {
     const [rouletteOffset, setRouletteOffset] = useState(0);
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
-    const [rouletteItemWidth, setRouletteItemWidth] = useState(144); // Default: 128px (w-32) + 16px (gap-4)
+    const [rouletteItemWidth, setRouletteItemWidth] = useState(112); // w-24 (96px) + gap-4 (16px)
 
     const rouletteContainerRef = useRef<HTMLDivElement>(null);
-    const rouletteItemRef = useRef<HTMLDivElement>(null);
 
     const { user, isUserLoading, updateBalance, addInventoryItem } = useUser();
     const { showAlert } = useAlertDialog();
 
     useEffect(() => {
         const calculateItemWidth = () => {
-            if (rouletteItemRef.current) {
-                const style = window.getComputedStyle(rouletteItemRef.current);
-                const width = rouletteItemRef.current.offsetWidth;
-                const marginLeft = parseFloat(style.marginLeft);
-                const marginRight = parseFloat(style.marginRight);
-                 const gap = 16; // from gap-4
-                setRouletteItemWidth(width + gap);
-            }
+             // sm breakpoint is 640px
+            const isSmallScreen = window.innerWidth < 640;
+            const itemBaseWidth = isSmallScreen ? 96 : 128; // w-24 or sm:w-32
+            const gap = 16; // gap-4
+            setRouletteItemWidth(itemBaseWidth + gap);
         };
 
         calculateItemWidth();
@@ -67,15 +63,6 @@ export default function CasePage() {
         for (let i = 0; i < ROULETTE_ITEMS_COUNT; i++) {
             reel.push(items[Math.floor(Math.random() * items.length)]);
         }
-        return reel;
-    }, []);
-
-    const generateRouletteReelWithPrize = useCallback((prize: Item, currentCaseItems: Item[]) => {
-        if (currentCaseItems.length === 0) return [];
-        const reel: Item[] = Array.from({ length: ROULETTE_ITEMS_COUNT }, () => 
-            currentCaseItems[Math.floor(Math.random() * currentCaseItems.length)]
-        );
-        reel[WINNING_ITEM_INDEX] = prize; 
         return reel;
     }, []);
 
@@ -101,6 +88,7 @@ export default function CasePage() {
                     .filter((item): item is Item => !!item)
                     .sort((a, b) => a.value - b.value);
                 setCaseItems(currentCaseItems);
+                // IMPORTANT: Generate initial reel only after caseItems is set
                 setRouletteItems(generateInitialReel(currentCaseItems));
             } else {
                 showAlert({title: "Error", description: "Case not found."});
@@ -123,14 +111,14 @@ export default function CasePage() {
 
         setIsFastSpin(isFast);
         setIsSpinning(true);
+        setRouletteOffset(0); // Reset position before spin
 
         // --- Prize Selection Logic ---
         const randomNumber = Math.random();
         let cumulativeProbability = 0;
         let prize: Item | undefined;
-        // Ensure probabilities sum to ~1. Sort by probability to be safe.
-        const sortedCaseItems = [...caseData.items].sort((a, b) => a.probability - b.probability);
-        for (const caseItem of sortedCaseItems) {
+        const sortedCaseItemsByProb = [...caseData.items].sort((a, b) => a.probability - b.probability);
+        for (const caseItem of sortedCaseItemsByProb) {
             cumulativeProbability += caseItem.probability;
             if (randomNumber <= cumulativeProbability) {
                 prize = caseItems.find(item => item.id === caseItem.itemId);
@@ -138,29 +126,25 @@ export default function CasePage() {
             }
         }
         if (!prize) {
-            // Fallback to the most common item if something goes wrong.
             prize = caseItems[0];
         }
         // --- End Prize Selection ---
-
-        if (!prize) {
-            showAlert({ title: "Error Opening Case", description: "Could not determine prize. Please try again." });
-            setIsSpinning(false);
-            return;
-        }
         
         updateBalance(-caseData.price);
         addInventoryItem(prize);
         setWonItem(prize);
 
-        const newReel = generateRouletteReelWithPrize(prize, caseItems);
+        // Generate a new reel with the prize in the winning position
+        const newReel = Array.from({ length: ROULETTE_ITEMS_COUNT }, () => 
+            caseItems[Math.floor(Math.random() * caseItems.length)]
+        );
+        newReel[WINNING_ITEM_INDEX] = prize; 
         setRouletteItems(newReel);
         
+        // Let the state update and DOM re-render with the new reel
         setTimeout(() => {
             const containerWidth = rouletteContainerRef.current?.offsetWidth || 0;
-            // Jitter adds a random offset to make the stop position feel less robotic
             const jitter = (Math.random() - 0.5) * rouletteItemWidth * 0.8;
-            // Calculate the exact offset to center the winning item under the marker
             const targetOffset = (WINNING_ITEM_INDEX * rouletteItemWidth) - (containerWidth / 2) + (rouletteItemWidth / 2) + jitter;
             
             setRouletteOffset(targetOffset);
@@ -171,7 +155,7 @@ export default function CasePage() {
             }, animationDuration + 500); 
         }, 100);
 
-    }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, generateRouletteReelWithPrize, rouletteItemWidth]);
+    }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, rouletteItemWidth]);
 
     const closeModal = () => {
         setIsWinModalOpen(false);
@@ -183,7 +167,7 @@ export default function CasePage() {
         setWonItem(null);
     }
     
-    if (!caseData || isUserLoading) {
+    if (!caseData || isUserLoading || caseItems.length === 0) {
         return (
             <div className="flex flex-col h-full">
                  <div className="flex items-center justify-between mb-4 flex-shrink-0">
@@ -208,26 +192,22 @@ export default function CasePage() {
             <span>Подарки внутри</span>
           </AccordionTrigger>
           <AccordionContent className="bg-card/80 p-4 rounded-b-lg">
-            {caseItems.length > 0 ? (
-                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-                  {caseItems.map(item => (
-                      <Card key={item.id} className={cn("p-1.5 flex flex-col items-center justify-between border-2 bg-transparent")}>
-                        <div className="aspect-square relative w-full h-full">
-                          <Image src={item.image} alt={item.name} fill sizes="15vw" className="object-contain p-1" data-ai-hint={item.imageHint} />
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+              {caseItems.map(item => (
+                  <Card key={item.id} className="p-1.5 flex flex-col items-center justify-between border-2 bg-transparent">
+                    <div className="aspect-square relative w-full h-full">
+                      <Image src={item.image} alt={item.name} fill sizes="15vw" className="object-contain p-1" data-ai-hint={item.imageHint} />
+                    </div>
+                    <div className="text-center w-full mt-1">
+                        <p className="text-xs font-bold truncate">{item.name}</p>
+                        <div className="flex items-center justify-center gap-1 text-xs text-amber-400">
+                            <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12} className="h-3 w-3 object-contain" />
+                            <span>{item.value}</span>
                         </div>
-                        <div className="text-center w-full mt-1">
-                            <p className="text-xs font-bold truncate">{item.name}</p>
-                            <div className="flex items-center justify-center gap-1 text-xs text-amber-400">
-                                <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12} className="h-3 w-3 object-contain" />
-                                <span>{item.value}</span>
-                            </div>
-                        </div>
-                      </Card>
-                  ))}
-                </div>
-            ) : (
-                <div className="text-center text-muted-foreground py-4">No items found for this case.</div>
-            )}
+                    </div>
+                  </Card>
+              ))}
+            </div>
           </AccordionContent>
         </AccordionItem>
       </Accordion>
@@ -257,11 +237,10 @@ export default function CasePage() {
                         >
                             {rouletteItems.map((item, index) => (
                                 <div 
-                                    key={index}
-                                    ref={index === 0 ? rouletteItemRef : null}
+                                    key={`${item.id}-${index}`}
                                     className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32"
                                 >
-                                     <Card className={cn("p-2 flex flex-col items-center justify-center w-full h-full border-2")}>
+                                     <Card className="p-2 flex flex-col items-center justify-center w-full h-full border-2 bg-card/80">
                                         <div className="aspect-square relative w-20 h-20 sm:w-24 sm:h-24">
                                             <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain" data-ai-hint={item.imageHint} />
                                         </div>
@@ -303,14 +282,14 @@ export default function CasePage() {
                     </DialogHeader>
                     {wonItem && (
                      <div className="flex flex-col items-center gap-4 py-4">
-                        <Card className={cn("p-4 flex flex-col items-center justify-center w-40 h-40 border-2 shadow-lg")}>
+                        <Card className="p-4 flex flex-col items-center justify-center w-40 h-40 border-2 shadow-lg bg-card">
                            <div className="aspect-square relative w-32 h-32">
                                <Image src={wonItem.image} alt={wonItem.name} fill sizes="30vw" className="object-contain drop-shadow-lg" data-ai-hint={wonItem.imageHint} />
                            </div>
                         </Card>
                          <div>
                             <p className="text-lg font-bold">{wonItem.name}</p>
-                            <p className={cn("text-sm font-bold")}>{wonItem.rarity}</p>
+                            <p className="text-sm font-bold text-muted-foreground">{wonItem.rarity}</p>
                         </div>
                      </div>
                      )}
