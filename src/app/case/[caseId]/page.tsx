@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -135,7 +136,7 @@ export default function CasePage() {
     }, [caseId, firestore, caseRef, itemsColRef]);
     
     useEffect(() => {
-        if (caseItems.length === 0) return;
+        if (caseItems.length === 0 || !emblaApi) return;
         
         const shuffleArray = (array: Item[]) => {
             let currentIndex = array.length, randomIndex;
@@ -147,10 +148,45 @@ export default function CasePage() {
             return array;
         }
         
-        const extendedItems = [...caseItems, ...caseItems, ...caseItems, ...caseItems, ...caseItems];
-        setReelItems(shuffleArray(extendedItems));
+        // Make the reel long enough for a smooth spin
+        const reelLength = 50;
+        let extendedItems: Item[] = [];
+        while (extendedItems.length < reelLength) {
+            extendedItems.push(...shuffleArray([...caseItems]));
+        }
+        extendedItems = extendedItems.slice(0, reelLength);
+
+        setReelItems(extendedItems);
+        emblaApi.reInit();
         
-    }, [caseItems]);
+    }, [caseItems, emblaApi]);
+
+    // Idle animation effect
+    useEffect(() => {
+        if (!emblaApi || isSpinning) return;
+    
+        const engine = emblaApi.internalEngine();
+        let animationFrame = 0;
+    
+        const tick = () => {
+            if (isSpinning || !engine) return;
+            // Move the carousel by a tiny amount each frame
+            engine.location.add(-0.1); 
+            engine.target.set(engine.location);
+            engine.scrollLooper.loop(engine.scrollBody.direction());
+            engine.animation.from = engine.location.get();
+            engine.animation.to = engine.location.get();
+    
+            animationFrame = requestAnimationFrame(tick);
+        };
+    
+        // Start idle animation
+        animationFrame = requestAnimationFrame(tick);
+    
+        return () => {
+            cancelAnimationFrame(animationFrame);
+        };
+    }, [emblaApi, isSpinning]);
     
     const handleSpin = useCallback((isFast: boolean = false) => {
         if (isSpinning || !caseData || !user || !emblaApi || reelItems.length === 0 || allItems.length === 0) return;
@@ -183,21 +219,20 @@ export default function CasePage() {
             return;
         }
 
-        let prizeIndexInReel = reelItems.findIndex((item, index) => item?.id === prize.id && index > reelItems.length / 3);
-        if (prizeIndexInReel === -1) {
-          prizeIndexInReel = reelItems.findIndex(item => item?.id === prize.id);
-        }
+        const reelWithPrize = [...reelItems];
+        // Ensure the prize is in the second half for a good spin
+        const targetIndex = Math.floor(reelItems.length / 2) + Math.floor(Math.random() * (reelItems.length / 2 - 5)) + 5;
+        reelWithPrize[targetIndex] = prize;
+        setReelItems(reelWithPrize);
         
-        if (prizeIndexInReel === -1) {
-            console.error("Prize item not found in reel items array. Adding it.");
-            const newReelItems = [...reelItems, prize];
-            setReelItems(newReelItems);
-            prizeIndexInReel = newReelItems.length - 1;
-        }
-        
-        const spinTime = isFast ? 1000 : 4000;
+        // This gives the state update a moment to propagate
+        setTimeout(() => {
+            if (!emblaApi) return;
+            emblaApi.reInit(); // Reinitialize with the new reel items
+            emblaApi.scrollTo(targetIndex, !isFast); // Use Embla's animation
+        }, 100);
 
-        emblaApi.scrollTo(prizeIndexInReel, false);
+        const spinTime = isFast ? 1000 : 4000;
         
         const onSpinEnd = () => {
             if (isFree) {
@@ -207,7 +242,6 @@ export default function CasePage() {
                 updateSpending(caseData.price);
             }
             
-            setIsSpinning(false);
             if (prize) {
                 setWonItem(prize);
                 setIsWinModalOpen(true);
@@ -218,9 +252,18 @@ export default function CasePage() {
                     addInventoryItem(prize);
                 }
             }
+            setIsSpinning(false);
         };
 
-        setTimeout(onSpinEnd, spinTime);
+        // Listen for the scroll event to end
+        const handleScrollEnd = () => {
+            onSpinEnd();
+            emblaApi.off('scroll', handleScrollEnd);
+            emblaApi.off('settle', handleScrollEnd);
+        };
+
+        emblaApi.on('scroll', handleScrollEnd);
+        emblaApi.on('settle', handleScrollEnd);
 
 
     }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, reelItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
@@ -261,7 +304,7 @@ export default function CasePage() {
           <AccordionItem value="item-1" className="border-none">
             <AccordionTrigger className="justify-center gap-2 text-muted-foreground hover:no-underline font-bold">
                 <Gift className="h-5 w-5 text-primary"/>
-                <span>Gifts Inside</span>
+                <span>Подарки внутри</span>
             </AccordionTrigger>
             <AccordionContent>
                 <div className="grid grid-cols-3 gap-2">
@@ -319,15 +362,14 @@ export default function CasePage() {
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
                     </div>
                     
-                    <div className="overflow-hidden w-full" ref={emblaRef} style={{ willChange: 'transform' }}>
+                    <div className="overflow-hidden w-full" ref={emblaRef}>
                         <div className="flex">
                             {reelItems.length > 0 ? reelItems.map((item, index) => (
                                 <div key={index} className="flex-[0_0_9rem] mx-2">
                                     <Card className={cn(
                                         "p-2 border-2 bg-card/50 transition-all duration-300", 
                                         item ? RARITY_PROPERTIES[item.rarity].border : 'border-gray-500',
-                                        isSpinning ? 'opacity-70 scale-95' : 'opacity-50'
-                                        )}>
+                                    )}>
                                         <div className="aspect-square relative">
                                             {item && <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" data-ai-hint={item.imageHint}/>}
                                         </div>
@@ -351,7 +393,7 @@ export default function CasePage() {
                 {/* Controls */}
                 <div className="mt-auto pt-8">
                     <Button 
-                        onClick={() => handleSpin()}
+                        onClick={() => handleSpin(false)}
                         onDoubleClick={() => handleSpin(true)}
                         disabled={isSpinning || !canAfford || reelItems.length === 0} 
                         className="w-full h-16 text-xl"
@@ -359,10 +401,10 @@ export default function CasePage() {
                     >
                        <div className="flex flex-col">
                             <div className="flex items-center justify-center gap-2">
-                                <span>{isFree ? 'Spin' : `Spin ${caseData.price}`}</span>
+                                <span>{isFree ? 'Крутить' : `Крутить ${caseData.price}`}</span>
                                 {!isFree && <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />}
                             </div>
-                             <span className="text-xs font-normal text-primary-foreground/70">(Double-click for a quick spin)</span>
+                             <span className="text-xs font-normal text-primary-foreground/70">(Двойное нажатие для быстрого вращения)</span>
                        </div>
                     </Button>
                     <div className="mt-4">
@@ -373,7 +415,7 @@ export default function CasePage() {
 
             {/* Win Modal */}
             <Dialog open={isWinModalOpen} onOpenChange={setIsWinModalOpen}>
-                <DialogContent 
+                 <DialogContent 
                     className="w-screen h-screen max-w-full max-h-full sm:w-full sm:h-full bg-background/90 backdrop-blur-sm p-4 flex flex-col justify-center items-center border-0" 
                     onInteractOutside={(e) => e.preventDefault()}
                 >
@@ -403,3 +445,5 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
