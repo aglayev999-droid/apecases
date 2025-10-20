@@ -317,36 +317,57 @@
         },
         "required": ["id", "userId", "sourceItems", "targetItem", "chance", "outcome", "createdAt"]
     },
-    "CaseBattle": {
+    "RocketGame": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Case Battle",
-      "description": "Represents a case battle between two or more players.",
+      "title": "RocketGame",
+      "description": "Represents the state of a single round in the Rocket game.",
       "type": "object",
       "properties": {
-        "id": { "type": "string", "description": "Unique identifier for the battle." },
-        "status": { "type": "string", "enum": ["waiting", "active", "finished", "cancelled"], "description": "The current status of the battle." },
+        "id": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["waiting", "playing", "crashed"]
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "crashPoint": {
+          "type": "number"
+        },
+        "crashTime": {
+          "type": "string",
+          "format": "date-time"
+        },
         "players": {
-          "type": "array",
-          "description": "Players participating in the battle.",
-          "items": {
-            "type": "object",
-            "properties": {
-              "userId": { "type": "string" },
-              "items": { "type": "array", "items": { "$ref": "#/entities/Inventory" } },
-              "totalValue": { "type": "number" }
-            }
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/entities/RocketPlayer"
           }
         },
-        "cases": {
+        "history": {
           "type": "array",
-          "description": "Array of case IDs included in the battle.",
-          "items": { "type": "string" }
-        },
-        "winnerId": { "type": "string", "description": "The ID of the winning user." },
-        "createdAt": { "type": "string", "format": "date-time" },
-        "finishedAt": { "type": "string", "format": "date-time" }
-      },
-      "required": ["id", "status", "players", "cases", "createdAt"]
+          "items": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "RocketPlayer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "RocketPlayer",
+      "description": "Represents a player's state within a Rocket game round.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "avatar": { "type": "string" },
+        "bet": { "type": "number" },
+        "status": { "type": "string", "enum": ["waiting", "playing", "cashed_out", "lost"] },
+        "cashedOutAt": { "type": "number" }
+      }
     }
   },
   "auth": {
@@ -391,9 +412,9 @@
         "schema": { "$ref": "#/entities/Upgrade" },
         "description": "Logs all upgrade attempts for analytics and history."
     },
-    "/battles/{battleId}": {
-        "schema": { "$ref": "#/entities/CaseBattle" },
-        "description": "Stores information about each case battle event."
+    "/rocket/current-game": {
+      "schema": { "$ref": "#/entities/RocketGame" },
+      "description": "Singleton document storing the state of the current rocket game."
     }
   }
 }
