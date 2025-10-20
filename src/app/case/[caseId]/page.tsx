@@ -366,7 +366,7 @@ export default function CasePage() {
             <div className="flex-grow flex flex-col justify-between">
                 {/* Roulette Reel */}
                  <div className="flex-grow flex flex-col items-center justify-center relative my-4">
-                     <div className="absolute top-[30%] -translate-y-1/2 left-1/2 -translate-x-1/2 text-white z-10">
+                     <div className="absolute top-1/2 -translate-y-[150%] left-1/2 -translate-x-1/2 text-white z-10">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
                     </div>
                     
@@ -375,7 +375,7 @@ export default function CasePage() {
                             {reelItems.length > 0 ? reelItems.map((item, index) => (
                                 <div key={index} className="flex-[0_0_6rem] mx-1">
                                     <Card className={cn(
-                                        "p-1.5 border-2 bg-card/50 transition-all duration-300", 
+                                        "p-1.5 border-2 bg-card/50 transition-all duration-300 h-24 w-24", 
                                         item ? RARITY_PROPERTIES[item.rarity].border : 'border-gray-500',
                                     )}>
                                         <div className="aspect-square relative">
@@ -385,7 +385,7 @@ export default function CasePage() {
                                 </div>
                             )) : (
                                 <div className="flex-[0_0_6rem] mx-1">
-                                    <Card className="p-1.5 border-2 bg-card/50">
+                                    <Card className="p-1.5 border-2 bg-card/50 h-24 w-24">
                                          <div className="aspect-square relative" />
                                     </Card>
                                 </div>
@@ -393,7 +393,7 @@ export default function CasePage() {
                         </div>
                     </div>
 
-                    <div className="absolute bottom-[30%] translate-y-1/2 left-1/2 -translate-x-1/2 text-white z-10">
+                    <div className="absolute top-1/2 translate-y-[150%] left-1/2 -translate-x-1/2 text-white z-10">
                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L2 9H22L12 19Z"/></svg>
                     </div>
                 </div>
@@ -407,7 +407,7 @@ export default function CasePage() {
                         className="w-full h-14 text-lg"
                         size="lg"
                     >
-                       <div className="flex flex-col">
+                       <div className="flex flex-col items-center justify-center">
                             <div className="flex items-center justify-center gap-2">
                                 <span>{isFree ? 'Крутить' : `Крутить ${caseData.price}`}</span>
                                 {!isFree && <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />}
@@ -453,5 +453,7 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
 
     
