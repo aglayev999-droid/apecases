@@ -11,7 +11,7 @@ import { Search, X, Loader2 } from 'lucide-react';
 import { DiamondIcon } from '@/components/icons/DiamondIcon';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import { useTranslation } from '@/contexts/LanguageContext';
