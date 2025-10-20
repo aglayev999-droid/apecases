@@ -21,8 +21,8 @@ export const ALL_ITEMS: Item[] = [
   // Uncommon
   { id: 'item-ring', name: 'Ring', rarity: 'Uncommon', image: 'https://i.ibb.co/hxy5rG61/ring.png', imageHint: 'silver diamond ring', value: 100, description: 'A beautiful silver ring.' },
   { id: 'item-lol-pop-random', name: 'Lol Pop (Random)', rarity: 'Uncommon', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'swirl lollipop', value: 360, description: 'A colorful lollipop.' },
-  { id: 'item-candy-cane-random', name: 'Candy Cane', rarity: 'Uncommon', image: 'https://i.ibb.co/ksnfgkCb/Candy-cane.png', imageHint: 'candy cane with bow', value: 300, description: 'A festive candy cane with a bow.' },
-  { id: 'item-desk-calendar-random', name: 'Desk Calendar', rarity: 'Uncommon', image: 'https://i.ibb.co/xNvnLh4/Desk-Calendar.png', imageHint: 'desk calendar', value: 300, description: 'A fun desk calendar.', animationUrl: 'https://player.vimeo.com/video/1128782666?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1' },
+  { id: 'item-candy-cane', name: 'Candy Cane', rarity: 'Uncommon', image: 'https://i.ibb.co/ksnfgkCb/Candy-cane.png', imageHint: 'candy cane with bow', value: 300, description: 'A festive candy cane with a bow.' },
+  { id: 'item-desk-calendar', name: 'Desk Calendar', rarity: 'Uncommon', image: 'https://i.ibb.co/xNvnLh4/Desk-Calendar.png', imageHint: 'desk calendar', value: 300, description: 'A fun desk calendar.', animationUrl: 'https://player.vimeo.com/video/1128782666?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1' },
   
   // Rare
   { id: 'item-evil-eye', name: 'Evil Eye', rarity: 'Rare', image: 'https://i.ibb.co/BH7RH5sn/Evil-eye.png', imageHint: 'evil eye amulet', value: 800, description: 'A protective evil eye amulet.' },
@@ -85,8 +85,8 @@ export const MOCK_CASES: Case[] = [
         { itemId: 'item-champagne', probability: 0.25 },
         { itemId: 'item-cup', probability: 0.18 },
         { itemId: 'item-diamond', probability: 0.18 },
-        { itemId: 'item-candy-cane-random', probability: 0.12 },
-        { itemId: 'item-desk-calendar-random', probability: 0.1 },
+        { itemId: 'item-candy-cane', probability: 0.12 },
+        { itemId: 'item-desk-calendar', probability: 0.1 },
         { itemId: 'item-witch-hat', probability: 0.08 },
         { itemId: 'item-tama-gadget', probability: 0.05 },
         { itemId: 'item-spy-agaric', probability: 0.03 },
@@ -103,8 +103,8 @@ export const MOCK_CASES: Case[] = [
         { itemId: 'item-diamond', probability: 0.25 },
         { itemId: 'item-cup', probability: 0.20 },
         { itemId: 'item-lol-pop-random', probability: 0.15 },
-        { itemId: 'item-candy-cane-random', probability: 0.12 },
-        { itemId: 'item-desk-calendar-random', probability: 0.10 },
+        { itemId: 'item-candy-cane', probability: 0.12 },
+        { itemId: 'item-desk-calendar', probability: 0.10 },
         { itemId: 'item-fresh-socks-random', probability: 0.08 },
         { itemId: 'item-clover-pin-random', probability: 0.05 },
         { itemId: 'item-hex-pot-random', probability: 0.03 },
@@ -165,5 +165,3 @@ export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { rank: 9, user: { name: 'Fury', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 15000 },
   { rank: 10, user: { name: 'Wraith', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 8000 },
 ];
-
-    

@@ -113,27 +113,34 @@ export default function CasePage() {
         for (let i = 0; i < ROULETTE_ITEMS_COUNT; i++) {
             reel.push(caseItems[Math.floor(Math.random() * caseItems.length)]);
         }
-        reel[ROULETTE_ITEMS_COUNT - 4] = prize; // Set prize at a predictable winning position
+        // Place the prize at a predictable winning position (e.g., the 47th item)
+        // The pointer is in the middle, so we want the prize to land there.
+        // The winning position will be `ROULETTE_ITEMS_COUNT - buffer`
+        reel[ROULETTE_ITEMS_COUNT - 4] = prize; 
         return reel;
     }, [caseItems]);
     
     const startRoulette = (prize: Item) => {
         const newReel = generateRouletteReel(prize);
         setRouletteItems(newReel);
+        setWonItem(prize);
         
         // Short delay to ensure state update before animation starts
         setTimeout(() => {
             const winningItemIndex = ROULETTE_ITEMS_COUNT - 4;
+            // Add a random "jitter" to make the stop position feel less robotic
             const jitter = (Math.random() - 0.5) * ROULETTE_ITEM_WIDTH * 0.8;
+            // Calculate the target offset to center the winning item
+            // The formula is: (winningIndex * itemWidth) - (containerWidth / 2) + (itemWidth / 2) + jitter
+            // Since our container is effectively 3.5 items wide for centering, we can simplify:
             const targetOffset = (winningItemIndex * ROULETTE_ITEM_WIDTH) - (ROULETTE_ITEM_WIDTH * 2.5) + jitter;
             
             setRouletteOffset(targetOffset);
 
             const animationDuration = isFastSpin ? 2000 : 5000;
             setTimeout(() => {
-                setWonItem(prize);
                 setIsWinModalOpen(true);
-            }, animationDuration + 500); // Add a small delay for animation to finish
+            }, animationDuration + 500); // Add a small delay for animation to finish before showing modal
         }, 100);
     }
     
@@ -150,10 +157,30 @@ export default function CasePage() {
         setWonItem(null);
         setRouletteOffset(0);
 
-        // Deduct price and add item locally as server flow is removed
+        // This is a temporary client-side only implementation.
+        // In a real app, you would call a server function here to get the prize.
         updateBalance(-caseData.price);
-        const prize = caseItems[Math.floor(Math.random() * caseItems.length)];
         
+        // --- Prize Selection Logic ---
+        const randomNumber = Math.random();
+        let cumulativeProbability = 0;
+        let prize: Item | undefined;
+
+        const sortedCaseItems = caseData.items.sort((a,b) => a.probability - b.probability);
+
+        for (const caseItem of sortedCaseItems) {
+            cumulativeProbability += caseItem.probability;
+            if (randomNumber <= cumulativeProbability) {
+                prize = caseItems.find(item => item.id === caseItem.itemId);
+                break;
+            }
+        }
+        // Fallback if something goes wrong with probability calculation
+        if (!prize) {
+            prize = caseItems[Math.floor(Math.random() * caseItems.length)];
+        }
+        // --- End Prize Selection ---
+
         if (!prize) {
             showAlert({ title: "Error Opening Case", description: "Could not determine prize. Please try again." });
             setIsSpinning(false);
@@ -164,15 +191,15 @@ export default function CasePage() {
         addInventoryItem(prize);
         startRoulette(prize);
 
-    }, [caseData, user, caseItems, isSpinning, showAlert, generateRouletteReel, updateBalance, addInventoryItem]);
+    }, [caseData, user, caseItems, isSpinning, showAlert, generateRouletteReel, updateBalance, addInventoryItem, isFastSpin]);
+
 
     const closeModal = () => {
         setIsWinModalOpen(false);
         setIsSpinning(false);
-        setIsFastSpin(false);
-        setRouletteOffset(0);
-        // Reset the reel for the next spin
+        // Reset the reel for the next spin to a random state
         setRouletteItems(generateInitialReel(caseItems));
+        setRouletteOffset(0);
     }
     
     if (!caseData || isUserLoading) {
@@ -287,26 +314,30 @@ export default function CasePage() {
              <Dialog open={isWinModalOpen} onOpenChange={(isOpen) => !isOpen && closeModal()}>
                 <DialogContent className="max-w-xs text-center" onInteractOutside={(e) => e.preventDefault()}>
                     <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold">Balance</DialogTitle>
+                        <DialogTitle className="text-2xl font-bold">Поздравляем с победой!</DialogTitle>
                     </DialogHeader>
                     {wonItem && (
-                    <div className="flex flex-col items-center gap-4 py-4">
-                        <div className="relative w-40 h-40">
-                             <Image src={wonItem.image} alt={wonItem.name} fill sizes="30vw" className="object-contain" data-ai-hint={wonItem.imageHint} />
+                     <div className="flex flex-col items-center gap-4 py-4">
+                        <Card className={cn("p-4 flex flex-col items-center justify-center w-40 h-40 border-2 shadow-lg", RARITY_PROPERTIES[wonItem.rarity]?.bg, RARITY_PROPERTIES[wonItem.rarity]?.border, RARITY_PROPERTIES[wonItem.rarity]?.glow)}>
+                           <div className="aspect-square relative w-32 h-32">
+                               <Image src={wonItem.image} alt={wonItem.name} fill sizes="30vw" className="object-contain drop-shadow-lg" data-ai-hint={wonItem.imageHint} />
+                           </div>
+                        </Card>
+                         <div>
+                            <p className="text-lg font-bold">{wonItem.name}</p>
+                            <p className={cn("text-sm font-bold", RARITY_PROPERTIES[wonItem.rarity]?.text)}>{wonItem.rarity}</p>
                         </div>
-                    </div>
+                     </div>
                      )}
-                    <DialogDescription className="text-base">
-                        Поздравляем с победой!
-                        <br />
+                    <DialogDescription className="text-base text-muted-foreground px-4">
                         Все выигранные призы вы можете увидеть у себя в{' '}
                         <Link href="/inventory" className="text-primary underline" onClick={closeModal}>
                             инвентаре
                         </Link>
                         .
                     </DialogDescription>
-                     <DialogFooter>
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base" onClick={closeModal}>Получить приз</Button>
+                     <DialogFooter className="p-4">
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base" onClick={closeModal}>Продолжить</Button>
                      </DialogFooter>
                 </DialogContent>
             </Dialog>
