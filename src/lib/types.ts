@@ -25,8 +25,7 @@ export interface Case {
 }
 
 export interface InventoryItem extends Item {
-  // The 'id' from the top-level 'items' collection is duplicated here for convenience,
-  // but the document ID in the subcollection is the unique inventory identifier.
+  inventoryId: string;
   status: 'won' | 'exchanged' | 'shipped';
   wonAt: Timestamp;
 }

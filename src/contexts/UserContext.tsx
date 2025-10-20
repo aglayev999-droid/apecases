@@ -1,9 +1,9 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from 'react';
 import type { User, InventoryItem, Item } from '@/lib/types';
 import { useAuth as useFirebaseAuth, useFirestore, useDoc, useCollection, addDocumentNonBlocking, useMemoFirebase } from '@/firebase';
-import { doc, collection, writeBatch, serverTimestamp, increment, setDoc } from 'firebase/firestore';
+import { doc, collection, writeBatch, serverTimestamp, increment, setDoc, deleteDoc } from 'firebase/firestore';
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { Auth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { LoadingScreen } from '@/components/LoadingScreen';
@@ -107,7 +107,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     firestore && firebaseUser ? collection(firestore, 'users', firebaseUser.uid, 'inventory') : null,
     [firestore, firebaseUser]
   );
-  const { data: inventory } = useCollection<InventoryItem>(inventoryColRef);
+    const { data: rawInventory } = useCollection<Omit<InventoryItem, 'inventoryId'>>(inventoryColRef);
+
+    const inventory: InventoryItem[] | null = useMemo(() => {
+        if (!rawInventory) return null;
+        return rawInventory.map(item => ({
+            ...item,
+            inventoryId: item.id, // Use the document ID as the unique inventoryId
+        }));
+    }, [rawInventory]);
+
 
   const [lastFreeCaseOpen, setLastFreeCaseOpenState] = useState<Date | null>(() => {
     if (typeof window === 'undefined') return null;
@@ -172,9 +181,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   
   const addInventoryItem = useCallback((item: Item) => {
     if (!inventoryColRef) return;
-    // We need to omit properties that are not in InventoryItem but in Item
     const { isUpgradable, isTargetable, ...baseItem } = item;
-    const newInventoryItem: Omit<InventoryItem, 'id'> & { wonAt: any } = {
+    const newInventoryItem: Omit<InventoryItem, 'id' | 'inventoryId'> & { wonAt: any } = {
       ...baseItem,
       status: 'won',
       wonAt: serverTimestamp(),
@@ -184,10 +192,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const removeInventoryItem = useCallback((inventoryId: string) => {
     if (!inventoryColRef || !firestore) return;
-    const batch = writeBatch(firestore);
     const itemRef = doc(inventoryColRef, inventoryId);
-    batch.delete(itemRef);
-    batch.commit().catch(e => console.error("Failed to remove item:", e));
+    deleteDoc(itemRef).catch(e => console.error("Failed to remove item:", e));
   }, [firestore, inventoryColRef]);
   
   const removeInventoryItems = useCallback((inventoryIds: string[]) => {
