@@ -37,7 +37,7 @@ export default function CasePage() {
     const caseId = params.caseId as string;
     const firestore = useFirestore();
 
-    const [caseData, setCaseData] = useState<Case | null>(null);
+    const [caseData, setCaseData] = useState<Case | null>(MOCK_CASES.find(c => c.id === caseId) || null);
     const [caseItems, setCaseItems] = useState<Item[]>([]);
     const [rouletteItems, setRouletteItems] = useState<Item[]>([]);
     const [isSpinning, setIsSpinning] = useState(false);
@@ -49,11 +49,23 @@ export default function CasePage() {
     const { showAlert } = useAlertDialog();
 
     useEffect(() => {
+        const initialCase = MOCK_CASES.find(c => c.id === caseId);
+        if (initialCase) {
+             const items = initialCase.items
+                .map(i => MOCK_ITEMS.find(item => item.id === i.itemId))
+                .filter((item): item is Item => !!item)
+                .sort((a, b) => a.value - b.value);
+            setCaseItems(items);
+        }
+    }, [caseId]);
+
+
+    useEffect(() => {
         if (!firestore || !caseId) return;
         const fetchCaseAndItemsData = async () => {
             try {
                 const itemsSnapshot = await getDocs(collection(firestore, 'items'));
-                const allItems = itemsSnapshot.docs.map(d => ({ ...d.data(), id: d.id } as Item));
+                const allItems = itemsSnapshot.empty ? MOCK_ITEMS : itemsSnapshot.docs.map(d => ({ ...d.data(), id: d.id } as Item));
 
                 const caseSnap = await getDoc(doc(firestore, 'cases', caseId));
                 let caseResult: Case | null = null;
@@ -77,8 +89,7 @@ export default function CasePage() {
                 }
             } catch (error) {
                 console.error("Error fetching case data:", error);
-                setCaseData(MOCK_CASES.find(c => c.id === caseId) || null);
-                setCaseItems(MOCK_ITEMS);
+                // Fallback to mock data already set
             }
         };
 

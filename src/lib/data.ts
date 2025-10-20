@@ -26,7 +26,7 @@ export const ALL_ITEMS: Item[] = [
   
   // Rare
   { id: 'item-evil-eye', name: 'Evil Eye', rarity: 'Rare', image: 'https://i.ibb.co/BH7RH5sn/Evil-eye.png', imageHint: 'evil eye amulet', value: 800, description: 'A protective evil eye amulet.' },
-  { id: 'item-witch-hat-random', name: 'Witch Hat', rarity: 'Rare', image: 'https://i.ibb.co/KxtS9HyT/Witch-hat.png', imageHint: 'purple witch hat', value: 380, description: 'A magical witch hat.' },
+  { id: 'item-witch-hat', name: 'Witch Hat', rarity: 'Rare', image: 'https://i.ibb.co/KxtS9HyT/Witch-hat.png', imageHint: 'purple witch hat', value: 380, description: 'A magical witch hat.' },
   { id: 'item-clover-pin-random', name: 'Clover Pin (Random)', rarity: 'Rare', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'clover pin', value: 650, description: 'A lucky clover pin.' },
 
   // Epic
@@ -83,14 +83,14 @@ export const MOCK_CASES: Case[] = [
       imageHint: 'blue apex case',
       items: [
         { itemId: 'item-champagne', probability: 0.25 },
-        { itemId: 'item-cup', probability: 0.20 },
-        { itemId: 'item-diamond', probability: 0.15 },
+        { itemId: 'item-cup', probability: 0.18 },
+        { itemId: 'item-diamond', probability: 0.18 },
         { itemId: 'item-candy-cane-random', probability: 0.12 },
-        { itemId: 'item-desk-calendar-random', probability: 0.10 },
-        { itemId: 'item-witch-hat-random', probability: 0.08 },
+        { itemId: 'item-desk-calendar-random', probability: 0.1 },
+        { itemId: 'item-witch-hat', probability: 0.08 },
         { itemId: 'item-tama-gadget', probability: 0.05 },
         { itemId: 'item-spy-agaric', probability: 0.03 },
-        { itemId: 'item-evil-eye', probability: 0.02 },
+        { itemId: 'item-evil-eye', probability: 0.01 },
       ],
     },
      {
