@@ -115,20 +115,31 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const inventory: InventoryItem[] | null = useMemo(() => {
     if (!rawInventory) return null;
-    
-    // Create a map of the base items for quick lookup
+
     const baseItemsMap = new Map(ALL_ITEMS.map(item => [item.id, item]));
 
     return rawInventory.map(invItem => {
-        const baseItem = baseItemsMap.get(invItem.id);
+        // Here invItem.id is the document ID from firestore,
+        // and invItem.itemId is the ID that links to ALL_ITEMS
+        const baseItem = baseItemsMap.get(invItem.itemId);
+        
         return {
             ...invItem,
-            inventoryId: invItem.id, // The doc id from Firestore is on the 'id' field
+            inventoryId: invItem.id, // This is the unique ID for the inventory entry
+            id: invItem.itemId,      // This is the base item ID
+            name: baseItem?.name || invItem.name,
+            image: baseItem?.image || invItem.image,
+            imageHint: baseItem?.imageHint || invItem.imageHint,
+            rarity: baseItem?.rarity || invItem.rarity,
+            value: baseItem?.value || invItem.value,
+            description: baseItem?.description || invItem.description,
             isUpgradable: baseItem?.isUpgradable ?? false,
             isTargetable: baseItem?.isTargetable ?? false,
+            collectionAddress: baseItem?.collectionAddress,
+            animationUrl: baseItem?.animationUrl,
         };
     });
-  }, [rawInventory]);
+}, [rawInventory]);
 
 
   const [lastFreeCaseOpen, setLastFreeCaseOpenState] = useState<Date | null>(() => {
@@ -194,9 +205,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   
   const addInventoryItem = useCallback((item: Item) => {
     if (!inventoryColRef) return;
-    const { isUpgradable, isTargetable, ...baseItem } = item;
-    const newInventoryItem: Omit<InventoryItem, 'id' | 'inventoryId'> & { wonAt: any } = {
-      ...baseItem,
+    const { isUpgradable, isTargetable, id: itemId, ...baseItemWithoutId } = item;
+    const newInventoryItem: Omit<InventoryItem, 'id' | 'inventoryId'> & { wonAt: any, itemId: string } = {
+      ...baseItemWithoutId,
+      itemId: itemId, // explicitly add itemId
       status: 'won',
       wonAt: serverTimestamp(),
     };
