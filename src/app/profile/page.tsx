@@ -6,11 +6,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Copy, Moon, Sun, Settings, Check, Trash2 } from 'lucide-react';
+import { Copy, Moon, Sun, Settings, Check, Trash2, X, ArrowRightLeft } from 'lucide-react';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
@@ -18,6 +19,10 @@ import { useTranslation } from '@/contexts/LanguageContext';
 import { InventoryCard } from '@/components/InventoryCard';
 import type { InventoryItem } from '@/lib/types';
 import Link from 'next/link';
+import { useTonWallet } from '@tonconnect/ui-react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
+import { useRouter } from 'next/navigation';
 
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
@@ -115,11 +120,129 @@ const EmptyInventory = () => {
     );
 }
 
+const ItemActionModal = ({ 
+    item, 
+    isOpen, 
+    onClose 
+} : { 
+    item: InventoryItem | null, 
+    isOpen: boolean, 
+    onClose: () => void 
+}) => {
+    const { showAlert } = useAlertDialog();
+    const { removeInventoryItem, updateBalance } = useUser();
+    const wallet = useTonWallet();
+    const firestore = useFirestore();
+    const { t } = useTranslation();
+    const router = useRouter();
+
+    const handleSell = () => {
+        if (!item) return;
+        updateBalance(item.value);
+        removeInventoryItem(item.inventoryId);
+        onClose();
+        showAlert({
+            title: t('inventoryPage.inventoryCard.itemSoldTitle'),
+            description: t('inventoryPage.inventoryCard.itemSoldDescription', { name: item.name, value: item.value }),
+        });
+    };
+
+    const handleWithdraw = async () => {
+        if (!item) return;
+        if (!wallet) {
+            showAlert({
+                title: t('inventoryPage.inventoryCard.walletNotConnectedTitle'),
+                description: t('inventoryPage.inventoryCard.walletNotConnectedDescription'),
+            });
+            return;
+        }
+        if (!firestore) {
+            showAlert({ title: 'Error', description: t('inventoryPage.inventoryCard.dbError') });
+            return;
+        }
+        if (!item.collectionAddress) {
+            showAlert({
+                title: t('inventoryPage.inventoryCard.withdrawErrorTitle'),
+                description: t('inventoryPage.inventoryCard.withdrawErrorDescription', { name: item.name }),
+            });
+            return;
+        }
+
+        try {
+            const queueRef = collection(firestore, 'withdrawal_queue');
+            await addDoc(queueRef, {
+                user_wallet_address: wallet.account.address,
+                nft_id: item.id,
+                nft_contract_address: item.collectionAddress,
+                status: 'pending',
+                timestamp: serverTimestamp(),
+            });
+            removeInventoryItem(item.inventoryId);
+            onClose();
+            showAlert({
+                title: t('inventoryPage.inventoryCard.withdrawRequestSentTitle'),
+                description: t('inventoryPage.inventoryCard.withdrawRequestSentDescription', { name: item.name }),
+            });
+        } catch (error) {
+            console.error("Error sending withdrawal request:", error);
+            showAlert({
+                title: t('inventoryPage.inventoryCard.withdrawFailedTitle'),
+                description: t('inventoryPage.inventoryCard.withdrawFailedDescription'),
+            });
+        }
+    };
+    
+    const handleUpgrade = () => {
+        onClose();
+        router.push('/upgrade');
+    }
+    
+    if (!item) return null;
+
+    const isNFT = item.rarity === 'NFT';
+    const isUpgradable = item.isUpgradable ?? !isNFT;
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onClose}>
+            <DialogContent className="max-w-xs text-center p-0 rounded-2xl" onInteractOutside={onClose}>
+                <DialogHeader className="p-6 pb-4">
+                    <DialogTitle className="text-xl font-bold">{item.name}</DialogTitle>
+                </DialogHeader>
+                <div className="flex flex-col items-center gap-4 px-6">
+                    <Card className="p-4 flex flex-col items-center justify-center w-48 h-48 border-0 shadow-lg bg-card">
+                       <div className="aspect-square relative w-40 h-40">
+                           <Image src={item.image} alt={item.name} fill sizes="40vw" className="object-contain drop-shadow-lg" data-ai-hint={item.imageHint} />
+                       </div>
+                    </Card>
+                    <p className={cn("text-lg font-bold")}>{item.rarity}</p>
+                 </div>
+                 <DialogFooter className="p-4 flex flex-col gap-2">
+                     {isUpgradable && (
+                        <Button className="w-full bg-purple-600 hover:bg-purple-700 h-12 text-base" onClick={handleUpgrade}>
+                           <ArrowRightLeft className="mr-2 h-4 w-4" />
+                           {t('inventoryPage.inventoryCard.upgrade')}
+                        </Button>
+                     )}
+                    <div className="grid grid-cols-2 gap-2">
+                         <Button variant="destructive" className="h-12 text-base" onClick={handleSell}>
+                            {t('inventoryPage.inventoryCard.sellFor')} {item.value}
+                            <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
+                        </Button>
+                        <Button variant="secondary" className="h-12 text-base" onClick={handleWithdraw} disabled={!isNFT}>
+                           {t('inventoryPage.inventoryCard.withdraw')}
+                        </Button>
+                    </div>
+                 </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    )
+}
+
 const InventorySection = () => {
   const { inventory, removeInventoryItems, updateBalance, isUserLoading } = useUser();
   const { showAlert } = useAlertDialog();
   const { t } = useTranslation();
-  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
   const nonNftItems = React.useMemo(() => {
     if (!inventory) return [];
@@ -163,7 +286,6 @@ const InventorySection = () => {
                     <div key={i} className="flex flex-col gap-2">
                         <Skeleton className="aspect-square w-full rounded-xl" />
                         <Skeleton className="h-5 w-2/3" />
-                        <Skeleton className="h-9 w-full" />
                     </div>
                 ))}
             </div>
@@ -176,27 +298,29 @@ const InventorySection = () => {
   }
 
   return (
-    <div className="space-y-4 mt-8">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tighter">{t('inventoryPage.title')}</h1>
-        <Button variant="destructive" size="sm" onClick={handleSellAll} disabled={nonNftItems.length === 0}>
-            <Trash2 className="mr-2 h-4 w-4" />
-            {t('inventoryPage.sellAll')} {totalSellValue}
-             <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
-        </Button>
+    <>
+      <div className="space-y-4 mt-8">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tighter">{t('inventoryPage.title')}</h1>
+          <Button variant="destructive" size="sm" onClick={handleSellAll} disabled={nonNftItems.length === 0}>
+              <Trash2 className="mr-2 h-4 w-4" />
+              {t('inventoryPage.sellAll')} {totalSellValue}
+               <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
+          </Button>
+        </div>
+        
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          {inventory.map((item: InventoryItem) => (
+            <InventoryCard 
+              key={item.inventoryId} 
+              item={item} 
+              onClick={() => setSelectedItem(item)}
+            />
+          ))}
+        </div>
       </div>
-      
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {inventory.map((item: InventoryItem) => (
-          <InventoryCard 
-            key={item.inventoryId} 
-            item={item} 
-            isExpanded={expandedCardId === item.inventoryId}
-            onExpand={() => setExpandedCardId(expandedCardId === item.inventoryId ? null : item.inventoryId)}
-          />
-        ))}
-      </div>
-    </div>
+      <ItemActionModal item={selectedItem} isOpen={!!selectedItem} onClose={() => setSelectedItem(null)} />
+    </>
   );
 }
 

@@ -66,6 +66,7 @@
     "inventoryCard": {
       "sellFor": "Продать за",
       "withdraw": "Вывести",
+      "upgrade": "Апгрейд",
       "itemSoldTitle": "Предмет продан!",
       "itemSoldDescription": "Вы продали {name} за {value} звезд.",
       "walletNotConnectedTitle": "Кошелек не подключен",

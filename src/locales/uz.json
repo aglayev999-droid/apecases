@@ -66,6 +66,7 @@
     "inventoryCard": {
       "sellFor": "Sotish",
       "withdraw": "Chiqarish",
+      "upgrade": "Apgrade",
       "itemSoldTitle": "Narsa sotildi!",
       "itemSoldDescription": "{name} ni {value} yulduzga sotdingiz.",
       "walletNotConnectedTitle": "Hamyon ulanmagan",

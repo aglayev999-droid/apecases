@@ -66,6 +66,7 @@
     "inventoryCard": {
       "sellFor": "Sell for",
       "withdraw": "Withdraw",
+      "upgrade": "Upgrade",
       "itemSoldTitle": "Item Sold!",
       "itemSoldDescription": "You sold {name} for {value} stars.",
       "walletNotConnectedTitle": "Wallet Not Connected",
