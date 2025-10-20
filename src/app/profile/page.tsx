@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -104,7 +105,7 @@ const EmptyInventory = () => {
     return (
         <div className="flex flex-col items-center justify-center text-center py-16">
             <div className="relative w-40 h-40">
-                <Image src="/redeye.png" alt="No Items" width={160} height={160} />
+                <Image src="https://i.ibb.co/27KjDLVY/model0emoji-5936013938331222567-by-Gift-Changes-Helper2-Bot-Ag-AD6-Fo.png" alt="No Items" width={160} height={160} />
             </div>
             <h2 className="text-2xl font-bold mt-6">{t('inventoryPage.emptyInventoryTitle')}</h2>
             <p className="text-muted-foreground mt-2">
@@ -493,3 +494,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
