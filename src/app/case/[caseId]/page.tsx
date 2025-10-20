@@ -58,7 +58,7 @@ export default function CasePage() {
     const [isSpinning, setIsSpinning] = useState(false);
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
-    const { user, lastFreeCaseOpen, setLastFreeCaseOpen, addInventoryItem, updateBalance } = useUser();
+    const { user, lastFreeCaseOpen, setLastFreeCaseOpen, addInventoryItem, updateBalance, isUserLoading, inventory } = useUser();
     const { showAlert } = useAlertDialog();
     const [caseItems, setCaseItems] = useState<Item[]>([]);
 
@@ -111,39 +111,43 @@ export default function CasePage() {
     
      const handleSpin = useCallback(async (isFast: boolean = false) => {
         if (isSpinning || !caseData || !user || allItems.length === 0) return;
-
+    
+        // Immediately deduct price from client for responsiveness
+        if (user.balance.stars < caseData.price) {
+            showAlert({ title: "Error", description: "Not enough stars." });
+            return;
+        }
+        updateBalance(-caseData.price);
+    
         setIsSpinning(true);
         setWonItem(null);
 
-        try {
-            const prize = await openCase({ caseId: caseData.id, userId: user.id });
+        const { prize, error } = await openCase({ caseId: caseData.id, userId: user.id });
 
-            if (!prize) {
-                showAlert({ title: "Error", description: "Could not determine prize from server." });
-                setIsSpinning(false);
-                return;
-            }
-            
-            // Simulate delay for animation
-            setTimeout(() => {
-                setWonItem(prize);
-                setIsWinModalOpen(true);
-                // Update client-side state after animation
-                if (prize.id.startsWith('item-stars-')) {
-                    updateBalance(prize.value);
-                } else {
-                    addInventoryItem(prize);
-                }
-                 // The balance for the case price was already deducted on the server.
-            }, isFast ? 500 : 2000);
-
-
-        } catch (error: any) {
-            showAlert({ title: "Error", description: error.message || "Failed to open case." });
+        if (error || !prize) {
+            // Refund the client-side deduction if the server-side transaction fails
+            updateBalance(caseData.price);
+            showAlert({ title: "Error", description: error || "Could not determine prize from server." });
             setIsSpinning(false);
+            return;
         }
 
-    }, [caseData, user, showAlert, allItems, isSpinning, updateBalance, addInventoryItem]);
+        setTimeout(() => {
+            setWonItem(prize);
+            setIsWinModalOpen(true);
+            
+            // The server already handled the prize logic, so we just need to update the client if the prize was stars
+            // The inventory will update automatically via its listener
+            if (prize.id.startsWith('item-stars-')) {
+                // The server already added this, but we can call it again
+                // to make sure client state is in sync if the listener is slow.
+                updateBalance(prize.value);
+            }
+            
+        }, isFast ? 500 : 2000);
+
+
+    }, [caseData, user, showAlert, allItems, isSpinning, updateBalance, inventory]);
 
 
     const closeModal = () => {
@@ -157,7 +161,7 @@ export default function CasePage() {
         router.push('/inventory');
     };
 
-    if (!caseData) {
+    if (!caseData || isUserLoading) {
         return (
             <div className="flex items-center justify-center h-full">
                 <p>Loading case...</p>
@@ -308,5 +312,3 @@ export default function CasePage() {
         </div>
     );
 }
-
-    

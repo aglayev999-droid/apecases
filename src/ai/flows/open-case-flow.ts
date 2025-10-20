@@ -18,11 +18,11 @@ async function selectPrize(caseData: Case): Promise<string> {
     return caseData.items[0].itemId;
 }
 
-export async function openCase(input: { caseId: string; userId: string }): Promise<Item | null> {
+export async function openCase(input: { caseId: string; userId: string }): Promise<{ prize: Item | null; error: string | null }> {
     const { caseId, userId } = input;
 
     if (!firestore) {
-        throw new Error("Firestore is not initialized on the server.");
+        return { prize: null, error: "Firestore is not initialized on the server." };
     }
 
     try {
@@ -51,9 +51,9 @@ export async function openCase(input: { caseId: string; userId: string }): Promi
             // Select prize on server
             const prizeId = await selectPrize(caseData);
             const prizeRef = doc(firestore!, 'items', prizeId);
-            const prizeDoc = await transaction.get(prizeRef);
+            const prizeDoc = await getDoc(prizeRef); // Use getDoc from firestore admin sdk which is available globally
             
-            if (!prizeDoc.exists()) {
+            if (!prizeDoc.exists) {
                  throw new Error(`Prize item with ID ${prizeId} not found.`);
             }
 
@@ -73,6 +73,7 @@ export async function openCase(input: { caseId: string; userId: string }): Promi
                 const inventoryRef = doc(collection(userRef, 'inventory'));
                 transaction.set(inventoryRef, {
                     ...prizeData, // Spread all properties of the prize
+                    id: inventoryRef.id, // Use the new doc ref ID as the inventory item ID
                     status: 'won',
                     wonAt: serverTimestamp()
                 });
@@ -81,10 +82,10 @@ export async function openCase(input: { caseId: string; userId: string }): Promi
             return prizeData;
         });
         
-        return prize;
+        return { prize, error: null };
 
     } catch (error: any) {
         console.error("Transaction failed: ", error);
-        throw new Error(error.message || 'An unexpected error occurred during the transaction.');
+        return { prize: null, error: error.message || 'An unexpected error occurred.' };
     }
 }
