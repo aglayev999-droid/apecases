@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 const ROULETTE_ITEMS_COUNT = 50;
 const WINNING_ITEM_INDEX = ROULETTE_ITEMS_COUNT - 5;
+const ANIMATION_DURATION_MS = 5000;
 
 export default function CasePage() {
     const params = useParams();
@@ -47,6 +48,7 @@ export default function CasePage() {
         return reel;
     }, []);
 
+    // Effect to load case data
     useEffect(() => {
         const fetchCaseAndItemsData = async () => {
             if (!caseId) return;
@@ -75,12 +77,16 @@ export default function CasePage() {
         fetchCaseAndItemsData();
     }, [caseId, router, showAlert]);
     
+    // Effect to populate initial reel
     useEffect(() => {
-        if (caseItems.length > 0 && rouletteItems.length === 0) {
-            setRouletteItems(generateInitialReel(caseItems));
+        if (caseItems.length > 0) {
+             setRouletteItems(generateInitialReel(caseItems));
+             setRouletteOffset(0); // Ensure offset is reset when items change
         }
-    }, [caseItems, generateInitialReel, rouletteItems.length]);
+    }, [caseItems, generateInitialReel]);
+
     
+    // Effect to handle responsive width
     useEffect(() => {
         const calculateItemWidth = () => {
             const isSmallScreen = window.innerWidth < 640;
@@ -93,6 +99,43 @@ export default function CasePage() {
         window.addEventListener('resize', calculateItemWidth);
         return () => window.removeEventListener('resize', calculateItemWidth);
     }, []);
+    
+    // Effect to run the animation when isSpinning becomes true
+    useEffect(() => {
+        if (!isSpinning || !wonItem || caseItems.length === 0) {
+            return;
+        }
+
+        // 1. Create a new reel with the winning item in the correct position
+        const newReel = Array.from({ length: ROULETTE_ITEMS_COUNT }, () => 
+            caseItems[Math.floor(Math.random() * caseItems.length)]
+        );
+        newReel[WINNING_ITEM_INDEX] = wonItem; 
+        setRouletteItems(newReel);
+
+        // 2. Calculate the target offset
+        const containerWidth = rouletteContainerRef.current?.offsetWidth || 0;
+        const jitter = (Math.random() - 0.5) * rouletteItemWidth * 0.8;
+        const targetOffset = (WINNING_ITEM_INDEX * rouletteItemWidth) - (containerWidth / 2) + (rouletteItemWidth / 2) + jitter;
+        
+        // Use a short timeout to ensure the state update for the reel is rendered before starting the transition
+        const animationTimeout = setTimeout(() => {
+            setRouletteOffset(targetOffset);
+        }, 100);
+
+        // 3. Set a timer to show the win modal after the animation finishes
+        const modalTimeout = setTimeout(() => {
+            setIsWinModalOpen(true);
+        }, ANIMATION_DURATION_MS + 500);
+        
+        // Cleanup timeouts if the component unmounts or spin is cancelled
+        return () => {
+            clearTimeout(animationTimeout);
+            clearTimeout(modalTimeout);
+        };
+
+    }, [isSpinning, wonItem, caseItems, rouletteItemWidth]);
+
 
     const handleSpin = useCallback(async () => {
         if (isSpinning || !caseData || !user || caseItems.length === 0) return;
@@ -102,9 +145,7 @@ export default function CasePage() {
             return;
         }
 
-        setIsSpinning(true);
-        setRouletteOffset(0);
-
+        // Determine the prize
         const randomNumber = Math.random();
         let cumulativeProbability = 0;
         let prize: Item | undefined;
@@ -120,40 +161,28 @@ export default function CasePage() {
             prize = caseItems[0]; 
         }
         
+        // Update balance and inventory
         updateBalance(-caseData.price);
         addInventoryItem(prize);
-        setWonItem(prize);
-
-        const newReel = Array.from({ length: ROULETTE_ITEMS_COUNT }, () => 
-            caseItems[Math.floor(Math.random() * caseItems.length)]
-        );
-        newReel[WINNING_ITEM_INDEX] = prize; 
-        setRouletteItems(newReel);
         
-        setTimeout(() => {
-            const containerWidth = rouletteContainerRef.current?.offsetWidth || 0;
-            const jitter = (Math.random() - 0.5) * rouletteItemWidth * 0.8;
-            const targetOffset = (WINNING_ITEM_INDEX * rouletteItemWidth) - (containerWidth / 2) + (rouletteItemWidth / 2) + jitter;
-            
-            setRouletteOffset(targetOffset);
+        // Set the winning item and trigger the animation effect
+        setWonItem(prize);
+        setIsSpinning(true);
 
-            const animationDuration = 5000;
-            setTimeout(() => {
-                setIsWinModalOpen(true);
-            }, animationDuration + 500);
-        }, 100);
-
-    }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, rouletteItemWidth]);
+    }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem]);
 
     const closeModal = () => {
         setIsWinModalOpen(false);
         setIsSpinning(false);
         setWonItem(null);
         
+        // Reset the reel for the next spin
         setTimeout(() => {
             setRouletteOffset(0); 
-            setRouletteItems(generateInitialReel(caseItems));
-        }, 300);
+            if (caseItems.length > 0) {
+                 setRouletteItems(generateInitialReel(caseItems));
+            }
+        }, 500); // Give it time to fade out before resetting
     }
     
     if (!caseData || isUserLoading || caseItems.length === 0) {
@@ -221,7 +250,7 @@ export default function CasePage() {
                             className="flex h-full items-center gap-4"
                             style={{
                                 transform: `translateX(-${rouletteOffset}px)`,
-                                transition: isSpinning ? 'transform 5s cubic-bezier(0.2, 0.5, 0.1, 1)' : 'none',
+                                transition: isSpinning ? `transform ${ANIMATION_DURATION_MS}ms cubic-bezier(0.2, 0.5, 0.1, 1)` : 'none',
                             }}
                         >
                             {rouletteItems.map((item, index) => (
@@ -244,7 +273,7 @@ export default function CasePage() {
 
                 <div className="w-full mt-auto flex-shrink-0 px-4">
                      <Button 
-                        onClick={() => handleSpin()}
+                        onClick={handleSpin}
                         disabled={isSpinning} 
                         className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700"
                         size="lg"
@@ -299,5 +328,3 @@ export default function CasePage() {
         </div>
     );
 }
-
-    
