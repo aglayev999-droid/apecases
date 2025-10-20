@@ -7,6 +7,7 @@ import { doc, collection, writeBatch, serverTimestamp, increment, setDoc } from 
 import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { Auth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { LoadingScreen } from '@/components/LoadingScreen';
+import { useAlertDialog } from './AlertDialogContext';
 
 // Define the Telegram user structure on the window object
 declare global {
@@ -24,6 +25,7 @@ declare global {
           };
         };
         ready: () => void;
+        close: () => void;
       };
     };
   }
@@ -83,6 +85,7 @@ const createNewUserDocument = async (firestore: any, firebaseUser: FirebaseUser)
 export const UserProvider = ({ children }: { children: ReactNode }) => {
   const firestore = useFirestore();
   const { user: firebaseUser, isUserLoading: isAuthLoading, auth } = useFirebaseAuth();
+  const { showAlert } = useAlertDialog();
   
   const userDocRef = useMemoFirebase(() => 
     firestore && firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null, 
@@ -115,8 +118,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [isAppLoading, setIsAppLoading] = useState(true);
   
   useEffect(() => {
-    // Make sure Telegram WebApp is ready
-    if (window.Telegram) {
+    if (window.Telegram?.WebApp) {
       window.Telegram.WebApp.ready();
     }
     
@@ -125,6 +127,25 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [isAuthLoading, firebaseUser, auth]);
   
+  // Multi-account detection
+   useEffect(() => {
+    if (user && window.Telegram?.WebApp?.initDataUnsafe?.user) {
+      const tgUserId = String(window.Telegram.WebApp.initDataUnsafe.user.id);
+      if (user.telegramId !== tgUserId) {
+        showAlert({
+          title: "Account Mismatch",
+          description: "You have switched Telegram accounts. Please log out and log back in to access the correct app data.",
+          onConfirm: () => {
+              auth?.signOut().then(() => {
+                  // This will trigger a re-login flow
+                   window.location.reload();
+              })
+          }
+        });
+      }
+    }
+  }, [user, auth, showAlert]);
+
   useEffect(() => {
     if (!isAuthLoading && !isUserDocLoading) {
       const timer = setTimeout(() => {
@@ -151,8 +172,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   
   const addInventoryItem = useCallback((item: Item) => {
     if (!inventoryColRef) return;
+    // We need to omit properties that are not in InventoryItem but in Item
+    const { isUpgradable, isTargetable, ...baseItem } = item;
     const newInventoryItem: Omit<InventoryItem, 'id'> & { wonAt: any } = {
-      ...item,
+      ...baseItem,
       status: 'won',
       wonAt: serverTimestamp(),
     };

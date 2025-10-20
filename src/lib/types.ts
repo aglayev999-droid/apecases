@@ -11,6 +11,7 @@ export interface Item {
   animationUrl?: string;
   isUpgradable?: boolean;
   isTargetable?: boolean;
+  collectionAddress?: string;
 }
 
 export interface Case {
@@ -80,4 +81,18 @@ export interface RocketGame {
     players: RocketPlayer[];
     history: number[];
     countdown: number; // This is a derived property, not stored in DB
+}
+
+export interface CaseBattle {
+    id: string;
+    cases: string[];
+    players: {
+        id: string;
+        name: string;
+        avatar: string;
+        totalValue: number;
+    }[];
+    status: 'waiting' | 'in-progress' | 'finished';
+    createdAt: Timestamp;
+    winnerId?: string;
 }

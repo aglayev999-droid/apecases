@@ -47,7 +47,7 @@ export const ALL_ITEMS: Item[] = [
   { id: 'item-ginger-cookie-white-gold', name: 'Ginger Cookie White Gold', rarity: 'Legendary', image: 'https://i.ibb.co/sXXQnrY/spy.png', imageHint: 'gingerbread man', value: 1122, description: 'A white gold ginger cookie.' },
   { id: 'item-candy-cane-hex-pot', name: 'Candy Cane Hex Pot', rarity: 'Legendary', image: 'https://i.ibb.co/bRrhpVKL/9ac8f934df67fea7-removebg-preview.png', imageHint: 'cauldron with candy', value: 1192, description: 'A hex pot full of candy canes.' },
   { id: 'item-spy-agaric-robocap', name: 'Spy Agaric RoboCap', rarity: 'Legendary', image: 'https://i.ibb.co/nMHVqgnM/witch.png', imageHint: 'robot mushroom', value: 1238, description: 'A robotic spy agaric.' },
-  { id: 'item-sakura-flower-crimsonia', name: 'Sakura Flower Crimsonia', rarity: 'Legendary', image: 'https://placehold.co/100x100/1e1e1e/fff?text=?', imageHint: 'red sakura flower', value: 1240, description: 'A crimson sakura flower.' },
+  { id: 'item-sakura-flower-crimsonia', name: 'Sakura Flower Crimsonia', rarity: 'Legendary', image: 'https://i.ibb.co/chQrQb4J/desk.png', imageHint: 'red sakura flower', value: 1240, description: 'A crimson sakura flower.' },
   { id: 'item-lol-pop-mortal-sin', name: 'Lol Pop Mortal Sin', rarity: 'Legendary', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'red black lollipop', value: 1344, description: 'A mortal sin lollipop.' },
   { id: 'item-jack-in-the-box-random', name: 'Jack-in-the-Box (Random)', rarity: 'Rare', image: 'https://i.ibb.co/yvsRNdc/evil.png', imageHint: 'jack in the box', value: 576, description: 'A surprising jack-in-the-box.' },
   { id: 'item-candy-cane-sticky-sweet', name: 'Candy Cane Sticky Sweet', rarity: 'Rare', image: 'https://i.ibb.co/bRrhpVKL/9ac8f934df67fea7-removebg-preview.png', imageHint: 'green sticky candy cane', value: 594, description: 'A sticky and sweet candy cane.' },
@@ -55,9 +55,9 @@ export const ALL_ITEMS: Item[] = [
   { id: 'item-candy-cane-old-school', name: 'Candy Cane Old School', rarity: 'Uncommon', image: 'https://i.ibb.co/sXXQnrY/spy.png', imageHint: 'black and white candy cane', value: 454, description: 'A classic black and white candy cane.' },
   
   // NFT
-  { id: 'item-nft-ape-1', name: 'Ape NFT #1', rarity: 'NFT', image: 'https://i.ibb.co/Y0p2k1j/bored-ape.png', imageHint: 'bored ape nft', value: 10000, description: 'A unique Bored Ape NFT. Super rare!', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0', animationUrl: 'https://cdn.pixabay.com/video/2023/04/10/157294-816223545_large.mp4' },
-  { id: 'item-nft-punk-1', name: 'Punk NFT #1', rarity: 'NFT', image: 'https://i.ibb.co/L6WvXQ4/cryptopunk.png', imageHint: 'cryptopunk nft', value: 15000, description: 'A legendary CryptoPunk NFT.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0' },
-  { id: 'item-nft-cat-1', name: 'CryptoCat NFT', rarity: 'NFT', image: 'https://i.ibb.co/bF9FpXp/pixel-cat.png', imageHint: 'pixel cat nft', value: 12000, description: 'A cool and pixelated cat NFT.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0' },
+  { id: 'item-nft-helmet-1', name: 'Cyber Helmet', rarity: 'NFT', image: 'https://i.ibb.co/hYDLm1c/cyber-helmet.png', imageHint: 'cyber helmet', value: 10000, description: 'A rare cybernetic helmet. Part of the first collection.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0', animationUrl: 'https://cdn.pixabay.com/video/2024/05/29/213089_large.mp4' },
+  { id: 'item-nft-sword-1', name: 'Plasma Katana', rarity: 'NFT', image: 'https://i.ibb.co/CbfcCZ2/plasma-katana.png', imageHint: 'plasma katana', value: 15000, description: 'A legendary plasma katana that hums with energy.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0' },
+  { id: 'item-nft-bot-1', name: 'R-Unit 734', rarity: 'NFT', image: 'https://i.ibb.co/YXRt6T5/r-unit-734.png', imageHint: 'robot unit', value: 12000, description: 'A loyal robot companion, R-Unit 734.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0', animationUrl: 'https://cdn.pixabay.com/video/2024/02/13/200545-913410692_large.mp4' },
 ];
 
 export const MOCK_CASES: Case[] = [
@@ -126,7 +126,7 @@ export const MOCK_CASES: Case[] = [
         { itemId: 'item-spy-agaric-robocap', probability: 0.08 },
         { itemId: 'item-sakura-flower-crimsonia', probability: 0.05 },
         { itemId: 'item-lol-pop-mortal-sin', probability: 0.015 },
-        { itemId: 'item-nft-ape-1', probability: 0.005 },
+        { itemId: 'item-nft-helmet-1', probability: 0.005 },
       ],
     },
      {
@@ -139,9 +139,9 @@ export const MOCK_CASES: Case[] = [
         { itemId: 'item-lol-pop-mortal-sin', probability: 0.4 },
         { itemId: 'item-spy-agaric-robocap', probability: 0.25 },
         { itemId: 'item-sakura-flower-crimsonia', probability: 0.15 },
-        { itemId: 'item-nft-ape-1', probability: 0.1 },
-        { itemId: 'item-nft-punk-1', probability: 0.08 },
-        { itemId: 'item-nft-cat-1', probability: 0.02 },
+        { itemId: 'item-nft-bot-1', probability: 0.1 },
+        { itemId: 'item-nft-sword-1', probability: 0.08 },
+        { itemId: 'item-nft-helmet-1', probability: 0.02 },
       ],
     },
 ];
