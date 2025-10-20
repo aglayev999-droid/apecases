@@ -15,9 +15,11 @@ import { useTranslation } from '@/contexts/LanguageContext';
 
 interface InventoryCardProps {
   item: InventoryItem;
+  isExpanded: boolean;
+  onExpand: () => void;
 }
 
-export function InventoryCard({ item }: InventoryCardProps) {
+export function InventoryCard({ item, isExpanded, onExpand }: InventoryCardProps) {
   const { showAlert } = useAlertDialog();
   const { removeInventoryItem, updateBalance } = useUser();
   const wallet = useTonWallet();
@@ -85,9 +87,13 @@ export function InventoryCard({ item }: InventoryCardProps) {
   const isIframe = hasAnimation && (item.animationUrl?.includes('vimeo') || item.animationUrl?.includes('youtube'));
 
   return (
-    <Card className={cn(
-        "flex flex-col group overflow-hidden border-2 bg-card"
-    )}>
+    <Card 
+        className={cn(
+            "flex flex-col group overflow-hidden border-2 bg-card cursor-pointer transition-all duration-300",
+            isExpanded ? "border-primary" : "border-transparent"
+        )}
+        onClick={onExpand}
+    >
       <CardHeader className="p-2 relative aspect-square">
         {hasAnimation ? (
           isIframe ? (
@@ -126,17 +132,19 @@ export function InventoryCard({ item }: InventoryCardProps) {
         <p className="text-sm font-semibold truncate">{item.name}</p>
         <p className={cn("text-xs font-bold")}>{item.rarity}</p>
       </CardContent>
-      <CardFooter className="p-2 flex flex-col gap-2">
-         <div className="w-full grid grid-cols-2 gap-2">
-            <Button variant="destructive" size="sm" onClick={handleSell}>
-                {t('inventoryPage.inventoryCard.sellFor')} {item.value}
-                <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
-            </Button>
-            <Button variant="default" size="sm" onClick={handleWithdraw}>
-                {t('inventoryPage.inventoryCard.withdraw')}
-            </Button>
-        </div>
-      </CardFooter>
+       {isExpanded && (
+        <CardFooter className="p-2 flex flex-col gap-2">
+            <div className="w-full grid grid-cols-2 gap-2">
+                <Button variant="destructive" size="sm" onClick={handleSell}>
+                    {t('inventoryPage.inventoryCard.sellFor')} {item.value}
+                    <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
+                </Button>
+                <Button variant="default" size="sm" onClick={handleWithdraw}>
+                    {t('inventoryPage.inventoryCard.withdraw')}
+                </Button>
+            </div>
+        </CardFooter>
+      )}
     </Card>
   );
 }

@@ -119,6 +119,7 @@ const InventorySection = () => {
   const { inventory, removeInventoryItems, updateBalance, isUserLoading } = useUser();
   const { showAlert } = useAlertDialog();
   const { t } = useTranslation();
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
 
   const nonNftItems = React.useMemo(() => {
     if (!inventory) return [];
@@ -187,7 +188,12 @@ const InventorySection = () => {
       
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {inventory.map((item: InventoryItem) => (
-          <InventoryCard key={item.inventoryId} item={item} />
+          <InventoryCard 
+            key={item.inventoryId} 
+            item={item} 
+            isExpanded={expandedCardId === item.inventoryId}
+            onExpand={() => setExpandedCardId(expandedCardId === item.inventoryId ? null : item.inventoryId)}
+          />
         ))}
       </div>
     </div>
