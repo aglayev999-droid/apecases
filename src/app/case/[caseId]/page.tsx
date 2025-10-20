@@ -16,7 +16,6 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { useFirestore } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
-import { openCase } from '@/ai/flows/open-case-flow';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const RARITY_PROPERTIES: { [key in Item['rarity']]: { glow: string; text: string; bg: string; border: string; } } = {
@@ -150,11 +149,11 @@ export default function CasePage() {
         setWonItem(null);
         setRouletteOffset(0);
 
-        // Call the server to open the case
-        const { prize, error } = await openCase({ caseId: caseData.id, userId: user.id });
+        // This is a temporary client-side simulation since openCase flow was removed.
+        const prize = caseItems[Math.floor(Math.random() * caseItems.length)];
 
-        if (error || !prize) {
-            showAlert({ title: "Error Opening Case", description: error || "Could not determine prize. Please try again." });
+        if (!prize) {
+            showAlert({ title: "Error Opening Case", description: "Could not determine prize. Please try again." });
             setIsSpinning(false);
             return;
         }
