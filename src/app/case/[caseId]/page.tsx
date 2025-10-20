@@ -31,7 +31,6 @@ export default function CasePage() {
     const [caseItems, setCaseItems] = useState<Item[]>([]);
     const [rouletteItems, setRouletteItems] = useState<Item[]>([]);
     const [isSpinning, setIsSpinning] = useState(false);
-    const [isFastSpin, setIsFastSpin] = useState(false);
     const [rouletteOffset, setRouletteOffset] = useState(0);
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
@@ -75,7 +74,7 @@ export default function CasePage() {
 
         fetchCaseAndItemsData();
     }, [caseId, router, showAlert]);
-
+    
     useEffect(() => {
         if (caseItems.length > 0 && rouletteItems.length === 0) {
             setRouletteItems(generateInitialReel(caseItems));
@@ -95,7 +94,7 @@ export default function CasePage() {
         return () => window.removeEventListener('resize', calculateItemWidth);
     }, []);
 
-    const handleSpin = useCallback(async (isFast: boolean) => {
+    const handleSpin = useCallback(async () => {
         if (isSpinning || !caseData || !user || caseItems.length === 0) return;
 
         if (user.balance.stars < caseData.price) {
@@ -103,7 +102,6 @@ export default function CasePage() {
             return;
         }
 
-        setIsFastSpin(isFast);
         setIsSpinning(true);
         setRouletteOffset(0);
 
@@ -139,7 +137,7 @@ export default function CasePage() {
             
             setRouletteOffset(targetOffset);
 
-            const animationDuration = isFast ? 2000 : 5000;
+            const animationDuration = 5000;
             setTimeout(() => {
                 setIsWinModalOpen(true);
             }, animationDuration + 500);
@@ -152,11 +150,10 @@ export default function CasePage() {
         setIsSpinning(false);
         setWonItem(null);
         
-        // Reset the roulette for the next spin
         setTimeout(() => {
             setRouletteOffset(0); 
             setRouletteItems(generateInitialReel(caseItems));
-        }, 300); // give it a moment before reset
+        }, 300);
     }
     
     if (!caseData || isUserLoading || caseItems.length === 0) {
@@ -224,7 +221,7 @@ export default function CasePage() {
                             className="flex h-full items-center gap-4"
                             style={{
                                 transform: `translateX(-${rouletteOffset}px)`,
-                                transition: isSpinning ? `transform ${isFastSpin ? '2s' : '5s'} cubic-bezier(0.2, 0.5, 0.1, 1)` : 'none',
+                                transition: isSpinning ? 'transform 5s cubic-bezier(0.2, 0.5, 0.1, 1)' : 'none',
                             }}
                         >
                             {rouletteItems.map((item, index) => (
@@ -247,18 +244,14 @@ export default function CasePage() {
 
                 <div className="w-full mt-auto flex-shrink-0 px-4">
                      <Button 
-                        onClick={() => handleSpin(false)}
-                        onDoubleClick={() => handleSpin(true)}
+                        onClick={() => handleSpin()}
                         disabled={isSpinning} 
                         className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700"
                         size="lg"
                     >
-                       <div className="flex flex-col items-center justify-center">
-                            <div className="flex items-center justify-center gap-2">
-                                <span>{`Крутить ${caseData.price}`}</span>
-                                <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />
-                            </div>
-                             <span className="text-xs font-normal text-primary-foreground/70">(Двойное нажатие для быстрого вращения)</span>
+                       <div className="flex items-center justify-center gap-2">
+                           <span>{`Крутить ${caseData.price}`}</span>
+                           <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />
                        </div>
                     </Button>
                     <div className="mt-4">
@@ -294,7 +287,7 @@ export default function CasePage() {
                     <DialogDescription className="text-base text-muted-foreground px-4">
                         Все выигранные призы вы можете увидеть у себя в{' '}
                         <button className="text-primary underline" onClick={() => { closeModal(); router.push('/inventory'); }}>
-                            инвентаре
+                            инвентаre
                         </button>
                         .
                     </DialogDescription>
@@ -306,3 +299,5 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
