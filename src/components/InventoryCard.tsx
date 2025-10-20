@@ -16,15 +16,6 @@ interface InventoryCardProps {
   item: InventoryItem;
 }
 
-const RARITY_PROPERTIES = {
-  Common: { border: 'border-gray-600/50', text: 'text-gray-400' },
-  Uncommon: { border: 'border-green-600/50', text: 'text-green-400' },
-  Rare: { border: 'border-blue-600/50', text: 'text-blue-400' },
-  Epic: { border: 'border-purple-600/50', text: 'text-purple-400' },
-  Legendary: { border: 'border-orange-600/50', text: 'text-orange-400' },
-  NFT: { border: 'border-purple-500/60', text: 'text-purple-400' },
-};
-
 export function InventoryCard({ item }: InventoryCardProps) {
   const { showAlert } = useAlertDialog();
   const { removeInventoryItem, updateBalance } = useUser();
@@ -93,8 +84,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
 
   return (
     <Card className={cn(
-        "flex flex-col group overflow-hidden border-2 bg-card", 
-        RARITY_PROPERTIES[item.rarity].border
+        "flex flex-col group overflow-hidden border-2 bg-card"
     )}>
       <CardHeader className="p-2 relative aspect-square">
         {hasAnimation ? (
@@ -132,7 +122,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
       </CardHeader>
       <CardContent className="p-2 pt-0 text-left flex-grow">
         <p className="text-sm font-semibold truncate">{item.name}</p>
-        <p className={cn("text-xs font-bold", RARITY_PROPERTIES[item.rarity].text)}>{item.rarity}</p>
+        <p className={cn("text-xs font-bold")}>{item.rarity}</p>
       </CardContent>
       <CardFooter className="p-2 flex flex-col gap-2">
          <div className="w-full grid grid-cols-2 gap-2">

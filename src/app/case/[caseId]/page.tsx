@@ -19,15 +19,6 @@ import { doc, getDoc } from 'firebase/firestore';
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const RARITY_PROPERTIES: { [key in Item['rarity']]: { glow: string; text: string; bg: string; border: string; } } = {
-    Common: { glow: 'shadow-gray-400/50', text: 'text-gray-400', bg: 'bg-gray-800/20', border: 'border-gray-500/50' },
-    Uncommon: { glow: 'shadow-green-400/60', text: 'text-green-400', bg: 'bg-green-800/20', border: 'border-green-500/50' },
-    Rare: { glow: 'shadow-blue-400/70', text: 'text-blue-400', bg: 'bg-blue-800/20', border: 'border-blue-500/50' },
-    Epic: { glow: 'shadow-purple-400/80', text: 'text-purple-400', bg: 'bg-purple-800/20', border: 'border-purple-500/50' },
-    Legendary: { glow: 'shadow-orange-400/90', text: 'text-orange-400', bg: 'bg-orange-800/20', border: 'border-orange-500/50' },
-    NFT: { glow: 'shadow-purple-400/90', text: 'bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500', bg: 'bg-purple-800/30', border: 'border-purple-500/60' },
-};
-
 const ROULETTE_ITEMS_COUNT = 50; // Total items in the reel
 const WINNING_ITEM_INDEX = ROULETTE_ITEMS_COUNT - 4; // Prize will be placed here
 
@@ -220,7 +211,7 @@ export default function CasePage() {
             {caseItems.length > 0 ? (
                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                   {caseItems.map(item => (
-                      <Card key={item.id} className={cn("p-1.5 flex flex-col items-center justify-between border-2 bg-transparent", RARITY_PROPERTIES[item.rarity]?.bg, RARITY_PROPERTIES[item.rarity]?.border)}>
+                      <Card key={item.id} className={cn("p-1.5 flex flex-col items-center justify-between border-2 bg-transparent")}>
                         <div className="aspect-square relative w-full h-full">
                           <Image src={item.image} alt={item.name} fill sizes="15vw" className="object-contain p-1" data-ai-hint={item.imageHint} />
                         </div>
@@ -270,7 +261,7 @@ export default function CasePage() {
                                     ref={index === 0 ? rouletteItemRef : null}
                                     className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32"
                                 >
-                                     <Card className={cn("p-2 flex flex-col items-center justify-center w-full h-full border-2", RARITY_PROPERTIES[item.rarity]?.bg, RARITY_PROPERTIES[item.rarity]?.border)}>
+                                     <Card className={cn("p-2 flex flex-col items-center justify-center w-full h-full border-2")}>
                                         <div className="aspect-square relative w-20 h-20 sm:w-24 sm:h-24">
                                             <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain" data-ai-hint={item.imageHint} />
                                         </div>
@@ -312,14 +303,14 @@ export default function CasePage() {
                     </DialogHeader>
                     {wonItem && (
                      <div className="flex flex-col items-center gap-4 py-4">
-                        <Card className={cn("p-4 flex flex-col items-center justify-center w-40 h-40 border-2 shadow-lg", RARITY_PROPERTIES[wonItem.rarity]?.bg, RARITY_PROPERTIES[wonItem.rarity]?.border, RARITY_PROPERTIES[wonItem.rarity]?.glow)}>
+                        <Card className={cn("p-4 flex flex-col items-center justify-center w-40 h-40 border-2 shadow-lg")}>
                            <div className="aspect-square relative w-32 h-32">
                                <Image src={wonItem.image} alt={wonItem.name} fill sizes="30vw" className="object-contain drop-shadow-lg" data-ai-hint={wonItem.imageHint} />
                            </div>
                         </Card>
                          <div>
                             <p className="text-lg font-bold">{wonItem.name}</p>
-                            <p className={cn("text-sm font-bold", RARITY_PROPERTIES[wonItem.rarity]?.text)}>{wonItem.rarity}</p>
+                            <p className={cn("text-sm font-bold")}>{wonItem.rarity}</p>
                         </div>
                      </div>
                      )}

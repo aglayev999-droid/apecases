@@ -13,16 +13,6 @@ import { DiamondIcon } from '@/components/icons/DiamondIcon';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-const RARITY_PROPERTIES = {
-    Common: { border: 'border-gray-600/50', text: 'text-gray-400' },
-    Uncommon: { border: 'border-green-600/50', text: 'text-green-400' },
-    Rare: { border: 'border-blue-600/50', text: 'text-blue-400' },
-    Epic: { border: 'border-purple-600/50', text: 'text-purple-400' },
-    Legendary: { border: 'border-orange-600/50', text: 'text-orange-400' },
-    NFT: { border: 'border-purple-500/60', text: 'text-purple-400' },
-};
-
-
 export default function UpgradePage() {
     const { inventory } = useUser();
     const [yourItem, setYourItem] = useState<InventoryItem | null>(null);
@@ -60,8 +50,7 @@ export default function UpgradePage() {
     const ItemCard = ({ item, onSelect, isSelected }: { item: Item | InventoryItem, onSelect: () => void, isSelected: boolean }) => (
         <Card 
             className={cn(
-                "p-2 cursor-pointer transition-all", 
-                RARITY_PROPERTIES[item.rarity].border,
+                "p-2 cursor-pointer transition-all border-2", 
                 isSelected ? 'ring-2 ring-primary' : ''
             )}
             onClick={onSelect}

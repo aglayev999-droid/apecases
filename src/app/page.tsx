@@ -14,17 +14,8 @@ import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
 
-const RARITY_PROPERTIES = {
-    Common: { border: 'border-gray-600/50' },
-    Uncommon: { border: 'border-green-600/50' },
-    Rare: { border: 'border-blue-600/50' },
-    Epic: { border: 'border-purple-600/50' },
-    Legendary: { border: 'border-orange-600/50' },
-    NFT: { border: 'border-purple-500/50' },
-};
-
 const LiveDropItem = ({ item }: { item: Item }) => (
-    <Card className={cn("p-1 border-2 bg-card/50 flex-shrink-0 w-[72px] h-[72px] rounded-xl", item.rarity ? RARITY_PROPERTIES[item.rarity].border : '')}>
+    <Card className={cn("p-1 border-2 bg-card/50 flex-shrink-0 w-[72px] h-[72px] rounded-xl")}>
         <div className="aspect-square relative w-full h-full">
           <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain p-1" data-ai-hint={item.imageHint}/>
         </div>
