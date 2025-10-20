@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -99,7 +100,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
            <div className="w-full h-full">
              <video 
                 src={item.animationUrl}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-md"
                 autoPlay
                 loop
                 muted
