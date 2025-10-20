@@ -94,26 +94,22 @@ const ItemSelectionModal = ({
   );
 };
 
-const UpgradeResultModal = ({ isOpen, onClose, isSuccess, item, onAnimationEnd }: { isOpen: boolean, onClose: () => void, isSuccess: boolean, item: Item | null, onAnimationEnd: () => void }) => {
+const UpgradeResultModal = ({ isOpen, onClose, isSuccess, item }: { isOpen: boolean, onClose: () => void, isSuccess: boolean, item: Item | null }) => {
     const { t } = useTranslation();
-    useEffect(() => {
-        if (isOpen) {
-            const timer = setTimeout(onAnimationEnd, 1500); // Wait for animation
-            return () => clearTimeout(timer);
-        }
-    }, [isOpen, onAnimationEnd]);
     
     if (!item) return null;
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-xs text-center" onInteractOutside={(e) => e.preventDefault()}>
-                 <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold">{isSuccess ? t('upgradePage.successTitle') : t('upgradePage.failureTitle')}</DialogTitle>
+            <DialogContent className="max-w-xs text-center p-0 rounded-2xl" onInteractOutside={onClose}>
+                 <DialogHeader className="p-6 pb-4">
+                    <DialogTitle className={cn("text-2xl font-bold", isSuccess ? "text-green-400" : "text-red-500")}>
+                        {isSuccess ? t('upgradePage.successTitle') : t('upgradePage.failureTitle')}
+                    </DialogTitle>
                 </DialogHeader>
-                 <div className="flex flex-col items-center gap-4 py-4">
-                    <Card className={cn("p-4 flex flex-col items-center justify-center w-40 h-40 border-0 shadow-lg", isSuccess ? "bg-green-500/10" : "bg-red-500/10")}>
-                        <div className="aspect-square relative w-32 h-32">
+                 <div className="flex flex-col items-center gap-4 py-2 px-6">
+                    <Card className={cn("p-4 flex flex-col items-center justify-center w-40 h-40 border-0 shadow-lg", isSuccess ? "bg-green-900/20" : "bg-red-900/20")}>
+                        <div className={cn("aspect-square relative w-32 h-32", !isSuccess && "opacity-50 grayscale")}>
                             <Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain drop-shadow-lg" data-ai-hint={item.imageHint} />
                         </div>
                     </Card>
@@ -121,7 +117,9 @@ const UpgradeResultModal = ({ isOpen, onClose, isSuccess, item, onAnimationEnd }
                         <p className="text-lg font-bold">{item.name}</p>
                     </div>
                  </div>
-                 <Button className="w-full" onClick={onClose}>{t('upgradePage.continueButton')}</Button>
+                 <DialogFooter className="p-4">
+                    <Button className="w-full h-12 text-base" onClick={onClose}>{t('upgradePage.continueButton')}</Button>
+                 </DialogFooter>
             </DialogContent>
         </Dialog>
     );
@@ -137,30 +135,42 @@ export default function UpgradePage() {
 
     const [isYourItemsModalOpen, setIsYourItemsModalOpen] = useState(false);
     const [isTargetItemModalOpen, setIsTargetItemModalOpen] = useState(false);
+    
     const [isUpgrading, setIsUpgrading] = useState(false);
     const [upgradeResult, setUpgradeResult] = useState<'success' | 'failure' | null>(null);
+    const [showResultModal, setShowResultModal] = useState(false);
 
     const upgradableItems = useMemo(() => {
         return inventory?.filter(item => item.isUpgradable) || [];
     }, [inventory]);
+    
+    const yourItemsValue = useMemo(() => {
+        return yourItems.reduce((sum, item) => sum + item.value, 0);
+    }, [yourItems]);
 
-    const targetableNfts = useMemo(() => {
-        return MOCK_ITEMS.filter(item => item.isTargetable);
-    }, []);
+    const targetableItems = useMemo(() => {
+        return MOCK_ITEMS.filter(item => item.isTargetable && item.value > yourItemsValue);
+    }, [yourItemsValue]);
     
     const { chance, multiplier } = useMemo(() => {
-        if (yourItems.length === 0 || !targetItem) {
+        if (yourItemsValue === 0 || !targetItem) {
             return { chance: 0, multiplier: 0 };
         }
-        const yourValue = yourItems.reduce((sum, item) => sum + item.value, 0);
         const targetValue = targetItem.value;
-        const calculatedChance = Math.min((yourValue / targetValue) * 75, 95);
-        const calculatedMultiplier = targetValue / yourValue;
+        const calculatedChance = Math.min((yourItemsValue / targetValue) * 75, 95);
+        const calculatedMultiplier = targetValue / yourItemsValue;
         return { 
             chance: parseFloat(calculatedChance.toFixed(1)), 
             multiplier: parseFloat(calculatedMultiplier.toFixed(1)) 
         };
-    }, [yourItems, targetItem]);
+    }, [yourItemsValue, targetItem]);
+
+    useEffect(() => {
+        if (targetItem && targetItem.value <= yourItemsValue) {
+            setTargetItem(null);
+        }
+    }, [yourItemsValue, targetItem]);
+
 
     const handleSelectYourItem = (item: InventoryItem) => {
         setYourItems(prev => {
@@ -182,29 +192,42 @@ export default function UpgradePage() {
         if (yourItems.length === 0 || !targetItem) return;
 
         setIsUpgrading(true);
+        
         const random = Math.random() * 100;
         const isSuccess = random <= chance;
         
         setTimeout(() => {
-            if (isSuccess) {
-                setUpgradeResult('success');
-                const yourItemIds = yourItems.map(i => i.inventoryId);
-                removeInventoryItems(yourItemIds);
+            const yourItemIds = yourItems.map(i => i.inventoryId);
+            removeInventoryItems(yourItemIds);
+
+            if (isSuccess && targetItem) {
                 addInventoryItem(targetItem);
+                setUpgradeResult('success');
             } else {
                 setUpgradeResult('failure');
-                 const yourItemIds = yourItems.map(i => i.inventoryId);
-                removeInventoryItems(yourItemIds);
             }
-        }, 3000); // Simulate upgrade duration
+
+            setIsUpgrading(false);
+            setTimeout(() => setShowResultModal(true), 300); // Show modal after animation settles
+            
+        }, 4000); // Simulate upgrade duration
     };
 
     const resetUpgrade = () => {
-        setIsUpgrading(false);
         setUpgradeResult(null);
+        setShowResultModal(false);
         setYourItems([]);
         setTargetItem(null);
     };
+
+    const getDiamondRotation = () => {
+        if (!isUpgrading) return 'rotate(0deg)';
+        const isSuccess = Math.random() * 100 <= chance;
+        const baseRotations = 5 * 360; // 5 full spins
+        // Success lands between 0 and 180 deg, failure between 181 and 359
+        const endRotation = isSuccess ? Math.random() * 170 : 190 + Math.random() * 160;
+        return `rotate(${baseRotations + endRotation}deg)`;
+    }
 
     return (
         <>
@@ -216,31 +239,39 @@ export default function UpgradePage() {
                  <div className="relative flex items-center justify-center mb-6">
                     <div className="absolute left-4 text-lg font-bold text-green-400">{chance}%</div>
                      <div className="relative w-40 h-40">
-                        {isUpgrading ? (
-                             <div className="absolute inset-0 flex items-center justify-center">
-                                <Loader2 className="w-24 h-24 text-primary animate-spin" />
-                            </div>
-                        ) : (
-                            <>
-                                <div className="absolute inset-0 bg-gray-800 rounded-full animate-pulse opacity-20" />
-                                <div className="absolute inset-2 bg-gray-900 rounded-full" />
-                                <div className="absolute inset-4 border-4 border-gray-800 rounded-full" />
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <DiamondIcon className="w-16 h-16 text-cyan-400" />
-                                </div>
-                             </>
-                        )}
-                    </div>
+                         {/* Spinning diamond background */}
+                        <div 
+                            className="absolute inset-0 transition-transform duration-[3500ms] ease-out"
+                            style={{ transform: isUpgrading ? getDiamondRotation() : 'rotate(0deg)' }}
+                        >
+                            <div 
+                                className="w-full h-full rounded-full"
+                                style={{
+                                    background: `conic-gradient(from 0deg, #dc2626 0deg 180deg, #16a34a 180deg 360deg)`
+                                }}
+                            />
+                        </div>
+                        {/* Inner mask and icon */}
+                        <div className="absolute inset-2 bg-background rounded-full" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                           <div className="w-0 h-0 border-b-[10px] border-b-white border-l-8 border-l-transparent border-r-8 border-r-transparent absolute top-0 -translate-y-1/2" />
+                            {isUpgrading ? (
+                                <Loader2 className="w-16 h-16 text-primary animate-spin" />
+                            ) : (
+                                <DiamondIcon className="w-16 h-16 text-cyan-400" />
+                            )}
+                        </div>
+                     </div>
                     <div className="absolute right-4 text-lg font-bold text-cyan-400">x{multiplier.toFixed(1)}</div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                     <Card className="h-32 flex flex-col items-center justify-center bg-card/50 border-dashed border-2 cursor-pointer hover:bg-card/70 relative group" onClick={() => setIsYourItemsModalOpen(true)}>
+                     <Card className="h-32 flex flex-col items-center justify-center bg-card/50 border-dashed border-2 cursor-pointer hover:bg-card/70 relative group" onClick={() => !isUpgrading && setIsYourItemsModalOpen(true)}>
                         {yourItems.length > 0 ? (
                             <>
-                                <div className="absolute top-1 right-1 flex items-center gap-1 text-xs bg-black/50 text-white px-1.5 py-0.5 rounded-full">
+                                <div className="absolute top-1 right-1 flex items-center gap-1 text-xs bg-black/50 text-white px-1.5 py-0.5 rounded-full z-10">
                                     <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12}/>
-                                    {yourItems.reduce((sum, item) => sum + item.value, 0).toLocaleString()}
+                                    {yourItemsValue.toLocaleString()}
                                 </div>
                                 <div className="grid grid-cols-2 gap-1 p-1">
                                     {yourItems.slice(0, 4).map(item => (
@@ -258,10 +289,10 @@ export default function UpgradePage() {
                             </>
                         )}
                     </Card>
-                     <Card className="h-32 flex flex-col items-center justify-center bg-card/50 border-dashed border-2 cursor-pointer hover:bg-card/70 relative" onClick={() => setIsTargetItemModalOpen(true)}>
+                     <Card className="h-32 flex flex-col items-center justify-center bg-card/50 border-dashed border-2 cursor-pointer hover:bg-card/70 relative" onClick={() => !isUpgrading && setIsTargetItemModalOpen(true)}>
                          {targetItem ? (
                              <>
-                                <div className="absolute top-1 right-1 flex items-center gap-1 text-xs bg-black/50 text-white px-1.5 py-0.5 rounded-full">
+                                <div className="absolute top-1 right-1 flex items-center gap-1 text-xs bg-black/50 text-white px-1.5 py-0.5 rounded-full z-10">
                                     <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12}/>
                                     {targetItem.value.toLocaleString()}
                                 </div>
@@ -294,8 +325,8 @@ export default function UpgradePage() {
                                 {upgradableItems.map(item => (
                                     <Card 
                                         key={item.inventoryId} 
-                                        className={cn("p-1.5 cursor-pointer transition-all border-2", yourItems.some(i => i.inventoryId === item.inventoryId) ? 'border-primary' : 'border-transparent')}
-                                        onClick={() => handleSelectYourItem(item)}
+                                        className={cn("p-1.5 cursor-pointer transition-all border-2", yourItems.some(i => i.inventoryId === item.inventoryId) ? 'border-primary' : 'border-transparent', isUpgrading && "opacity-50 pointer-events-none")}
+                                        onClick={() => !isUpgrading && handleSelectYourItem(item)}
                                     >
                                         <div className="aspect-square relative">
                                             <Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain p-1" data-ai-hint={item.imageHint}/>
@@ -321,19 +352,18 @@ export default function UpgradePage() {
             <ItemSelectionModal 
                 isOpen={isTargetItemModalOpen}
                 onClose={() => setIsTargetItemModalOpen(false)}
-                items={targetableNfts}
+                items={targetableItems}
                 selectedItems={targetItem ? [targetItem] : []}
-                onSelect={handleSelectTargetItem}
+                onSelect={(item) => handleSelectTargetItem(item as Item)}
                 title={t('upgradePage.selectTargetNft')}
                 isMultiSelect={false}
             />
 
             <UpgradeResultModal
-                isOpen={!!upgradeResult}
-                onClose={() => {}} // This modal is not closable by user action
+                isOpen={showResultModal}
+                onClose={resetUpgrade}
                 isSuccess={upgradeResult === 'success'}
                 item={targetItem}
-                onAnimationEnd={resetUpgrade}
             />
         </>
     );
