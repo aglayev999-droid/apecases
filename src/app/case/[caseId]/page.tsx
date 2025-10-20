@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronLeft, Gift } from 'lucide-react';
@@ -19,7 +19,6 @@ import { doc, getDoc } from 'firebase/firestore';
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 
-
 const RARITY_PROPERTIES: { [key in Item['rarity']]: { glow: string; text: string; bg: string; border: string; } } = {
     Common: { glow: 'shadow-gray-400/50', text: 'text-gray-400', bg: 'bg-gray-800/20', border: 'border-gray-500/50' },
     Uncommon: { glow: 'shadow-green-400/60', text: 'text-green-400', bg: 'bg-green-800/20', border: 'border-green-500/50' },
@@ -29,7 +28,6 @@ const RARITY_PROPERTIES: { [key in Item['rarity']]: { glow: string; text: string
     NFT: { glow: 'shadow-purple-400/90', text: 'bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500', bg: 'bg-purple-800/30', border: 'border-purple-500/60' },
 };
 
-const ROULETTE_ITEM_WIDTH = 144; // 128px width + 16px gap
 const ROULETTE_ITEMS_COUNT = 50; // Total items in the reel
 const WINNING_ITEM_INDEX = ROULETTE_ITEMS_COUNT - 4; // Prize will be placed here
 
@@ -47,9 +45,21 @@ export default function CasePage() {
     const [rouletteOffset, setRouletteOffset] = useState(0);
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
+    const [rouletteItemWidth, setRouletteItemWidth] = useState(144); // Default: 128px (w-32) + 16px (gap-4)
+
+    const rouletteItemRef = useRef<HTMLDivElement>(null);
 
     const { user, isUserLoading, updateBalance, addInventoryItem } = useUser();
     const { showAlert } = useAlertDialog();
+
+    // Dynamically get the width of a roulette item
+    useEffect(() => {
+        if (rouletteItemRef.current) {
+            const width = rouletteItemRef.current.offsetWidth;
+            const gap = 16; // from "gap-4"
+            setRouletteItemWidth(width + gap);
+        }
+    }, []);
 
     const generateInitialReel = useCallback((items: Item[]) => {
         if (items.length === 0) return [];
@@ -72,13 +82,15 @@ export default function CasePage() {
 
     useEffect(() => {
         const fetchCaseAndItemsData = async () => {
-            let caseResult: Case | null = MOCK_CASES.find(c => c.id === caseId) || null;
-            
-            if(firestore) {
+            let caseResult: Case | null = null;
+            if (firestore) {
                 const caseSnap = await getDoc(doc(firestore, 'cases', caseId));
                 if (caseSnap.exists()) {
                     caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
                 }
+            }
+            if (!caseResult) {
+                caseResult = MOCK_CASES.find(c => c.id === caseId) || null;
             }
             
             if(caseResult) {
@@ -101,7 +113,7 @@ export default function CasePage() {
     }, [caseId, firestore, router, showAlert, generateInitialReel]);
     
     const handleSpin = useCallback(async (isFast: boolean) => {
-        if (isSpinning || !caseData || !user || caseItems.length === 0) return;
+        if (isSpinning || !caseData || !user || caseItems.length === 0 || rouletteItemWidth === 0) return;
 
         if (user.balance.stars < caseData.price) {
             showAlert({ title: "Insufficient funds", description: "You do not have enough stars to open this case." });
@@ -125,7 +137,8 @@ export default function CasePage() {
             }
         }
         if (!prize) {
-            prize = caseItems[caseItems.length - 1]; // Fallback
+            // Fallback to the least rare item if something goes wrong
+            prize = caseItems[0];
         }
         // --- End Prize Selection ---
 
@@ -135,18 +148,19 @@ export default function CasePage() {
             return;
         }
         
-        // Update user state before animation
+        // This is optimistic update. In a real app, this should be confirmed by the server
         updateBalance(-caseData.price);
         addInventoryItem(prize);
         setWonItem(prize);
 
-        // Generate the reel with the chosen prize and start animation
         const newReel = generateRouletteReelWithPrize(prize, caseItems);
         setRouletteItems(newReel);
         
+        // Use timeout to ensure state update is rendered before animation starts
         setTimeout(() => {
-            const jitter = (Math.random() - 0.5) * ROULETTE_ITEM_WIDTH * 0.8;
-            const targetOffset = (WINNING_ITEM_INDEX * ROULETTE_ITEM_WIDTH) - (ROULETTE_ITEM_WIDTH * 2.5) + jitter;
+            const containerWidth = rouletteItemRef.current?.parentElement?.parentElement?.offsetWidth || 0;
+            const jitter = (Math.random() - 0.5) * rouletteItemWidth * 0.8;
+            const targetOffset = (WINNING_ITEM_INDEX * rouletteItemWidth) - (containerWidth / 2) + (rouletteItemWidth / 2) + jitter;
             
             setRouletteOffset(targetOffset);
 
@@ -156,12 +170,12 @@ export default function CasePage() {
             }, animationDuration + 500); 
         }, 100);
 
-    }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, generateRouletteReelWithPrize]);
-
+    }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, generateRouletteReelWithPrize, rouletteItemWidth]);
 
     const closeModal = () => {
         setIsWinModalOpen(false);
         setIsSpinning(false);
+        setIsFastSpin(false);
         // Reset the reel for the next spin to a random state
         setRouletteItems(generateInitialReel(caseItems));
         setRouletteOffset(0);
@@ -236,14 +250,18 @@ export default function CasePage() {
                         <div 
                             className="flex h-full items-center gap-4"
                             style={{
-                                transform: `translateX(calc(50% - ${rouletteOffset}px - ${ROULETTE_ITEM_WIDTH/2}px))`,
+                                transform: `translateX(-${rouletteOffset}px)`,
                                 transition: isSpinning ? `transform ${isFastSpin ? '2s' : '5s'} cubic-bezier(0.2, 0.5, 0.1, 1)` : 'none',
                             }}
                         >
                             {rouletteItems.map((item, index) => (
-                                <div key={index} className="flex-shrink-0 w-32 h-32">
+                                <div 
+                                    key={index}
+                                    ref={index === 0 ? rouletteItemRef : null}
+                                    className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32"
+                                >
                                      <Card className={cn("p-2 flex flex-col items-center justify-center w-full h-full border-2", RARITY_PROPERTIES[item.rarity]?.bg, RARITY_PROPERTIES[item.rarity]?.border)}>
-                                        <div className="aspect-square relative w-24 h-24">
+                                        <div className="aspect-square relative w-20 h-20 sm:w-24 sm:h-24">
                                             <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain" data-ai-hint={item.imageHint} />
                                         </div>
                                     </Card>
@@ -298,7 +316,7 @@ export default function CasePage() {
                     <DialogDescription className="text-base text-muted-foreground px-4">
                         Все выигранные призы вы можете увидеть у себя в{' '}
                         <Link href="/inventory" className="text-primary underline" onClick={closeModal}>
-                            инвентаре
+                            инвентаre
                         </Link>
                         .
                     </DialogDescription>
