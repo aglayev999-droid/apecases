@@ -21,19 +21,19 @@ export const ALL_ITEMS: Item[] = [
   // Uncommon
   { id: 'item-ring', name: 'Ring', rarity: 'Uncommon', image: 'https://i.ibb.co/hxy5rG61/ring.png', imageHint: 'silver diamond ring', value: 100, description: 'A beautiful silver ring.' },
   { id: 'item-lol-pop-random', name: 'Lol Pop (Random)', rarity: 'Uncommon', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'swirl lollipop', value: 360, description: 'A colorful lollipop.' },
-  { id: 'item-candy-cane-random', name: 'Candy Cane', rarity: 'Uncommon', image: 'https://i.ibb.co/ksnfgkCb/Candy-cane.png', imageHint: 'candy cane with bow', value: 380, description: 'A festive candy cane with a bow.' },
-  { id: 'item-desk-calendar-random', name: 'Desk Calendar', rarity: 'Uncommon', image: 'https://i.ibb.co/xNvnLh4/Desk-Calendar.png', imageHint: 'desk calendar', value: 426, description: 'A fun desk calendar.', animationUrl: 'https://player.vimeo.com/video/1128782666?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1' },
+  { id: 'item-candy-cane-random', name: 'Candy Cane', rarity: 'Uncommon', image: 'https://i.ibb.co/ksnfgkCb/Candy-cane.png', imageHint: 'candy cane with bow', value: 300, description: 'A festive candy cane with a bow.' },
+  { id: 'item-desk-calendar-random', name: 'Desk Calendar', rarity: 'Uncommon', image: 'https://i.ibb.co/xNvnLh4/Desk-Calendar.png', imageHint: 'desk calendar', value: 300, description: 'A fun desk calendar.', animationUrl: 'https://player.vimeo.com/video/1128782666?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1' },
   
   // Rare
-  { id: 'item-evil-eye', name: 'Evil Eye', rarity: 'Rare', image: 'https://i.ibb.co/BH7RH5sn/Evil-eye.png', imageHint: 'evil eye amulet', value: 550, description: 'A protective evil eye amulet.' },
-  { id: 'item-witch-hat-random', name: 'Witch Hat', rarity: 'Rare', image: 'https://i.ibb.co/KxtS9HyT/Witch-hat.png', imageHint: 'purple witch hat', value: 716, description: 'A magical witch hat.' },
+  { id: 'item-evil-eye', name: 'Evil Eye', rarity: 'Rare', image: 'https://i.ibb.co/BH7RH5sn/Evil-eye.png', imageHint: 'evil eye amulet', value: 800, description: 'A protective evil eye amulet.' },
+  { id: 'item-witch-hat-random', name: 'Witch Hat', rarity: 'Rare', image: 'https://i.ibb.co/KxtS9HyT/Witch-hat.png', imageHint: 'purple witch hat', value: 380, description: 'A magical witch hat.' },
   { id: 'item-clover-pin-random', name: 'Clover Pin (Random)', rarity: 'Rare', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'clover pin', value: 650, description: 'A lucky clover pin.' },
 
   // Epic
-  { id: 'item-spy-agaric', name: 'Spy Agaric', rarity: 'Epic', image: 'https://i.ibb.co/XZBv49Mw/Spy-agariq.png', imageHint: 'mushroom with hat', value: 1100, description: 'A mysterious spy mushroom.' },
+  { id: 'item-spy-agaric', name: 'Spy Agaric', rarity: 'Epic', image: 'https://i.ibb.co/XZBv49Mw/Spy-agariq.png', imageHint: 'mushroom with hat', value: 700, description: 'A mysterious spy mushroom.' },
 
   // Legendary
-  { id: 'item-tama-gadget', name: 'Tama Gadget', rarity: 'Legendary', image: 'https://i.ibb.co/N629KC3k/tama-gadget.png', imageHint: 'tamagotchi device', value: 1200, description: 'A nostalgic tama gadget.' },
+  { id: 'item-tama-gadget', name: 'Tama Gadget', rarity: 'Legendary', image: 'https://i.ibb.co/N629KC3k/tama-gadget.png', imageHint: 'tamagotchi device', value: 600, description: 'A nostalgic tama gadget.' },
   { id: 'item-fresh-socks-random', name: 'Fresh socks (Random)', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'fresh socks', value: 250, description: 'A pair of fresh socks.' },
   { id: 'item-hex-pot-random', name: 'Hex pot (Random)', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'hex pot', value: 1150, description: 'A mysterious hex pot.' },
   { id: 'item-input-key-random', name: 'input key (Random)', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'input key', value: 1500, description: 'A mysterious input key.' },
@@ -82,15 +82,15 @@ export const MOCK_CASES: Case[] = [
       image: 'https://i.ibb.co/twnxRfvP/floor.png',
       imageHint: 'blue apex case',
       items: [
-        { itemId: 'item-ring', probability: 0.20 },
+        { itemId: 'item-champagne', probability: 0.25 },
         { itemId: 'item-cup', probability: 0.20 },
-        { itemId: 'item-diamond', probability: 0.20 },
-        { itemId: 'item-desk-calendar-random', probability: 0.15 },
-        { itemId: 'item-candy-cane-random', probability: 0.10 },
-        { itemId: 'item-evil-eye', probability: 0.05 },
-        { itemId: 'item-witch-hat-random', probability: 0.05 },
+        { itemId: 'item-diamond', probability: 0.15 },
+        { itemId: 'item-candy-cane-random', probability: 0.12 },
+        { itemId: 'item-desk-calendar-random', probability: 0.10 },
+        { itemId: 'item-witch-hat-random', probability: 0.08 },
+        { itemId: 'item-tama-gadget', probability: 0.05 },
         { itemId: 'item-spy-agaric', probability: 0.03 },
-        { itemId: 'item-tama-gadget', probability: 0.02 },
+        { itemId: 'item-evil-eye', probability: 0.02 },
       ],
     },
      {
