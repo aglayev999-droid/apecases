@@ -27,8 +27,8 @@ export async function openCase(input: { caseId: string; userId: string }): Promi
 
     try {
         const prize = await runTransaction(firestore, async (transaction) => {
-            const userRef = doc(firestore, 'users', userId);
-            const caseRef = doc(firestore, 'cases', caseId);
+            const userRef = doc(firestore!, 'users', userId);
+            const caseRef = doc(firestore!, 'cases', caseId);
 
             const userDoc = await transaction.get(userRef);
             const caseDoc = await transaction.get(caseRef);
@@ -50,7 +50,7 @@ export async function openCase(input: { caseId: string; userId: string }): Promi
 
             // Select prize on server
             const prizeId = await selectPrize(caseData);
-            const prizeRef = doc(firestore, 'items', prizeId);
+            const prizeRef = doc(firestore!, 'items', prizeId);
             const prizeDoc = await transaction.get(prizeRef);
             
             if (!prizeDoc.exists()) {
