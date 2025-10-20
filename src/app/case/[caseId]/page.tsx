@@ -377,6 +377,7 @@ export default function CasePage() {
                     className="w-screen h-screen max-w-full max-h-full sm:w-full sm:h-full bg-background/90 backdrop-blur-sm p-4 flex flex-col justify-center items-center border-0" 
                     onInteractOutside={(e) => e.preventDefault()}
                 >
+                    <DialogTitle className="sr-only">You Won an Item!</DialogTitle>
                      {wonItem && (
                         <div className="text-center flex flex-col items-center justify-center gap-6">
                             <Button variant="ghost" size="icon" className="absolute top-4 left-4" onClick={closeModal}>
