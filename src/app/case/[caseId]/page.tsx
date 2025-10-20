@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -302,6 +303,7 @@ export default function CasePage() {
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="item-1" className="border-none">
           <AccordionTrigger className="[&[data-state=open]>svg]:rotate-180 justify-center gap-2 text-muted-foreground hover:no-underline font-bold py-2 rounded-lg hover:bg-card/80 transition-colors">
+            <Gift className="h-5 w-5" />
             <span>Подарки внутри</span>
           </AccordionTrigger>
           <AccordionContent className="bg-card/80 p-4 rounded-b-lg">
@@ -310,7 +312,7 @@ export default function CasePage() {
                 if (!item) return null;
                 const isStars = item.id.startsWith('item-stars-');
                 return (
-                  <Card key={item.id} className={cn("p-1.5 flex flex-col border-2 bg-card-foreground/5", RARITY_PROPERTIES[item.rarity].border)}>
+                  <Card key={item.id} className="p-1.5 flex flex-col bg-card-foreground/5 border-border">
                     <div className="aspect-square relative w-full">
                       <Image src={item.image} alt={item.name} fill sizes="15vw" className="object-contain" data-ai-hint={item.imageHint} />
                     </div>
@@ -451,3 +453,5 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
