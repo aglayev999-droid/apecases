@@ -10,6 +10,7 @@ import Image from 'next/image';
 import { Skeleton } from '../ui/skeleton';
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Card } from '@/components/ui/card';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
