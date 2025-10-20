@@ -42,15 +42,14 @@ export const ALL_ITEMS: Item[] = [
   { id: 'item-tama-gadget', name: 'Tama Gadget', rarity: 'Legendary', image: 'https://i.ibb.co/N629KC3k/tama-gadget.png', imageHint: 'tamagotchi device', value: 600, description: 'A nostalgic tama gadget.', isUpgradable: true, isTargetable: true },
   { id: 'item-sakura-flower', name: 'Sakura Flower', rarity: 'Legendary', image: 'https://i.ibb.co/Dg9V2MvC/Sakura-Flower.png', imageHint: 'sakura flower', value: 1200, description: 'A beautiful sakura flower.', isUpgradable: true, isTargetable: true },
   { id: 'item-cupid-charm', name: 'Cupid Charm', rarity: 'Legendary', image: 'https://i.ibb.co/C3q5PhcK/Diamond-Ring-2.png', imageHint: 'cupid charm', value: 2000, description: 'A charming cupid charm.', isUpgradable: true, isTargetable: true },
-  { id: 'item-voodoo-doll', name: 'Voodoo Doll', rarity: 'Legendary', image: 'https://i.ibb.co/LdGL6vR/woodoo-doll.png', imageHint: 'voodoo doll', value: 3800, description: 'A spooky voodoo doll.', isUpgradable: true, isTargetable: true },
+  { id: 'item-voodoo-doll', name: 'Voodoo Doll', rarity: 'Legendary', image: 'https://i.ibb.co/LdGL6vR1/woodoo-doll.png', imageHint: 'voodoo doll', value: 3800, description: 'A spooky voodoo doll.', isUpgradable: true, isTargetable: true },
   { id: 'item-diamond-ring', name: 'Diamond Ring', rarity: 'Legendary', image: 'https://i.ibb.co/xKYxXh8d/Diamond-Ring-1.png', imageHint: 'diamond ring', value: 4000, description: 'A stunning diamond ring.', isUpgradable: true, isTargetable: true },
   { id: 'item-toy-bear', name: 'Toy Bear', rarity: 'Legendary', image: 'https://i.ibb.co/ccF1j4pZ/Toy-BEar.png', imageHint: 'toy bear', value: 4100, description: 'A cuddly toy bear.', isUpgradable: true, isTargetable: true },
-  { id: 'item-bonded-ring', name: 'Bonded Ring', rarity: 'Legendary', image: 'https://i.ibb.co/MxGnGgS/Bonded-ring.png', imageHint: 'luxury gold ring', value: 8700, description: 'A ring signifying a powerful bond.', isUpgradable: true, isTargetable: true },
-  { id: 'item-scared-cat', name: 'Scared Cat', rarity: 'Legendary', image: 'https://i.ibb.co/B2R0XSQ/scared-cat.png', imageHint: 'surprised black cat', value: 10000, description: 'This cat has seen things.', isUpgradable: true, isTargetable: true },
+  { id: 'item-bonded-ring', name: 'Bonded Ring', rarity: 'Legendary', image: 'https://i.ibb.co/MxGnGgSG/Bonded-ring.png', imageHint: 'luxury gold ring', value: 8700, description: 'A ring signifying a powerful bond.', isUpgradable: true, isTargetable: true },
+  { id: 'item-scared-cat', name: 'Scared Cat', rarity: 'Legendary', image: 'https://i.ibb.co/B2R0XSQn/scared-cat.png', imageHint: 'surprised black cat', value: 10000, description: 'This cat has seen things.', isUpgradable: true, isTargetable: true },
   
   // NFT
-  { id: 'item-nft-sword-1', name: 'Plasma Katana', rarity: 'NFT', image: 'https://i.ibb.co/CbfcCZ2/plasma-katana.png', imageHint: 'plasma katana', value: 15000, description: 'A legendary plasma katana that hums with energy.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0', isUpgradable: false, isTargetable: true },
-  { id: 'item-nft-nail-bracelet', name: 'Nail Bracelet', rarity: 'NFT', image: 'https://i.ibb.co/v4b1qY8/nail-braclet.png', imageHint: 'gold nail bracelet', value: 20000, description: 'An iconic bracelet in the shape of a nail.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0', isUpgradable: false, isTargetable: true },
+  { id: 'item-nft-nail-bracelet', name: 'Nail Bracelet', rarity: 'NFT', image: 'https://i.ibb.co/v4b1qY8q/nail-braclet.png', imageHint: 'gold nail bracelet', value: 20000, description: 'An iconic bracelet in the shape of a nail.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0', isUpgradable: false, isTargetable: true },
 ];
 
 export const MOCK_CASES: Case[] = [
@@ -143,14 +142,13 @@ export const MOCK_CASES: Case[] = [
       image: 'https://i.ibb.co/93nbm8ky/a6f998b1-e6a7-4e6a-9b04-29b0fa661313-removebg-preview.png',
       imageHint: 'golden legendary case',
       items: [
-        { itemId: 'item-cupid-charm', probability: 0.40 },       // 2000
+        { itemId: 'item-cupid-charm', probability: 0.45 },       // 2000
         { itemId: 'item-voodoo-doll', probability: 0.25 },     // 3800
         { itemId: 'item-diamond-ring', probability: 0.15 },     // 4000
-        { itemId: 'item-toy-bear', probability: 0.12 },         // 4100
+        { itemId: 'item-toy-bear', probability: 0.08 },         // 4100
         { itemId: 'item-bonded-ring', probability: 0.05 },      // 8700
-        { itemId: 'item-scared-cat', probability: 0.02 },       // 10000
-        { itemId: 'item-nft-sword-1', probability: 0.006 },      // 15000
-        { itemId: 'item-nft-nail-bracelet', probability: 0.004 },// 20000
+        { itemId: 'item-scared-cat', probability: 0.015 },       // 10000
+        { itemId: 'item-nft-nail-bracelet', probability: 0.005 },// 20000
       ],
     },
 ];
@@ -181,3 +179,4 @@ export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
     
 
     
+
