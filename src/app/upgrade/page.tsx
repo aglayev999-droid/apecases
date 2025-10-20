@@ -11,7 +11,7 @@ import { Search, X, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { MOCK_ITEMS } from '@/lib/data';
+import { ALL_ITEMS } from '@/lib/data';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import { useTranslation } from '@/contexts/LanguageContext';
 
@@ -149,7 +149,7 @@ export default function UpgradePage() {
     }, [yourItems]);
 
     const targetableItems = useMemo(() => {
-        return MOCK_ITEMS.filter(item => item.isTargetable && item.value > yourItemsValue);
+        return ALL_ITEMS.filter(item => item.isTargetable && item.value > yourItemsValue);
     }, [yourItemsValue]);
     
     const { chance, multiplier } = useMemo(() => {
