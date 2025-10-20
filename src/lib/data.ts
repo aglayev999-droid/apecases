@@ -19,41 +19,32 @@ export const ALL_ITEMS: Item[] = [
   { id: 'item-diamond', name: 'Diamond', rarity: 'Common', image: 'https://i.ibb.co/RGtr2rCb/diamond.png', imageHint: 'blue diamond gem', value: 100, description: 'A sparkling diamond.' },
   
   // Uncommon
-  { id: 'item-ring', name: 'Ring', rarity: 'Uncommon', image: 'https://i.ibb.co/hxy5rG61/ring.png', imageHint: 'silver diamond ring', value: 100, description: 'A beautiful silver ring.' },
-  { id: 'item-lol-pop-random', name: 'Lol Pop (Random)', rarity: 'Uncommon', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'swirl lollipop', value: 360, description: 'A colorful lollipop.' },
+  { id: 'item-ring', name: 'Silver Ring', rarity: 'Uncommon', image: 'https://i.ibb.co/hxy5rG61/ring.png', imageHint: 'silver diamond ring', value: 100, description: 'A beautiful silver ring.' },
+  { id: 'item-lol-pop-random', name: 'Lol Pop', rarity: 'Uncommon', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'swirl lollipop', value: 360, description: 'A colorful lollipop.' },
   { id: 'item-candy-cane', name: 'Candy Cane', rarity: 'Uncommon', image: 'https://i.ibb.co/ksnfgkCb/Candy-cane.png', imageHint: 'candy cane with bow', value: 300, description: 'A festive candy cane with a bow.' },
   { id: 'item-desk-calendar', name: 'Desk Calendar', rarity: 'Uncommon', image: 'https://i.ibb.co/xNvnLh4/Desk-Calendar.png', imageHint: 'desk calendar', value: 300, description: 'A fun desk calendar.', animationUrl: 'https://player.vimeo.com/video/1128782666?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1' },
-  
+  { id: 'item-ginger-cookie', name: 'Ginger Cookie', rarity: 'Uncommon', image: 'https://i.ibb.co/sXXQnrY/spy.png', imageHint: 'gingerbread man', value: 440, description: 'A delicious ginger cookie.' },
+
   // Rare
+  { id: 'item-party-sparkler', name: 'Party Sparkler', rarity: 'Rare', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'party sparkler', value: 450, description: 'A festive party sparkler.' },
+  { id: 'item-clover-pin', name: 'Clover Pin', rarity: 'Rare', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'clover pin', value: 470, description: 'A lucky clover pin.' },
+  { id: 'item-input-key', name: 'Input Key', rarity: 'Rare', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'input key', value: 500, description: 'A mysterious input key.' },
+  { id: 'item-fresh-socks', name: 'Fresh Socks', rarity: 'Rare', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'fresh socks', value: 550, description: 'A pair of fresh socks.' },
   { id: 'item-evil-eye', name: 'Evil Eye', rarity: 'Rare', image: 'https://i.ibb.co/BH7RH5sn/Evil-eye.png', imageHint: 'evil eye amulet', value: 800, description: 'A protective evil eye amulet.' },
   { id: 'item-witch-hat', name: 'Witch Hat', rarity: 'Rare', image: 'https://i.ibb.co/KxtS9HyT/Witch-hat.png', imageHint: 'purple witch hat', value: 380, description: 'A magical witch hat.' },
-  { id: 'item-clover-pin-random', name: 'Clover Pin (Random)', rarity: 'Rare', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'clover pin', value: 650, description: 'A lucky clover pin.' },
-
+  
   // Epic
   { id: 'item-spy-agaric', name: 'Spy Agaric', rarity: 'Epic', image: 'https://i.ibb.co/XZBv49Mw/Spy-agariq.png', imageHint: 'mushroom with hat', value: 700, description: 'A mysterious spy mushroom.' },
+  { id: 'item-jelly-bunny', name: 'Jelly Bunny', rarity: 'Epic', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'jelly bunny', value: 800, description: 'A sweet jelly bunny.' },
+  { id: 'item-love-potion', name: 'Love Potion', rarity: 'Epic', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'love potion', value: 1800, description: 'A mysterious love potion.' },
 
   // Legendary
   { id: 'item-tama-gadget', name: 'Tama Gadget', rarity: 'Legendary', image: 'https://i.ibb.co/N629KC3k/tama-gadget.png', imageHint: 'tamagotchi device', value: 600, description: 'A nostalgic tama gadget.' },
-  { id: 'item-fresh-socks-random', name: 'Fresh socks (Random)', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'fresh socks', value: 250, description: 'A pair of fresh socks.' },
-  { id: 'item-hex-pot-random', name: 'Hex pot (Random)', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'hex pot', value: 1150, description: 'A mysterious hex pot.' },
-  { id: 'item-input-key-random', name: 'input key (Random)', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'input key', value: 1500, description: 'A mysterious input key.' },
-  { id: 'item-sakura-flower-random', name: 'Sakura Flower (Random)', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'sakura flower', value: 1140, description: 'A beautiful sakura flower.' },
-  { id: 'item-jack-in-the-box-minifigure', name: 'Jack-in-the-Box Minifigure', rarity: 'Epic', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'lego jack in the box', value: 734, description: 'A minifigure jack-in-the-box.' },
-  { id: 'item-easter-egg-eggburger', name: 'Easter Egg Eggburger', rarity: 'Epic', image: 'https://i.ibb.co/WvnMSb5J/000-1.png', imageHint: 'burger easter egg', value: 774, description: 'A surprising egg burger.' },
-  { id: 'item-jelly-bunny-quiksilver', name: 'Jelly Bunny Quiksilver', rarity: 'Epic', image: 'https://i.ibb.co/m54YJrg8/shampain.png', imageHint: 'silver jelly bunny', value: 800, description: 'A quicksilver jelly bunny.' },
-  { id: 'item-desk-calendar-dead-line', name: 'Desk Calendar Dead Line', rarity: 'Epic', image: 'https://i.ibb.co/chQrQb4J/desk.png', imageHint: 'deadline calendar', value: 868, description: 'A deadline-themed desk calendar.', animationUrl: 'https://player.vimeo.com/video/1128782666?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1' },
-  { id: 'item-jack-in-the-box-spaceship', name: 'Jack-in-the-Box Spaceship', rarity: 'Epic', image: 'https://i.ibb.co/RGtr2rCb/diamond.png', imageHint: 'space jack in the box', value: 900, description: 'A spaceship jack-in-the-box.' },
-  { id: 'item-candy-cane-grinch', name: 'Candy Cane Grinch', rarity: 'Epic', image: 'https://i.ibb.co/hxy5rG61/ring.png', imageHint: 'grinch candy cane', value: 998, description: 'A Grinch-themed candy cane.' },
-  { id: 'item-ginger-cookie-white-gold', name: 'Ginger Cookie White Gold', rarity: 'Legendary', image: 'https://i.ibb.co/sXXQnrY/spy.png', imageHint: 'gingerbread man', value: 1122, description: 'A white gold ginger cookie.' },
-  { id: 'item-candy-cane-hex-pot', name: 'Candy Cane Hex Pot', rarity: 'Legendary', image: 'https://i.ibb.co/bRrhpVKL/9ac8f934df67fea7-removebg-preview.png', imageHint: 'cauldron with candy', value: 1192, description: 'A hex pot full of candy canes.' },
-  { id: 'item-spy-agaric-robocap', name: 'Spy Agaric RoboCap', rarity: 'Legendary', image: 'https://i.ibb.co/nMHVqgnM/witch.png', imageHint: 'robot mushroom', value: 1238, description: 'A robotic spy agaric.' },
-  { id: 'item-sakura-flower-crimsonia', name: 'Sakura Flower Crimsonia', rarity: 'Legendary', image: 'https://i.ibb.co/chQrQb4J/desk.png', imageHint: 'red sakura flower', value: 1240, description: 'A crimson sakura flower.' },
-  { id: 'item-lol-pop-mortal-sin', name: 'Lol Pop Mortal Sin', rarity: 'Legendary', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'red black lollipop', value: 1344, description: 'A mortal sin lollipop.' },
-  { id: 'item-jack-in-the-box-random', name: 'Jack-in-the-Box (Random)', rarity: 'Rare', image: 'https://i.ibb.co/yvsRNdc/evil.png', imageHint: 'jack in the box', value: 576, description: 'A surprising jack-in-the-box.' },
-  { id: 'item-candy-cane-sticky-sweet', name: 'Candy Cane Sticky Sweet', rarity: 'Rare', image: 'https://i.ibb.co/bRrhpVKL/9ac8f934df67fea7-removebg-preview.png', imageHint: 'green sticky candy cane', value: 594, description: 'A sticky and sweet candy cane.' },
-  { id: 'item-lol-pop-celestia', name: 'Lol Pop Celestia', rarity: 'Rare', image: 'https://i.ibb.co/Xf6HPpYc/tama.png', imageHint: 'purple lollipop', value: 730, description: 'A celestial lollipop.' },
-  { id: 'item-candy-cane-old-school', name: 'Candy Cane Old School', rarity: 'Uncommon', image: 'https://i.ibb.co/sXXQnrY/spy.png', imageHint: 'black and white candy cane', value: 454, description: 'A classic black and white candy cane.' },
-  
+  { id: 'item-sakura-flower', name: 'Sakura Flower', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'sakura flower', value: 1200, description: 'A beautiful sakura flower.' },
+  { id: 'item-cupid-charm', name: 'Cupid Charm', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'cupid charm', value: 2000, description: 'A charming cupid charm.' },
+  { id: 'item-diamond-ring', name: 'Diamond Ring', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'diamond ring', value: 4000, description: 'A stunning diamond ring.' },
+  { id: 'item-toy-bear', name: 'Toy Bear', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'toy bear', value: 4100, description: 'A cuddly toy bear.' },
+
   // NFT
   { id: 'item-nft-helmet-1', name: 'Cyber Helmet', rarity: 'NFT', image: 'https://i.ibb.co/hYDLm1c/cyber-helmet.png', imageHint: 'cyber helmet', value: 10000, description: 'A rare cybernetic helmet. Part of the first collection.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0', animationUrl: 'https://cdn.pixabay.com/video/2024/05/29/213089_large.mp4' },
   { id: 'item-nft-sword-1', name: 'Plasma Katana', rarity: 'NFT', image: 'https://i.ibb.co/CbfcCZ2/plasma-katana.png', imageHint: 'plasma katana', value: 15000, description: 'A legendary plasma katana that hums with energy.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0' },
@@ -100,16 +91,24 @@ export const MOCK_CASES: Case[] = [
       image: 'https://i.ibb.co/20Fh8RKz/labubu.png',
       imageHint: 'green labubu case',
       items: [
-        { itemId: 'item-diamond', probability: 0.25 },
-        { itemId: 'item-cup', probability: 0.20 },
-        { itemId: 'item-lol-pop-random', probability: 0.15 },
-        { itemId: 'item-candy-cane', probability: 0.12 },
-        { itemId: 'item-desk-calendar', probability: 0.10 },
-        { itemId: 'item-fresh-socks-random', probability: 0.08 },
-        { itemId: 'item-clover-pin-random', probability: 0.05 },
-        { itemId: 'item-hex-pot-random', probability: 0.03 },
-        { itemId: 'item-sakura-flower-random', probability: 0.015 },
-        { itemId: 'item-input-key-random', probability: 0.005 },
+        { itemId: 'item-cup', probability: 0.18 }, // 100
+        { itemId: 'item-diamond', probability: 0.18 }, // 100
+        { itemId: 'item-desk-calendar', probability: 0.14 }, // 300
+        { itemId: 'item-candy-cane', probability: 0.14 }, // 300
+        { itemId: 'item-lol-pop-random', probability: 0.10 }, // 360
+        { itemId: 'item-ginger-cookie', probability: 0.08 }, // 440
+        { itemId: 'item-party-sparkler', probability: 0.05 }, // 450
+        { itemId: 'item-clover-pin', probability: 0.04 }, // 470
+        { itemId: 'item-input-key', probability: 0.03 }, // 500
+        { itemId: 'item-fresh-socks', probability: 0.02 }, // 550
+        { itemId: 'item-tama-gadget', probability: 0.015 }, // 600
+        { itemId: 'item-jelly-bunny', probability: 0.01 }, // 800
+        { itemId: 'item-evil-eye', probability: 0.01 }, // 800
+        { itemId: 'item-sakura-flower', probability: 0.002 }, // 1200
+        { itemId: 'item-love-potion', probability: 0.001 }, // 1800
+        { itemId: 'item-cupid-charm', probability: 0.0009 }, // 2000
+        { itemId: 'item-diamond-ring', probability: 0.0006 }, // 4000
+        { itemId: 'item-toy-bear', probability: 0.0005 }, // 4100
       ],
     },
     {
@@ -119,15 +118,15 @@ export const MOCK_CASES: Case[] = [
       image: 'https://i.ibb.co/F4V0dGX3/Apex-Case.png',
       imageHint: 'purple snoop dogg case',
       items: [
-        { itemId: 'item-candy-cane-grinch', probability: 0.3 },
-        { itemId: 'item-ginger-cookie-white-gold', probability: 0.2 },
-        { itemId: 'item-sakura-flower-random', probability: 0.15 },
-        { itemId: 'item-candy-cane-hex-pot', probability: 0.1 },
-        { itemId: 'item-tama-gadget', probability: 0.1 },
-        { itemId: 'item-spy-agaric-robocap', probability: 0.08 },
-        { itemId: 'item-sakura-flower-crimsonia', probability: 0.05 },
-        { itemId: 'item-lol-pop-mortal-sin', probability: 0.015 },
-        { itemId: 'item-nft-helmet-1', probability: 0.005 },
+        { itemId: 'item-tama-gadget', probability: 0.3 },
+        { itemId: 'item-spy-agaric', probability: 0.2 },
+        { itemId: 'item-jelly-bunny', probability: 0.15 },
+        { itemId: 'item-evil-eye', probability: 0.15 },
+        { itemId: 'item-sakura-flower', probability: 0.1 },
+        { itemId: 'item-love-potion', probability: 0.05 },
+        { itemId: 'item-cupid-charm', probability: 0.03 },
+        { itemId: 'item-diamond-ring', probability: 0.015 },
+        { itemId: 'item-toy-bear', probability: 0.005 },
       ],
     },
      {
@@ -137,11 +136,12 @@ export const MOCK_CASES: Case[] = [
       image: 'https://i.ibb.co/93nbm8ky/a6f998b1-e6a7-4e6a-9b04-29b0fa661313-removebg-preview.png',
       imageHint: 'golden legendary case',
       items: [
-        { itemId: 'item-lol-pop-mortal-sin', probability: 0.4 },
-        { itemId: 'item-spy-agaric-robocap', probability: 0.25 },
-        { itemId: 'item-sakura-flower-crimsonia', probability: 0.15 },
-        { itemId: 'item-nft-bot-1', probability: 0.1 },
-        { itemId: 'item-nft-sword-1', probability: 0.08 },
+        { itemId: 'item-love-potion', probability: 0.3 },
+        { itemId: 'item-cupid-charm', probability: 0.25 },
+        { itemId: 'item-diamond-ring', probability: 0.2 },
+        { itemId: 'item-toy-bear', probability: 0.15 },
+        { itemId: 'item-nft-bot-1', probability: 0.05 },
+        { itemId: 'item-nft-sword-1', probability: 0.03 },
         { itemId: 'item-nft-helmet-1', probability: 0.02 },
       ],
     },
@@ -165,5 +165,3 @@ export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { rank: 9, user: { name: 'Fury', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 15000 },
   { rank: 10, user: { name: 'Wraith', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 8000 },
 ];
-
-    
