@@ -1,14 +1,13 @@
-
 'use client';
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useUser } from '@/contexts/UserContext';
 import type { Item, InventoryItem } from '@/lib/types';
 import Image from 'next/image';
-import { Search, X, Loader2 } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -19,7 +18,6 @@ import { useTranslation } from '@/contexts/LanguageContext';
 export default function UpgradePage() {
     const { inventory, addInventoryItem, removeInventoryItems } = useUser();
     const { showAlert } = useAlertDialog();
-    const { t } = useTranslation();
     
     const [yourItems, setYourItems] = useState<InventoryItem[]>([]);
     const [targetItem, setTargetItem] = useState<Item | null>(null);
@@ -31,6 +29,8 @@ export default function UpgradePage() {
     const [upgradeResult, setUpgradeResult] = useState<'success' | 'failure' | null>(null);
     const [showResultModal, setShowResultModal] = useState(false);
     const [spinnerRotation, setSpinnerRotation] = useState(0);
+    const [useTransition, setUseTransition] = useState(true);
+    const spinnerRef = useRef<HTMLDivElement>(null);
 
     const ItemSelectionModal = ({
       isOpen,
@@ -50,6 +50,7 @@ export default function UpgradePage() {
       isMultiSelect: boolean;
     }) => {
       const [searchQuery, setSearchQuery] = useState('');
+      const { t } = useTranslation();
     
       const filteredItems = useMemo(() => {
         if (!searchQuery) return items;
@@ -110,6 +111,7 @@ export default function UpgradePage() {
     };
     
     const UpgradeResultModal = ({ isOpen, onClose, isSuccess, item }: { isOpen: boolean, onClose: () => void, isSuccess: boolean, item: Item | null }) => {
+        const { t } = useTranslation();
         if (!item) return null;
     
         return (
@@ -164,6 +166,7 @@ export default function UpgradePage() {
     }, [yourItemsValue, targetItem]);
     
     const greenZoneAngle = chance * 3.6;
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (targetItem && targetItem.value <= yourItemsValue) {
@@ -188,8 +191,9 @@ export default function UpgradePage() {
     };
 
     const handleUpgrade = () => {
-        if (yourItems.length === 0 || !targetItem) return;
-
+        if (yourItems.length === 0 || !targetItem || isUpgrading) return;
+        
+        setUseTransition(true);
         setIsUpgrading(true);
         setUpgradeResult(null);
 
@@ -223,11 +227,10 @@ export default function UpgradePage() {
             }
 
             setTimeout(() => {
-                 setIsUpgrading(false);
                  setShowResultModal(true);
             }, 1000);
             
-        }, 5000);
+        }, 5000); // Corresponds to animation duration + a small buffer
     };
 
     const resetUpgrade = () => {
@@ -235,8 +238,22 @@ export default function UpgradePage() {
         setUpgradeResult(null);
         setYourItems([]);
         setTargetItem(null);
-        const currentRotation = spinnerRotation % 360;
-        setSpinnerRotation(spinnerRotation - currentRotation);
+        setIsUpgrading(false);
+        
+        // Reset rotation logic
+        setUseTransition(false); // Disable transition for instant reset
+        setSpinnerRotation(0);
+        
+        // Force a reflow to ensure the transform is applied without transition
+        if(spinnerRef.current) {
+            // Reading a property like offsetHeight forces the browser to reflow
+            void spinnerRef.current.offsetHeight;
+        }
+
+        // Re-enable transition for the next spin
+        setTimeout(() => {
+            setUseTransition(true);
+        }, 50);
     };
 
     const resultGlowClass = upgradeResult === 'success' 
@@ -270,10 +287,11 @@ export default function UpgradePage() {
                         <div className="absolute inset-2 bg-background rounded-full" />
                         
                         <div 
+                            ref={spinnerRef}
                             className="absolute inset-0 flex items-start justify-center"
                             style={{ 
                                 transform: `rotate(${spinnerRotation}deg)`,
-                                transition: isUpgrading ? `transform 4500ms ease-out` : 'none',
+                                transition: useTransition ? `transform 4500ms ease-out` : 'none',
                              }}
                         >
                              <div className="h-1/2 w-1 -translate-y-1 bg-white shadow-lg" style={{ clipPath: 'polygon(50% 0, 100% 20%, 100% 20%, 0 20%, 0 20%)' }}/>
@@ -338,7 +356,7 @@ export default function UpgradePage() {
                 </div>
                 
                  <Button className="w-full h-14 text-lg mb-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white" disabled={yourItems.length === 0 || !targetItem || isUpgrading} onClick={handleUpgrade}>
-                    {isUpgrading ? <Loader2 className="animate-spin" /> : t('upgradePage.upgradeButton')}
+                    {isUpgrading ? "Upgrading..." : t('upgradePage.upgradeButton')}
                 </Button>
 
                 <div className="flex-grow flex flex-col bg-card rounded-t-2xl p-4 min-h-0">
