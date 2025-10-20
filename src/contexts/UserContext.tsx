@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect, useMemo } from 'react';
@@ -9,6 +10,7 @@ import { Auth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { useAlertDialog } from './AlertDialogContext';
 import { useTranslation } from './LanguageContext';
+import { ALL_ITEMS } from '@/lib/data';
 
 // Define the Telegram user structure on the window object
 declare global {
@@ -109,15 +111,24 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     firestore && firebaseUser ? collection(firestore, 'users', firebaseUser.uid, 'inventory') : null,
     [firestore, firebaseUser]
   );
-    const { data: rawInventory } = useCollection<Omit<InventoryItem, 'inventoryId'>>(inventoryColRef);
+  const { data: rawInventory } = useCollection<Omit<InventoryItem, 'inventoryId'>>(inventoryColRef);
 
-    const inventory: InventoryItem[] | null = useMemo(() => {
-        if (!rawInventory) return null;
-        return rawInventory.map(item => ({
-            ...item,
-            inventoryId: item.id, // Use the document ID as the unique inventoryId
-        }));
-    }, [rawInventory]);
+  const inventory: InventoryItem[] | null = useMemo(() => {
+    if (!rawInventory) return null;
+    
+    // Create a map of the base items for quick lookup
+    const baseItemsMap = new Map(ALL_ITEMS.map(item => [item.id, item]));
+
+    return rawInventory.map(invItem => {
+        const baseItem = baseItemsMap.get(invItem.id);
+        return {
+            ...invItem,
+            inventoryId: invItem.id, // The doc id from Firestore is on the 'id' field
+            isUpgradable: baseItem?.isUpgradable ?? false,
+            isTargetable: baseItem?.isTargetable ?? false,
+        };
+    });
+  }, [rawInventory]);
 
 
   const [lastFreeCaseOpen, setLastFreeCaseOpenState] = useState<Date | null>(() => {
