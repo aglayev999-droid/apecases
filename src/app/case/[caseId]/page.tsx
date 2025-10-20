@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -33,16 +32,17 @@ export default function CasePage() {
     
     const [caseData, setCaseData] = useState<Case | null>(null);
     const [caseItems, setCaseItems] = useState<Item[]>([]);
-    const [rouletteItems, setRouletteItems] = useState<Item[]>([]);
+    const [rouletteItems, setRouletteItems] = useState<Item[][]>([]);
     const [isSpinning, setIsSpinning] = useState(false);
-    const [rouletteOffset, setRouletteOffset] = useState(0);
-    const [wonItem, setWonItem] = useState<Item | null>(null);
+    const [rouletteOffsets, setRouletteOffsets] = useState<number[]>([]);
+    const [wonItems, setWonItems] = useState<Item[]>([]);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
+    const [multiplier, setMultiplier] = useState(1);
     
     const rouletteContainerRef = useRef<HTMLDivElement>(null);
     const itemWidthRef = useRef(128); // Default width (w-32)
 
-    const generateInitialReel = useCallback((items: Item[]): Item[] => {
+    const generateReel = useCallback((items: Item[]): Item[] => {
         if (!items || items.length === 0) return [];
         return Array.from({ length: ROULETTE_ITEMS_COUNT }, () => 
             items[Math.floor(Math.random() * items.length)]
@@ -78,11 +78,12 @@ export default function CasePage() {
     }, [caseId, router, showAlert, t]);
     
     useEffect(() => {
-        if (caseItems.length > 0 && rouletteItems.length === 0) {
-             setRouletteItems(generateInitialReel(caseItems));
-             setRouletteOffset(0);
+        if (caseItems.length > 0) {
+             const newReels = Array.from({ length: multiplier }, () => generateReel(caseItems));
+             setRouletteItems(newReels);
+             setRouletteOffsets(new Array(multiplier).fill(0));
         }
-    }, [caseItems, generateInitialReel, rouletteItems.length]);
+    }, [caseItems, generateReel, multiplier]);
 
     useEffect(() => {
         const calculateItemWidth = () => {
@@ -103,20 +104,25 @@ export default function CasePage() {
     }, []);
 
     useEffect(() => {
-        if (!isSpinning || !wonItem || caseItems.length === 0) {
+        if (!isSpinning || wonItems.length === 0 || caseItems.length === 0) {
             return;
         }
 
-        const newReel = generateInitialReel(caseItems);
-        newReel[WINNING_ITEM_INDEX] = wonItem; 
-        setRouletteItems(newReel);
+        const newReels = wonItems.map(wonItem => {
+            const newReel = generateReel(caseItems);
+            newReel[WINNING_ITEM_INDEX] = wonItem;
+            return newReel;
+        });
+        setRouletteItems(newReels);
 
         const containerWidth = rouletteContainerRef.current?.offsetWidth || 0;
-        const jitter = (Math.random() - 0.5) * (itemWidthRef.current * 0.8);
-        const targetOffset = (WINNING_ITEM_INDEX * itemWidthRef.current) - (containerWidth / 2) + (itemWidthRef.current / 2) + jitter;
+        const newOffsets = newReels.map(() => {
+             const jitter = (Math.random() - 0.5) * (itemWidthRef.current * 0.8);
+             return (WINNING_ITEM_INDEX * itemWidthRef.current) - (containerWidth / 2) + (itemWidthRef.current / 2) + jitter;
+        });
         
         const animationTimeout = setTimeout(() => {
-            setRouletteOffset(targetOffset);
+            setRouletteOffsets(newOffsets);
         }, 100);
 
         const modalTimeout = setTimeout(() => {
@@ -127,61 +133,72 @@ export default function CasePage() {
             clearTimeout(animationTimeout);
             clearTimeout(modalTimeout);
         };
-    }, [isSpinning, wonItem, caseItems, generateInitialReel]);
+    }, [isSpinning, wonItems, caseItems, generateReel]);
+    
+    const getPrize = useCallback(() => {
+        if (!caseData || caseItems.length === 0) return null;
+        
+        const randomNumber = Math.random();
+        let cumulativeProbability = 0;
+        const sortedCaseItemsByProb = [...caseData.items].sort((a, b) => a.probability - b.probability);
+        
+        for (const caseItem of sortedCaseItemsByProb) {
+            cumulativeProbability += caseItem.probability;
+            if (randomNumber <= cumulativeProbability) {
+                return caseItems.find(item => item.id === caseItem.itemId) || null;
+            }
+        }
+        return caseItems.find(item => item.id === sortedCaseItemsByProb[0].itemId) || null;
+
+    }, [caseData, caseItems]);
+
 
     const handleSpin = useCallback(async () => {
         if (isSpinning || !caseData || !user || caseItems.length === 0) return;
 
-        if (user.balance.stars < caseData.price) {
+        const totalCost = caseData.price * multiplier;
+        if (user.balance.stars < totalCost) {
             showAlert({ title: t('casePage.errorInsufficientFunds'), description: "" });
             return;
         }
-
-        const randomNumber = Math.random();
-        let cumulativeProbability = 0;
-        let prize: Item | undefined;
-        const sortedCaseItemsByProb = [...caseData.items].sort((a, b) => a.probability - b.probability);
-        for (const caseItem of sortedCaseItemsByProb) {
-            cumulativeProbability += caseItem.probability;
-            if (randomNumber <= cumulativeProbability) {
-                prize = caseItems.find(item => item.id === caseItem.itemId);
-                break;
+        
+        const prizes: Item[] = [];
+        for (let i = 0; i < multiplier; i++) {
+            const prize = getPrize();
+            if (prize) {
+                prizes.push(prize);
+            } else {
+                 showAlert({ title: t('casePage.errorCouldNotDeterminePrize'), description: "" });
+                 return;
             }
         }
-        if (!prize) {
-            prize = caseItems.find(item => item.id === sortedCaseItemsByProb[0].itemId);
-        }
-        if (!prize) {
-            showAlert({ title: t('casePage.errorCouldNotDeterminePrize'), description: "" });
-            return;
-        }
         
-        updateBalance(-caseData.price);
-        addInventoryItem(prize);
+        updateBalance(-totalCost);
+        prizes.forEach(prize => addInventoryItem(prize));
         
-        setWonItem(prize);
+        setWonItems(prizes);
         setIsSpinning(true);
 
-    }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, t]);
+    }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, t, multiplier, getPrize]);
 
     const closeModal = () => {
         setIsWinModalOpen(false);
         setIsSpinning(false);
-        setWonItem(null);
+        setWonItems([]);
         
         setTimeout(() => {
             if (rouletteContainerRef.current) {
                 rouletteContainerRef.current.style.transition = 'none';
-                setRouletteOffset(0); 
+                setRouletteOffsets(new Array(multiplier).fill(0));
                 if (caseItems.length > 0) {
-                     const newReel = generateInitialReel(caseItems);
-                     setRouletteItems(newReel);
+                     const newReels = Array.from({ length: multiplier }, () => generateReel(caseItems));
+                     setRouletteItems(newReels);
                 }
             }
         }, 500); 
     }
     
-    if (!caseData || isUserLoading || caseItems.length === 0 || rouletteItems.length === 0) {
+    if (!caseData || isUserLoading || caseItems.length === 0) {
         return (
             <div className="flex flex-col h-full">
                  <div className="flex items-center justify-between mb-4 flex-shrink-0">
@@ -226,46 +243,70 @@ export default function CasePage() {
         </AccordionItem>
       </Accordion>
     );
+    
+    const MultiplierControls = () => (
+        <div className="flex items-center gap-2">
+            {[1, 2, 3].map(m => (
+                 <Button 
+                    key={m}
+                    variant={multiplier === m ? 'secondary' : 'ghost'} 
+                    className={cn('font-bold', multiplier === m && 'text-primary border-primary')}
+                    onClick={() => !isSpinning && setMultiplier(m)}
+                >
+                    x{m}
+                </Button>
+            ))}
+        </div>
+    );
 
     return (
         <div className="flex flex-col h-full text-white">
-            <div className="flex items-center justify-between mb-4 flex-shrink-0">
+             <div className="flex items-center justify-between mb-4 flex-shrink-0">
                 <Button variant="ghost" size="icon" onClick={() => router.back()}>
                     <ChevronLeft className="h-6 w-6" />
                 </Button>
                 <h1 className="text-xl font-bold">{t('casePage.rouletteTitle')}</h1>
-                <div className="w-10"></div>
+                <MultiplierControls />
             </div>
 
             <div className="flex-grow flex flex-col items-center justify-center">
-                <div ref={rouletteContainerRef} className="relative w-full flex flex-col items-center justify-center my-4 sm:my-8">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-white z-10"></div>
-                    
-                    <div className="w-full h-28 sm:h-32 md:h-36 overflow-hidden">
-                        <div 
-                            className="flex h-full items-center gap-4"
-                            style={{
-                                transform: `translateX(-${rouletteOffset}px)`,
-                                transition: isSpinning ? `transform ${ANIMATION_DURATION_MS}ms cubic-bezier(0.2, 0.5, 0.1, 1)` : 'none',
-                            }}
-                        >
-                            {rouletteItems.map((item, index) => (
+                 <div ref={rouletteContainerRef} className="relative w-full flex flex-col items-center justify-center my-4 sm:my-8 gap-2">
+                    {rouletteItems.map((reel, reelIndex) => (
+                        <div key={reelIndex} className="relative w-full flex items-center justify-center">
+                            {reelIndex === Math.floor(multiplier / 2) && (
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-white z-10"></div>
+                            )}
+                            
+                            <div className="w-full h-28 sm:h-32 md:h-36 overflow-hidden">
                                 <div 
-                                    key={`${item.id}-${index}`}
-                                    className="roulette-item flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32"
+                                    className="flex h-full items-center gap-4"
+                                    style={{
+                                        transform: `translateX(-${rouletteOffsets[reelIndex] || 0}px)`,
+                                        transition: isSpinning ? `transform ${ANIMATION_DURATION_MS}ms cubic-bezier(0.2, 0.5, 0.1, 1)` : 'none',
+                                    }}
                                 >
-                                     <Card className="p-2 flex flex-col items-center justify-center w-full h-full border-0 bg-card/80">
-                                        <div className="aspect-square relative w-full h-full">
-                                            <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain p-1" data-ai-hint={item.imageHint} />
+                                    {reel.map((item, index) => (
+                                        <div 
+                                            key={`${item.id}-${index}`}
+                                            className="roulette-item flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32"
+                                        >
+                                             <Card className="p-2 flex flex-col items-center justify-center w-full h-full border-0 bg-card/80">
+                                                <div className="aspect-square relative w-full h-full">
+                                                    <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain p-1" data-ai-hint={item.imageHint} />
+                                                </div>
+                                            </Card>
                                         </div>
-                                    </Card>
+                                    ))}
                                 </div>
-                            ))}
+                            </div>
+                            
+                             {reelIndex === Math.floor(multiplier / 2) && (
+                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-white z-10"></div>
+                             )}
                         </div>
-                    </div>
-                    
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-white z-10"></div>
+                    ))}
                 </div>
+
 
                 <div className="w-full mt-auto flex-shrink-0 px-4">
                      <Button 
@@ -275,7 +316,7 @@ export default function CasePage() {
                         size="lg"
                     >
                        <div className="flex items-center justify-center gap-2">
-                           <span>{`${t('casePage.spinButton')} ${caseData.price}`}</span>
+                           <span>{`${t('casePage.spinButton')} ${caseData.price * multiplier}`}</span>
                            <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />
                        </div>
                     </Button>
@@ -285,27 +326,31 @@ export default function CasePage() {
                 </div>
             </div>
 
-             <Dialog open={isWinModalOpen} onOpenChange={(isOpen) => !isOpen && closeModal()}>
-                <DialogContent className="max-w-[90vw] sm:max-w-xs text-center p-0 rounded-2xl" onInteractOutside={(e) => e.preventDefault()}>
+            <Dialog open={isWinModalOpen} onOpenChange={(isOpen) => !isOpen && closeModal()}>
+                <DialogContent className="max-w-md w-[90vw] text-center p-0 rounded-2xl" onInteractOutside={(e) => e.preventDefault()}>
                     <DialogHeader className="p-6 pb-4">
                         <DialogTitle className="text-2xl font-bold">{t('casePage.winModalTitle')}</DialogTitle>
                     </DialogHeader>
-                    {wonItem && (
-                     <div className="flex flex-col items-center gap-4 py-2">
-                        <Card className="p-4 flex flex-col items-center justify-center w-40 h-40 border-0 shadow-lg bg-card">
-                           <div className="aspect-square relative w-32 h-32">
-                               <Image src={wonItem.image} alt={wonItem.name} fill sizes="30vw" className="object-contain drop-shadow-lg" data-ai-hint={wonItem.imageHint} />
-                           </div>
-                        </Card>
-                         <div>
-                            <p className="text-lg font-bold">{wonItem.name}</p>
-                            <p className="text-sm font-bold text-muted-foreground">{wonItem.rarity}</p>
-                        </div>
+                    {wonItems.length > 0 && (
+                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 px-6 py-2 max-h-[50vh] overflow-y-auto">
+                        {wonItems.map((item, index) => (
+                            <div key={index} className="flex flex-col items-center gap-2">
+                                <Card className="p-2 flex flex-col items-center justify-center w-28 h-28 border-0 shadow-lg bg-card">
+                                   <div className="aspect-square relative w-24 h-24">
+                                       <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain drop-shadow-lg" data-ai-hint={item.imageHint} />
+                                   </div>
+                                </Card>
+                                 <div>
+                                    <p className="text-base font-bold">{item.name}</p>
+                                    <p className="text-xs font-bold text-muted-foreground">{item.rarity}</p>
+                                </div>
+                            </div>
+                        ))}
                      </div>
                      )}
-                    <DialogDescription className="text-base text-muted-foreground px-6">
+                    <DialogDescription className="text-base text-muted-foreground px-6 py-4">
                         {t('casePage.winModalDescription')}{' '}
-                        <button className="text-primary underline" onClick={() => { closeModal(); router.push('/inventory'); }}>
+                        <button className="text-primary underline" onClick={() => { closeModal(); router.push('/profile'); }}>
                             {t('casePage.winModalInventoryLink')}
                         </button>
                         .
