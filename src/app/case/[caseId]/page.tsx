@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, Gift } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -18,6 +17,8 @@ import { useFirestore, useMemoFirebase } from '@/firebase';
 import { doc, getDocs, collection, getDoc } from 'firebase/firestore';
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { openCase } from '@/ai/flows/open-case-flow';
+import { Skeleton } from '@/components/ui/skeleton';
+
 
 const RARITY_PROPERTIES = {
     Common: {
@@ -59,8 +60,6 @@ export default function CasePage() {
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
     const { user, lastFreeCaseOpen, setLastFreeCaseOpen, addInventoryItem, updateBalance } = useUser();
     const { showAlert } = useAlertDialog();
-    const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
-    const [reelItems, setReelItems] = useState<Item[]>([]);
     const [caseItems, setCaseItems] = useState<Item[]>([]);
 
     const caseRef = useMemoFirebase(() => 
@@ -110,67 +109,23 @@ export default function CasePage() {
         fetchCaseAndItemsData();
     }, [caseId, firestore, caseRef, itemsColRef]);
     
-    useEffect(() => {
-        if (caseItems.length === 0 || !emblaApi) return;
-        
-        const shuffleArray = (array: Item[]) => {
-            let currentIndex = array.length, randomIndex;
-            while (currentIndex !== 0) {
-                randomIndex = Math.floor(Math.random() * currentIndex);
-                currentIndex--;
-                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-            }
-            return array;
-        }
-        
-        const reelLength = 50;
-        let extendedItems: Item[] = [];
-        while (extendedItems.length < reelLength) {
-            extendedItems.push(...shuffleArray([...caseItems]));
-        }
-        extendedItems = extendedItems.slice(0, reelLength);
-
-        setReelItems(extendedItems);
-        emblaApi.reInit();
-        
-    }, [caseItems, emblaApi]);
-
-    // Idle animation effect
-    useEffect(() => {
-        if (!emblaApi || isSpinning) return;
-    
-        const engine = emblaApi.internalEngine();
-        let animationFrame = 0;
-    
-        const tick = () => {
-            if (isSpinning || !engine) return;
-            engine.location.add(-0.1); 
-            engine.target.set(engine.location);
-            engine.scrollLooper.loop(engine.scrollBody.direction());
-            engine.animation.from = engine.location.get();
-            engine.animation.to = engine.location.get();
-    
-            animationFrame = requestAnimationFrame(tick);
-        };
-    
-        animationFrame = requestAnimationFrame(tick);
-    
-        return () => {
-            cancelAnimationFrame(animationFrame);
-        };
-    }, [emblaApi, isSpinning]);
-    
      const handleSpin = useCallback(async (isFast: boolean = false) => {
-        if (isSpinning || !caseData || !user || !emblaApi || reelItems.length === 0 || allItems.length === 0) return;
+        if (isSpinning || !caseData || !user || allItems.length === 0) return;
 
         setIsSpinning(true);
         setWonItem(null);
 
-        let prize: Item | null = null;
+        try {
+            const prize = await openCase({ caseId: caseData.id, userId: user.id });
 
-        const onSpinEnd = () => {
-            emblaApi?.off('settle', onSpinEnd);
-            if (prize) {
+            if (!prize) {
+                showAlert({ title: "Error", description: "Could not determine prize from server." });
+                setIsSpinning(false);
+                return;
+            }
+            
+            // Simulate delay for animation
+            setTimeout(() => {
                 setWonItem(prize);
                 setIsWinModalOpen(true);
                 // Update client-side state after animation
@@ -179,40 +134,16 @@ export default function CasePage() {
                 } else {
                     addInventoryItem(prize);
                 }
-                // The balance for the case price was already deducted on the server.
-            }
-        };
+                 // The balance for the case price was already deducted on the server.
+            }, isFast ? 500 : 2000);
 
-        try {
-            prize = await openCase({ caseId: caseData.id, userId: user.id });
-
-            if (!prize) {
-                showAlert({ title: "Error", description: "Could not determine prize from server." });
-                setIsSpinning(false);
-                return;
-            }
-
-            // Find a place for the prize in the reel
-            // To make it look more random, we don't always put it in the middle
-            const targetIndex = Math.floor(reelItems.length * 0.7) + Math.floor(Math.random() * (reelItems.length * 0.2));
-            const newReelItems = [...reelItems];
-            newReelItems[targetIndex] = prize;
-            setReelItems(newReelItems);
-
-            // Give React time to update the state before starting the animation
-            setTimeout(() => {
-                if (!emblaApi) return;
-                emblaApi.reInit();
-                emblaApi.on('settle', onSpinEnd);
-                emblaApi.scrollTo(targetIndex, !isFast);
-            }, 100);
 
         } catch (error: any) {
             showAlert({ title: "Error", description: error.message || "Failed to open case." });
             setIsSpinning(false);
         }
 
-    }, [caseData, user, emblaApi, showAlert, reelItems, allItems, isSpinning, updateBalance, addInventoryItem]);
+    }, [caseData, user, showAlert, allItems, isSpinning, updateBalance, addInventoryItem]);
 
 
     const closeModal = () => {
@@ -306,35 +237,20 @@ export default function CasePage() {
 
             {/* Main content */}
             <div className="flex-grow flex flex-col justify-between">
-                {/* Roulette Reel */}
+                {/* Case Image */}
                  <div className="flex flex-col items-center justify-center relative my-4">
-                    <div className="text-white z-10 absolute -top-4">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L2 9H22L12 19Z"/></svg>
-                    </div>
-                    
-                    <div className="overflow-hidden w-full" ref={emblaRef}>
-                        <div className="flex">
-                            {reelItems.length > 0 ? reelItems.map((item, index) => (
-                                <div key={index} className="flex-[0_0_8rem] mx-2">
-                                     <Card className="p-2 bg-card-foreground/5 border-border h-32 w-32">
-                                        <div className="aspect-square relative">
-                                            {item && <Image src={item.image} alt={item.name} fill sizes="15vw" className="object-contain p-1" data-ai-hint={item.imageHint}/>}
-                                        </div>
-                                    </Card>
-                                </div>
-                            )) : (
-                                <div className="flex-[0_0_8rem] mx-2">
-                                    <Card className="p-2 bg-card-foreground/5 border-border h-32 w-32">
-                                         <div className="aspect-square relative" />
-                                    </Card>
-                                </div>
-                            )}
+                    {isSpinning ? (
+                         <div className="w-64 h-64 flex items-center justify-center">
+                            <svg className="animate-spin -ml-1 mr-3 h-12 w-12 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                         </div>
+                    ) : (
+                        <div className="relative w-64 h-64">
+                            <Image src={caseData.image} alt={caseData.name} fill sizes="50vw" className="object-contain" data-ai-hint={caseData.imageHint}/>
                         </div>
-                    </div>
-
-                    <div className="text-white z-10 absolute -bottom-4">
-                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
-                    </div>
+                    )}
                 </div>
 
                 {/* Controls */}
@@ -345,7 +261,7 @@ export default function CasePage() {
                     <Button 
                         onClick={() => handleSpin(false)}
                         onDoubleClick={() => handleSpin(true)}
-                        disabled={isSpinning || !canAfford || reelItems.length === 0} 
+                        disabled={isSpinning || !canAfford} 
                         className="w-full h-14 text-lg"
                         size="lg"
                     >
@@ -392,3 +308,5 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
