@@ -152,8 +152,11 @@ export default function CasePage() {
         setIsSpinning(false);
         setWonItem(null);
         
-        setRouletteOffset(0); 
-        setRouletteItems(generateInitialReel(caseItems));
+        // Reset the roulette for the next spin
+        setTimeout(() => {
+            setRouletteOffset(0); 
+            setRouletteItems(generateInitialReel(caseItems));
+        }, 300); // give it a moment before reset
     }
     
     if (!caseData || isUserLoading || caseItems.length === 0) {
@@ -271,7 +274,6 @@ export default function CasePage() {
              }}>
                 <DialogContent className="max-w-xs text-center" onInteractOutside={(e) => {
                     e.preventDefault();
-                    closeModal();
                 }}>
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold">Поздравляем с победой!</DialogTitle>
@@ -304,5 +306,3 @@ export default function CasePage() {
         </div>
     );
 }
-
-    
