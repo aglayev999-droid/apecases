@@ -1,3 +1,4 @@
+
 import { Item, Case, User, LeaderboardEntry, CaseBattle } from './types';
 import { Timestamp } from 'firebase/firestore';
 
@@ -54,7 +55,7 @@ export const ALL_ITEMS: Item[] = [
   { id: 'item-candy-cane-old-school', name: 'Candy Cane Old School', rarity: 'Uncommon', image: 'https://i.ibb.co/sXXQnrY/spy.png', imageHint: 'black and white candy cane', value: 454, description: 'A classic black and white candy cane.' },
   
   // NFT
-  { id: 'item-nft-ape-1', name: 'Ape NFT #1', rarity: 'NFT', image: 'https://i.ibb.co/Y0p2k1j/bored-ape.png', imageHint: 'bored ape nft', value: 10000, description: 'A unique Bored Ape NFT. Super rare!', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0' },
+  { id: 'item-nft-ape-1', name: 'Ape NFT #1', rarity: 'NFT', image: 'https://i.ibb.co/Y0p2k1j/bored-ape.png', imageHint: 'bored ape nft', value: 10000, description: 'A unique Bored Ape NFT. Super rare!', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0', animationUrl: 'https://cdn.pixabay.com/video/2023/04/10/157294-816223545_large.mp4' },
   { id: 'item-nft-punk-1', name: 'Punk NFT #1', rarity: 'NFT', image: 'https://i.ibb.co/L6WvXQ4/cryptopunk.png', imageHint: 'cryptopunk nft', value: 15000, description: 'A legendary CryptoPunk NFT.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0' },
   { id: 'item-nft-cat-1', name: 'CryptoCat NFT', rarity: 'NFT', image: 'https://i.ibb.co/bF9FpXp/pixel-cat.png', imageHint: 'pixel cat nft', value: 12000, description: 'A cool and pixelated cat NFT.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0' },
 ];
@@ -163,3 +164,5 @@ export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { rank: 9, user: { name: 'Fury', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 15000 },
   { rank: 10, user: { name: 'Wraith', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 8000 },
 ];
+
+    
