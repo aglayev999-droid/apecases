@@ -15,6 +15,7 @@ import type { Case, Item } from '@/lib/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
 const ROULETTE_ITEMS_COUNT = 50;
 const WINNING_ITEM_INDEX = ROULETTE_ITEMS_COUNT - 5;
@@ -23,8 +24,8 @@ const ANIMATION_DURATION_MS = 5000;
 export default function CasePage() {
     const params = useParams();
     const router = useRouter();
-    const { showAlert } = useAlertDialog();
     const { user, isUserLoading, updateBalance, addInventoryItem } = useUser();
+    const { showAlert } = useAlertDialog();
 
     const caseId = params.caseId as string;
     
@@ -35,17 +36,16 @@ export default function CasePage() {
     const [rouletteOffset, setRouletteOffset] = useState(0);
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
-    const [rouletteItemWidth, setRouletteItemWidth] = useState(112); 
-
+    
+    // Using refs for widths to avoid re-renders on window resize
     const rouletteContainerRef = useRef<HTMLDivElement>(null);
+    const itemWidthRef = useRef(128); // Default width (w-32) + gap (16px)
 
     const generateInitialReel = useCallback((items: Item[]): Item[] => {
         if (!items || items.length === 0) return [];
-        const reel: Item[] = [];
-        for (let i = 0; i < ROULETTE_ITEMS_COUNT; i++) {
-            reel.push(items[Math.floor(Math.random() * items.length)]);
-        }
-        return reel;
+        return Array.from({ length: ROULETTE_ITEMS_COUNT }, () => 
+            items[Math.floor(Math.random() * items.length)]
+        );
     }, []);
 
     // Effect to load case data
@@ -77,46 +77,48 @@ export default function CasePage() {
         fetchCaseAndItemsData();
     }, [caseId, router, showAlert]);
     
-    // Effect to populate initial reel
+    // Effect to populate reel when caseItems are ready or when returning to the page
     useEffect(() => {
-        if (caseItems.length > 0) {
+        if (caseItems.length > 0 && rouletteItems.length === 0) {
              setRouletteItems(generateInitialReel(caseItems));
-             setRouletteOffset(0); // Ensure offset is reset when items change
+             setRouletteOffset(0);
         }
-    }, [caseItems, generateInitialReel]);
+    }, [caseItems, generateInitialReel, rouletteItems.length]);
 
-    
-    // Effect to handle responsive width
+     // Effect to handle responsive width calculation without causing re-renders
     useEffect(() => {
         const calculateItemWidth = () => {
-            const isSmallScreen = window.innerWidth < 640;
-            const itemBaseWidth = isSmallScreen ? 96 : 128;
-            const gap = 16;
-            setRouletteItemWidth(itemBaseWidth + gap);
+            const itemEl = document.querySelector('.roulette-item');
+            if (itemEl) {
+                const style = window.getComputedStyle(itemEl);
+                const width = itemEl.clientWidth;
+                const marginLeft = parseInt(style.marginLeft, 10) || 0;
+                const marginRight = parseInt(style.marginRight, 10) || 0;
+                const gap = 16; // from gap-4
+                itemWidthRef.current = width + gap;
+            }
         };
 
         calculateItemWidth();
         window.addEventListener('resize', calculateItemWidth);
         return () => window.removeEventListener('resize', calculateItemWidth);
     }, []);
-    
-    // Effect to run the animation when isSpinning becomes true
+
+    // Main animation effect
     useEffect(() => {
         if (!isSpinning || !wonItem || caseItems.length === 0) {
             return;
         }
 
         // 1. Create a new reel with the winning item in the correct position
-        const newReel = Array.from({ length: ROULETTE_ITEMS_COUNT }, () => 
-            caseItems[Math.floor(Math.random() * caseItems.length)]
-        );
+        const newReel = generateInitialReel(caseItems);
         newReel[WINNING_ITEM_INDEX] = wonItem; 
         setRouletteItems(newReel);
 
         // 2. Calculate the target offset
         const containerWidth = rouletteContainerRef.current?.offsetWidth || 0;
-        const jitter = (Math.random() - 0.5) * rouletteItemWidth * 0.8;
-        const targetOffset = (WINNING_ITEM_INDEX * rouletteItemWidth) - (containerWidth / 2) + (rouletteItemWidth / 2) + jitter;
+        const jitter = (Math.random() - 0.5) * (itemWidthRef.current * 0.8);
+        const targetOffset = (WINNING_ITEM_INDEX * itemWidthRef.current) - (containerWidth / 2) + (itemWidthRef.current / 2) + jitter;
         
         // Use a short timeout to ensure the state update for the reel is rendered before starting the transition
         const animationTimeout = setTimeout(() => {
@@ -128,14 +130,12 @@ export default function CasePage() {
             setIsWinModalOpen(true);
         }, ANIMATION_DURATION_MS + 500);
         
-        // Cleanup timeouts if the component unmounts or spin is cancelled
         return () => {
             clearTimeout(animationTimeout);
             clearTimeout(modalTimeout);
         };
 
-    }, [isSpinning, wonItem, caseItems, rouletteItemWidth]);
-
+    }, [isSpinning, wonItem, caseItems]);
 
     const handleSpin = useCallback(async () => {
         if (isSpinning || !caseData || !user || caseItems.length === 0) return;
@@ -158,7 +158,12 @@ export default function CasePage() {
             }
         }
         if (!prize) {
-            prize = caseItems[0]; 
+            // Fallback to the first item if something goes wrong
+            prize = caseItems.find(item => item.id === sortedCaseItemsByProb[0].itemId);
+        }
+        if (!prize) {
+            showAlert({ title: "Error", description: "Could not determine prize. Please try again." });
+            return;
         }
         
         // Update balance and inventory
@@ -176,16 +181,16 @@ export default function CasePage() {
         setIsSpinning(false);
         setWonItem(null);
         
-        // Reset the reel for the next spin
+        // Use a timeout to reset the reel after the modal has closed
         setTimeout(() => {
             setRouletteOffset(0); 
             if (caseItems.length > 0) {
                  setRouletteItems(generateInitialReel(caseItems));
             }
-        }, 500); // Give it time to fade out before resetting
+        }, 500); 
     }
     
-    if (!caseData || isUserLoading || caseItems.length === 0) {
+    if (!caseData || isUserLoading || caseItems.length === 0 || rouletteItems.length === 0) {
         return (
             <div className="flex flex-col h-full">
                  <div className="flex items-center justify-between mb-4 flex-shrink-0">
@@ -245,7 +250,7 @@ export default function CasePage() {
                 <div ref={rouletteContainerRef} className="relative w-full flex flex-col items-center justify-center my-8">
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-white z-10"></div>
                     
-                    <div className="w-full h-36 overflow-hidden">
+                    <div className="w-full h-32 sm:h-36 overflow-hidden">
                         <div 
                             className="flex h-full items-center gap-4"
                             style={{
@@ -256,11 +261,11 @@ export default function CasePage() {
                             {rouletteItems.map((item, index) => (
                                 <div 
                                     key={`${item.id}-${index}`}
-                                    className="flex-shrink-0 w-24 h-24 sm:w-32 sm:h-32"
+                                    className="roulette-item flex-shrink-0 w-28 h-28 sm:w-32 sm:h-32"
                                 >
                                      <Card className="p-2 flex flex-col items-center justify-center w-full h-full border-0 bg-card/80">
-                                        <div className="aspect-square relative w-20 h-20 sm:w-24 sm:h-24">
-                                            <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain" data-ai-hint={item.imageHint} />
+                                        <div className="aspect-square relative w-full h-full">
+                                            <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain p-1" data-ai-hint={item.imageHint} />
                                         </div>
                                     </Card>
                                 </div>
@@ -289,14 +294,8 @@ export default function CasePage() {
                 </div>
             </div>
 
-             <Dialog open={isWinModalOpen} onOpenChange={(isOpen) => {
-                if (!isOpen) {
-                    closeModal();
-                }
-             }}>
-                <DialogContent className="max-w-xs text-center" onInteractOutside={(e) => {
-                    e.preventDefault();
-                }}>
+             <Dialog open={isWinModalOpen} onOpenChange={(isOpen) => !isOpen && closeModal()}>
+                <DialogContent className="max-w-[90vw] sm:max-w-xs text-center" onInteractOutside={(e) => e.preventDefault()}>
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold">Поздравляем с победой!</DialogTitle>
                     </DialogHeader>
@@ -320,7 +319,7 @@ export default function CasePage() {
                         </button>
                         .
                     </DialogDescription>
-                     <DialogFooter className="p-4">
+                     <DialogFooter className="sm:justify-center px-4 pb-4">
                         <Button className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base" onClick={closeModal}>Продолжить</Button>
                      </DialogFooter>
                 </DialogContent>
@@ -328,3 +327,5 @@ export default function CasePage() {
         </div>
     );
 }
+
+    

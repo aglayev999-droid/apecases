@@ -151,7 +151,7 @@ export default function Home() {
     <div className="space-y-8">
        <LiveDrops />
        <h1 className="text-2xl md:text-3xl font-bold mb-4">APEX Cases</h1>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
         {displayCases.map((caseData) => (
           <CaseCard key={caseData.id} caseData={caseData} onOpen={() => handleCaseSelect(caseData)} />
         ))}
@@ -159,3 +159,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
