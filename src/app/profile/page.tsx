@@ -6,14 +6,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Copy, Moon, Sun, Settings, ChevronRight } from 'lucide-react';
+import { Copy, Moon, Sun, Settings, Check } from 'lucide-react';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
@@ -52,7 +51,7 @@ const ThemeSelector = () => {
     }, []);
     
     if (!mounted) {
-        return <Skeleton className="h-14 w-full" />
+        return <Skeleton className="h-28 w-full" />
     }
 
     return (
