@@ -307,7 +307,7 @@ export default function CasePage() {
                 <span>Подарки внутри</span>
             </AccordionTrigger>
             <AccordionContent>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
                     {caseItems.map(item => {
                         if (!item) return null;
                         return (
@@ -355,17 +355,17 @@ export default function CasePage() {
             </div>
 
             {/* Main content */}
-            <div className="flex-grow flex flex-col justify-between">
+            <div className="flex-grow flex flex-col justify-around">
                 {/* Roulette Reel */}
-                 <div className="flex-grow flex flex-col items-center justify-center relative">
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 text-primary z-10">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
+                 <div className="flex-grow flex flex-col items-center justify-center relative my-4">
+                    <div className="absolute top-1/4 -translate-y-full left-1/2 -translate-x-1/2 text-white z-10">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
                     </div>
                     
                     <div className="overflow-hidden w-full" ref={emblaRef}>
                         <div className="flex">
                             {reelItems.length > 0 ? reelItems.map((item, index) => (
-                                <div key={index} className="flex-[0_0_9rem] mx-2">
+                                <div key={index} className="flex-[0_0_8rem] mx-2">
                                     <Card className={cn(
                                         "p-2 border-2 bg-card/50 transition-all duration-300", 
                                         item ? RARITY_PROPERTIES[item.rarity].border : 'border-gray-500',
@@ -376,7 +376,7 @@ export default function CasePage() {
                                     </Card>
                                 </div>
                             )) : (
-                                <div className="flex-[0_0_9rem] mx-2">
+                                <div className="flex-[0_0_8rem] mx-2">
                                     <Card className="p-2 border-2 bg-card/50">
                                          <div className="aspect-square relative" />
                                     </Card>
@@ -385,18 +385,18 @@ export default function CasePage() {
                         </div>
                     </div>
 
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-2 text-primary z-10">
-                         <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L2 9H22L12 19Z"/></svg>
+                    <div className="absolute bottom-1/4 translate-y-full left-1/2 -translate-x-1/2 text-white z-10">
+                         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L2 9H22L12 19Z"/></svg>
                     </div>
                 </div>
 
                 {/* Controls */}
-                <div className="mt-auto pt-8">
+                <div className="w-full mt-auto">
                     <Button 
                         onClick={() => handleSpin(false)}
                         onDoubleClick={() => handleSpin(true)}
                         disabled={isSpinning || !canAfford || reelItems.length === 0} 
-                        className="w-full h-16 text-xl"
+                        className="w-full h-14 text-lg"
                         size="lg"
                     >
                        <div className="flex flex-col">
@@ -407,7 +407,7 @@ export default function CasePage() {
                              <span className="text-xs font-normal text-primary-foreground/70">(Двойное нажатие для быстрого вращения)</span>
                        </div>
                     </Button>
-                    <div className="mt-4">
+                    <div className="mt-2">
                         <GiftsInside />
                     </div>
                 </div>
@@ -445,6 +445,8 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
 
     
 
