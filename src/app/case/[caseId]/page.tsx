@@ -156,6 +156,9 @@ export default function CasePage() {
         setIsSpinning(true);
         setWonItem(null);
         setRouletteOffset(0);
+        // Reset the reel to its initial random state before generating the new one with the prize
+        setRouletteItems(generateInitialReel(caseItems));
+
 
         // This is a temporary client-side only implementation.
         // In a real app, you would call a server function here to get the prize.
@@ -166,7 +169,7 @@ export default function CasePage() {
         let cumulativeProbability = 0;
         let prize: Item | undefined;
 
-        const sortedCaseItems = caseData.items.sort((a,b) => a.probability - b.probability);
+        const sortedCaseItems = [...caseData.items].sort((a,b) => a.probability - b.probability);
 
         for (const caseItem of sortedCaseItems) {
             cumulativeProbability += caseItem.probability;
@@ -177,7 +180,7 @@ export default function CasePage() {
         }
         // Fallback if something goes wrong with probability calculation
         if (!prize) {
-            prize = caseItems[Math.floor(Math.random() * caseItems.length)];
+            prize = caseItems[caseItems.length -1];
         }
         // --- End Prize Selection ---
 
@@ -191,7 +194,7 @@ export default function CasePage() {
         addInventoryItem(prize);
         startRoulette(prize);
 
-    }, [caseData, user, caseItems, isSpinning, showAlert, generateRouletteReel, updateBalance, addInventoryItem, isFastSpin]);
+    }, [caseData, user, caseItems, isSpinning, showAlert, generateRouletteReel, updateBalance, addInventoryItem, isFastSpin, generateInitialReel]);
 
 
     const closeModal = () => {
@@ -344,5 +347,3 @@ export default function CasePage() {
         </div>
     );
 }
-
-    
