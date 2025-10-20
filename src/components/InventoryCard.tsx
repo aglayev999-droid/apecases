@@ -89,6 +89,7 @@ export function InventoryCard({ item }: InventoryCardProps) {
   };
 
   const hasAnimation = !!item.animationUrl;
+  const isIframe = hasAnimation && (item.animationUrl?.includes('vimeo') || item.animationUrl?.includes('youtube'));
 
   return (
     <Card className={cn(
@@ -97,17 +98,27 @@ export function InventoryCard({ item }: InventoryCardProps) {
     )}>
       <CardHeader className="p-2 relative aspect-square">
         {hasAnimation ? (
-           <div className="w-full h-full">
-             <video 
-                src={item.animationUrl}
-                className="w-full h-full object-cover rounded-md"
-                autoPlay
-                loop
-                muted
-                playsInline
-                title={item.name}
-              />
-           </div>
+          isIframe ? (
+            <iframe
+              src={item.animationUrl}
+              frameBorder="0"
+              allow="autoplay; fullscreen; picture-in-picture"
+              className="w-full h-full rounded-md"
+              title={item.name}
+            />
+          ) : (
+             <div className="w-full h-full">
+               <video 
+                  src={item.animationUrl}
+                  className="w-full h-full object-cover rounded-md"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  title={item.name}
+                />
+             </div>
+          )
         ) : (
           <Image
             src={item.image}
