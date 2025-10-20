@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -301,36 +299,35 @@ export default function CasePage() {
     }
 
     const GiftsInside = () => (
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="item-1" className="border-none">
-            <AccordionTrigger className="justify-center gap-2 text-muted-foreground hover:no-underline font-bold">
-                <Gift className="h-5 w-5 text-primary"/>
-                <span>Подарки внутри</span>
-            </AccordionTrigger>
-            <AccordionContent>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                    {caseItems.map(item => {
-                        if (!item) return null;
-                        const isStars = item.id.startsWith('item-stars-');
-                        return (
-                            <Card key={item.id} className={cn("p-1.5 flex flex-col border-2", RARITY_PROPERTIES[item.rarity].border)}>
-                                <div className="aspect-square relative w-full">
-                                    <Image src={item.image} alt={item.name} fill sizes="15vw" className="object-contain" data-ai-hint={item.imageHint}/>
-                                </div>
-                                <div className="text-center mt-1">
-                                    <p className="text-xs font-bold truncate">{item.name}</p>
-                                    <div className="flex items-center justify-center gap-1 text-xs">
-                                        <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12} className="h-3 w-3 object-contain" />
-                                        <span className={cn('font-semibold', isStars ? 'text-yellow-400' : 'text-muted-foreground')}>{item.value}</span>
-                                    </div>
-                                </div>
-                            </Card>
-                        )
-                    })}
-                </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="item-1" className="border-none">
+          <AccordionTrigger className="[&[data-state=open]>svg]:rotate-180 justify-center gap-2 text-muted-foreground hover:no-underline font-bold py-2 rounded-lg hover:bg-card/80 transition-colors">
+            <span>Подарки внутри</span>
+          </AccordionTrigger>
+          <AccordionContent className="bg-card/80 p-4 rounded-b-lg">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+              {caseItems.map(item => {
+                if (!item) return null;
+                const isStars = item.id.startsWith('item-stars-');
+                return (
+                  <Card key={item.id} className={cn("p-1.5 flex flex-col border-2 bg-card-foreground/5", RARITY_PROPERTIES[item.rarity].border)}>
+                    <div className="aspect-square relative w-full">
+                      <Image src={item.image} alt={item.name} fill sizes="15vw" className="object-contain" data-ai-hint={item.imageHint} />
+                    </div>
+                    <div className="text-center mt-1">
+                      <p className="text-xs font-bold truncate">{item.name}</p>
+                      <div className="flex items-center justify-center gap-1 text-xs">
+                        <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12} className="h-3 w-3 object-contain" />
+                        <span className={cn('font-semibold', isStars ? 'text-yellow-400' : 'text-muted-foreground')}>{item.value}</span>
+                      </div>
+                    </div>
+                  </Card>
+                )
+              })}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     );
     
     const PrizeDisplay = ({ item }: { item: Item }) => {
@@ -400,7 +397,7 @@ export default function CasePage() {
                 </div>
 
                 {/* Controls */}
-                <div className="w-full">
+                <div className="w-full mt-auto">
                     <Button 
                         onClick={() => handleSpin(false)}
                         onDoubleClick={() => handleSpin(true)}
@@ -454,7 +451,3 @@ export default function CasePage() {
         </div>
     );
 }
-
-    
-
-    
