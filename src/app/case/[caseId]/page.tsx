@@ -445,11 +445,3 @@ export default function CasePage() {
         </div>
     );
 }
-
-    
-
-    
-
-    
-
-    
