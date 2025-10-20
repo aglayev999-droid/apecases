@@ -272,8 +272,13 @@ export default function CasePage() {
             <div className="flex-grow flex flex-col items-center justify-center">
                  <div ref={rouletteContainerRef} className="relative w-full flex flex-col items-center justify-center my-4 sm:my-8 gap-2">
                     {rouletteItems.map((reel, reelIndex) => {
-                        const showTopArrow = (multiplier === 1 && reelIndex === 0) || (multiplier === 2 && reelIndex === 0) || (multiplier === 3 && reelIndex === 0);
-                        const showBottomArrow = (multiplier === 1 && reelIndex === 0) || (multiplier === 2 && reelIndex === 1) || (multiplier === 3 && reelIndex === 2);
+                        const showTopArrow = (multiplier === 1 && reelIndex === 0) || 
+                                             (multiplier === 2 && reelIndex === 0) || 
+                                             (multiplier === 3 && reelIndex === 0);
+                                             
+                        const showBottomArrow = (multiplier === 1 && reelIndex === 0) || 
+                                                (multiplier === 2 && reelIndex === 1) || 
+                                                (multiplier === 3 && reelIndex === 2);
 
                         return (
                         <div key={reelIndex} className="relative w-full flex items-center justify-center">
