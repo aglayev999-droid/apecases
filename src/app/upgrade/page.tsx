@@ -158,7 +158,8 @@ export default function UpgradePage() {
             return { chance: 0, multiplier: 0 };
         }
         const targetValue = targetItem.value;
-        const calculatedChance = Math.min((yourItemsValue / targetValue) * 75, 95);
+        // New formula: (your_value / target_value) * 100, capped at 95%
+        const calculatedChance = Math.min((yourItemsValue / targetValue) * 100, 95);
         const calculatedMultiplier = targetValue / yourItemsValue;
         return { 
             chance: parseFloat(calculatedChance.toFixed(1)), 
@@ -204,7 +205,6 @@ export default function UpgradePage() {
 
         if (isSuccess) {
             // Land in the green zone (0 to greenZoneAngle degrees)
-            // Add a small margin from the edges
             const margin = greenZoneAngle > 5 ? 2 : 0;
             stopAngle = margin + Math.random() * (greenZoneAngle - margin * 2);
         } else {
@@ -244,6 +244,12 @@ export default function UpgradePage() {
         setSpinnerRotation(0);
     };
 
+    const resultGlowClass = upgradeResult === 'success' 
+        ? 'shadow-[0_0_20px_5px_#16a34a]' 
+        : upgradeResult === 'failure' 
+        ? 'shadow-[0_0_20px_5px_#dc2626]' 
+        : '';
+
     return (
         <>
             <div className="flex flex-col h-full text-center">
@@ -254,9 +260,12 @@ export default function UpgradePage() {
                 <div className="relative flex items-center justify-center mb-6">
                     <div className="absolute left-4 text-lg font-bold text-green-400">{chance}%</div>
                      <div className="relative w-40 h-40">
-                         {/* Static Wheel */}
+                        {/* Static Wheel background */}
                         <div 
-                            className="w-full h-full rounded-full transition-colors duration-500"
+                            className={cn(
+                                "w-full h-full rounded-full transition-all duration-500",
+                                resultGlowClass
+                            )}
                             style={{
                                 background: upgradeResult
                                     ? (upgradeResult === 'success' ? '#16a34a' : '#dc2626')
@@ -275,7 +284,14 @@ export default function UpgradePage() {
                                 transition: isUpgrading ? `transform 4500ms ease-out` : 'none',
                              }}
                         >
-                            <div className="w-0 h-0 border-b-[10px] border-b-white border-l-8 border-l-transparent border-r-8 border-r-transparent absolute top-0 -translate-y-1/2" />
+                             <div 
+                                className="absolute h-1/2 w-1 -translate-y-1/4"
+                                style={{
+                                    clipPath: 'polygon(50% 0, 100% 25%, 100% 100%, 0 100%, 0 25%)'
+                                }}
+                             >
+                                <div className="h-full w-full bg-white shadow-lg" />
+                             </div>
                         </div>
 
                          {/* Center Icon */}
@@ -397,3 +413,4 @@ export default function UpgradePage() {
     );
 }
 
+    
