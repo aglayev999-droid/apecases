@@ -19,13 +19,13 @@ import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { openCase } from '@/ai/flows/open-case-flow';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const RARITY_PROPERTIES: { [key in Item['rarity']]: { glow: string; text: string; bg: string } } = {
-    Common: { glow: 'shadow-gray-400/50', text: 'text-gray-400', bg: 'bg-gray-800/20' },
-    Uncommon: { glow: 'shadow-green-400/60', text: 'text-green-400', bg: 'bg-green-800/20' },
-    Rare: { glow: 'shadow-blue-400/70', text: 'text-blue-400', bg: 'bg-blue-800/20' },
-    Epic: { glow: 'shadow-purple-400/80', text: 'text-purple-400', bg: 'bg-purple-800/20' },
-    Legendary: { glow: 'shadow-orange-400/90', text: 'text-orange-400', bg: 'bg-orange-800/20' },
-    NFT: { glow: 'shadow-purple-400/90', text: 'bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500', bg: 'bg-purple-800/30' },
+const RARITY_PROPERTIES: { [key in Item['rarity']]: { glow: string; text: string; bg: string; border: string; } } = {
+    Common: { glow: 'shadow-gray-400/50', text: 'text-gray-400', bg: 'bg-gray-800/20', border: 'border-gray-500/50' },
+    Uncommon: { glow: 'shadow-green-400/60', text: 'text-green-400', bg: 'bg-green-800/20', border: 'border-green-500/50' },
+    Rare: { glow: 'shadow-blue-400/70', text: 'text-blue-400', bg: 'bg-blue-800/20', border: 'border-blue-500/50' },
+    Epic: { glow: 'shadow-purple-400/80', text: 'text-purple-400', bg: 'bg-purple-800/20', border: 'border-purple-500/50' },
+    Legendary: { glow: 'shadow-orange-400/90', text: 'text-orange-400', bg: 'bg-orange-800/20', border: 'border-orange-500/50' },
+    NFT: { glow: 'shadow-purple-400/90', text: 'bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500', bg: 'bg-purple-800/30', border: 'border-purple-500/60' },
 };
 
 const ROULETTE_ITEM_WIDTH = 144; // 128px width + 16px gap
@@ -68,7 +68,8 @@ export default function CasePage() {
                     setCaseData(caseResult);
                     const currentCaseItems = caseResult.items
                         .map(i => allItems.find(item => item.id === i.itemId))
-                        .filter((item): item is Item => !!item);
+                        .filter((item): item is Item => !!item)
+                        .sort((a, b) => a.value - b.value);
                     setCaseItems(currentCaseItems);
                 } else {
                     showAlert({title: "Error", description: "Case not found."});
@@ -85,6 +86,7 @@ export default function CasePage() {
     }, [caseId, firestore, router, showAlert]);
 
     const generateRouletteReel = useCallback((prize: Item) => {
+        if (caseItems.length === 0) return [];
         const reel: Item[] = [];
         for (let i = 0; i < ROULETTE_ITEMS_COUNT; i++) {
             reel.push(caseItems[Math.floor(Math.random() * caseItems.length)]);
@@ -102,7 +104,7 @@ export default function CasePage() {
             showAlert({ title: "Error", description: "Not enough stars." });
             return;
         }
-        updateBalance(-caseData.price);
+        
         setIsSpinning(true);
         setWonItem(null);
         setRouletteOffset(0);
@@ -110,13 +112,12 @@ export default function CasePage() {
         const { prize, error } = await openCase({ caseId: caseData.id, userId: user.id });
 
         if (error || !prize) {
-            updateBalance(caseData.price); // Refund
             showAlert({ title: "Error", description: error || "Could not determine prize." });
             setIsSpinning(false);
             return;
         }
 
-        const reel = generateRouletteReel(prize);
+        generateRouletteReel(prize);
         
         // Calculate the target position
         const winningItemIndex = ROULETTE_ITEMS_COUNT - 4;
@@ -128,13 +129,14 @@ export default function CasePage() {
         }, 100);
 
         // Wait for animation to finish
+        const animationDuration = isFast ? 2000 : 5000;
         setTimeout(() => {
             setWonItem(prize);
             setIsWinModalOpen(true);
             if (prize.id.startsWith('item-stars-')) {
                 updateBalance(prize.value);
             }
-        }, isFast ? 2000 : 5000);
+        }, animationDuration);
 
     }, [caseData, user, caseItems, isSpinning, updateBalance, showAlert, generateRouletteReel]);
 
@@ -170,15 +172,19 @@ export default function CasePage() {
             <span>Подарки внутри</span>
           </AccordionTrigger>
           <AccordionContent className="bg-card/80 p-4 rounded-b-lg">
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-              {caseItems.map(item => (
-                  <Card key={item.id} className={cn("p-1.5 flex flex-col items-center justify-center border-2", RARITY_PROPERTIES[item.rarity]?.bg, RARITY_PROPERTIES[item.rarity]?.border)}>
-                    <div className="aspect-square relative w-full h-full">
-                      <Image src={item.image} alt={item.name} fill sizes="15vw" className="object-contain p-1" data-ai-hint={item.imageHint} />
-                    </div>
-                  </Card>
-              ))}
-            </div>
+            {caseItems.length > 0 ? (
+                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                  {caseItems.map(item => (
+                      <Card key={item.id} className={cn("p-1.5 flex flex-col items-center justify-center border-2", RARITY_PROPERTIES[item.rarity]?.bg, RARITY_PROPERTIES[item.rarity]?.border)}>
+                        <div className="aspect-square relative w-full h-full">
+                          <Image src={item.image} alt={item.name} fill sizes="15vw" className="object-contain p-1" data-ai-hint={item.imageHint} />
+                        </div>
+                      </Card>
+                  ))}
+                </div>
+            ) : (
+                <div className="text-center text-muted-foreground py-4">No items found for this case.</div>
+            )}
           </AccordionContent>
         </AccordionItem>
       </Accordion>
@@ -207,18 +213,24 @@ export default function CasePage() {
                             className="flex h-full items-center gap-4"
                             style={{
                                 transform: `translateX(calc(50% - ${rouletteOffset}px - ${ROULETTE_ITEM_WIDTH/2}px))`,
-                                transition: isSpinning ? `transform ${isSpinning ? '5s' : '0s'} cubic-bezier(0.2, 0.5, 0.1, 1)` : 'none',
+                                transition: isSpinning ? `transform ${isSpinning ? (isFast ? '2s' : '5s') : '0s'} cubic-bezier(0.2, 0.5, 0.1, 1)` : 'none',
                             }}
                         >
-                            {rouletteItems.map((item, index) => (
-                                <div key={index} className="flex-shrink-0 w-32 h-32">
-                                     <Card className={cn("p-2 flex flex-col items-center justify-center w-full h-full border-2", RARITY_PROPERTIES[item.rarity]?.bg, RARITY_PROPERTIES[item.rarity]?.border)}>
-                                        <div className="aspect-square relative w-24 h-24">
-                                            <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain" data-ai-hint={item.imageHint} />
-                                        </div>
-                                    </Card>
+                            {rouletteItems.length > 0 ? (
+                                rouletteItems.map((item, index) => (
+                                    <div key={index} className="flex-shrink-0 w-32 h-32">
+                                         <Card className={cn("p-2 flex flex-col items-center justify-center w-full h-full border-2", RARITY_PROPERTIES[item.rarity]?.bg, RARITY_PROPERTIES[item.rarity]?.border)}>
+                                            <div className="aspect-square relative w-24 h-24">
+                                                <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain" data-ai-hint={item.imageHint} />
+                                            </div>
+                                        </Card>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                                    Press spin to start...
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </div>
                     
