@@ -188,7 +188,34 @@ export default function CasePage() {
     
     const handleSpin = useCallback((isFast: boolean = false) => {
         if (isSpinning || !caseData || !user || !emblaApi || reelItems.length === 0 || allItems.length === 0) return;
-        
+
+        const prize = selectItem(caseData, allItems);
+        if (!prize) {
+            console.error("Could not select a prize.");
+            setIsSpinning(false);
+            return;
+        }
+
+        const onSpinEnd = () => {
+            emblaApi?.off('settle', onSpinEnd);
+            if (isFree) {
+                setLastFreeCaseOpen(new Date());
+            } else {
+                updateBalance(-caseData.price);
+                updateSpending(caseData.price);
+            }
+            
+            setWonItem(prize);
+            setIsWinModalOpen(true);
+            
+            if (prize.id.startsWith('item-stars-')) {
+                updateBalance(prize.value);
+            } else {
+                addInventoryItem(prize);
+            }
+            setIsSpinning(false);
+        };
+
         emblaApi?.off('settle', onSpinEnd);
 
         const isFree = caseData.price === 0;
@@ -212,39 +239,10 @@ export default function CasePage() {
         setIsSpinning(true);
         setWonItem(null);
         
-        const prize = selectItem(caseData, allItems);
-        if (!prize) {
-            console.error("Could not select a prize.");
-            setIsSpinning(false);
-            return;
-        }
-
         const reelWithPrize = [...reelItems];
         const targetIndex = Math.floor(reelItems.length / 2) + Math.floor(Math.random() * (reelItems.length / 2 - 5)) + 5;
         reelWithPrize[targetIndex] = prize;
         setReelItems(reelWithPrize);
-        
-        const onSpinEnd = () => {
-            if (isFree) {
-                setLastFreeCaseOpen(new Date());
-            } else {
-                updateBalance(-caseData.price);
-                updateSpending(caseData.price);
-            }
-            
-            if (prize) {
-                setWonItem(prize);
-                setIsWinModalOpen(true);
-                
-                if (prize.id.startsWith('item-stars-')) {
-                    updateBalance(prize.value);
-                } else {
-                    addInventoryItem(prize);
-                }
-            }
-            setIsSpinning(false);
-            emblaApi?.off('settle', onSpinEnd);
-        };
         
         setTimeout(() => {
             if (!emblaApi) return;
@@ -353,7 +351,7 @@ export default function CasePage() {
             <div className="flex-grow flex flex-col justify-between">
                 {/* Roulette Reel */}
                  <div className="flex flex-col items-center justify-center relative my-4">
-                    <div className="text-white z-10 mb-2">
+                    <div className="text-white z-10 absolute -top-4">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L2 9H22L12 19Z"/></svg>
                     </div>
                     
@@ -377,7 +375,7 @@ export default function CasePage() {
                         </div>
                     </div>
 
-                    <div className="text-white z-10 mt-2">
+                    <div className="text-white z-10 absolute -bottom-4">
                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
                     </div>
                 </div>
@@ -437,7 +435,5 @@ export default function CasePage() {
         </div>
     );
 }
-
-    
 
     
