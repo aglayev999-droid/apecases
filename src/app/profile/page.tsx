@@ -47,11 +47,11 @@ export default function ProfilePage() {
   if (isUserLoading || !user) {
     return (
       <div className="space-y-8">
-        <div className="flex flex-col sm:flex-row items-center gap-6">
+        <div className="flex flex-col items-center text-center sm:flex-row sm:text-left sm:items-center gap-6">
           <Skeleton className="h-24 w-24 rounded-full" />
           <div className="space-y-2">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-6 w-64" />
+            <Skeleton className="h-8 w-48 mx-auto sm:mx-0" />
+            <Skeleton className="h-6 w-64 mx-auto sm:mx-0" />
           </div>
         </div>
         <div className="grid md:grid-cols-2 gap-8">
@@ -64,24 +64,24 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row items-center gap-6">
+      <div className="flex flex-col items-center text-center sm:flex-row sm:text-left sm:items-center gap-6">
         <Avatar className="h-24 w-24 border-4 border-primary">
           <AvatarImage src={user.avatar || DEFAULT_AVATAR} alt={user.name} />
           <AvatarFallback className="text-3xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
         </Avatar>
-        <div>
-          <h1 className="text-4xl font-bold tracking-tighter">{user.name}</h1>
-          <div className="flex items-center gap-2 mt-1">
-            <a href="https://t.me/apexcasesbot" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">@apexcasesbot</a>
-            <p className="text-muted-foreground">ID: {user.telegramId}</p>
+        <div className="flex-grow">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tighter">{user.name}</h1>
+          <div className="flex items-center justify-center sm:justify-start gap-2 mt-1">
+            <a href="https://t.me/apexcasesbot" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors text-sm">@apexcasesbot</a>
+            <p className="text-muted-foreground text-sm">ID: {user.telegramId}</p>
           </div>
         </div>
       </div>
       
-       <div className="grid md:grid-cols-2 gap-8">
+       <div className="grid grid-cols-1 gap-4">
           <Card>
             <CardHeader>
-              <CardTitle>Settings</CardTitle>
+              <CardTitle className="text-xl">Settings</CardTitle>
             </CardHeader>
             <CardContent>
               {!mounted ? (
@@ -94,7 +94,7 @@ export default function ProfilePage() {
                 </div>
               ) : (
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="theme-switch" className="flex items-center gap-2">
+                  <Label htmlFor="theme-switch" className="flex items-center gap-2 cursor-pointer">
                     {theme === 'dark' ? <Moon className="h-5 w-5"/> : <Sun className="h-5 w-5" />}
                     <span>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
                   </Label>
@@ -109,10 +109,10 @@ export default function ProfilePage() {
           </Card>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid md:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
-            <CardTitle>Balances</CardTitle>
+            <CardTitle className="text-xl">Balances</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between p-4 rounded-lg bg-card-foreground/5 dark:bg-card-foreground/5">
@@ -127,7 +127,7 @@ export default function ProfilePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Referral Program</CardTitle>
+            <CardTitle className="text-xl">Referral Program</CardTitle>
             <CardDescription>Invite friends and earn commissions.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -143,7 +143,7 @@ export default function ProfilePage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <input readOnly value={user.referrals.code} className="w-full bg-background border p-2 rounded-md font-mono" />
+              <input readOnly value={user.referrals.code} className="w-full bg-background border p-2 rounded-md font-mono text-sm" />
               <Button size="icon" variant="ghost" onClick={copyReferralCode}>
                 <Copy className="h-5 w-5" />
               </Button>

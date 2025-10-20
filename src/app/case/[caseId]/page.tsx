@@ -4,21 +4,20 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import useEmblaCarousel from 'embla-carousel-react';
-import { ChevronLeft, Trash2, X, Gift } from 'lucide-react';
-import { doc, getDocs, collection, getDoc } from 'firebase/firestore';
+import { ChevronLeft, Gift } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogClose, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { useUser } from '@/contexts/UserContext';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import type { Case, Item } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useFirestore, useMemoFirebase } from '@/firebase';
+import { doc, getDocs, collection, getDoc } from 'firebase/firestore';
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { openCase } from '@/ai/flows/open-case-flow';
-
 
 const RARITY_PROPERTIES = {
     Common: {
@@ -47,7 +46,6 @@ const RARITY_PROPERTIES = {
     },
 };
 
-
 export default function CasePage() {
     const params = useParams();
     const router = useRouter();
@@ -59,7 +57,7 @@ export default function CasePage() {
     const [isSpinning, setIsSpinning] = useState(false);
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
-    const { user, lastFreeCaseOpen, setLastFreeCaseOpen } = useUser();
+    const { user, lastFreeCaseOpen, setLastFreeCaseOpen, addInventoryItem, updateBalance } = useUser();
     const { showAlert } = useAlertDialog();
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
     const [reelItems, setReelItems] = useState<Item[]>([]);
@@ -92,7 +90,6 @@ export default function CasePage() {
             if (caseSnap.exists()) {
                 caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
             } else {
-                // Fallback to mock data if case not found in Firestore
                 const mockCase = MOCK_CASES.find(c => c.id === caseId);
                 if (mockCase) {
                     caseResult = mockCase;
@@ -126,7 +123,6 @@ export default function CasePage() {
             return array;
         }
         
-        // Make the reel long enough for a smooth spin
         const reelLength = 50;
         let extendedItems: Item[] = [];
         while (extendedItems.length < reelLength) {
@@ -164,14 +160,31 @@ export default function CasePage() {
         };
     }, [emblaApi, isSpinning]);
     
-    const handleSpin = useCallback(async (isFast: boolean = false) => {
+     const handleSpin = useCallback(async (isFast: boolean = false) => {
         if (isSpinning || !caseData || !user || !emblaApi || reelItems.length === 0 || allItems.length === 0) return;
 
         setIsSpinning(true);
         setWonItem(null);
 
+        let prize: Item | null = null;
+
+        const onSpinEnd = () => {
+            emblaApi?.off('settle', onSpinEnd);
+            if (prize) {
+                setWonItem(prize);
+                setIsWinModalOpen(true);
+                // Update client-side state after animation
+                if (prize.id.startsWith('item-stars-')) {
+                    updateBalance(prize.value);
+                } else {
+                    addInventoryItem(prize);
+                }
+                // The balance for the case price was already deducted on the server.
+            }
+        };
+
         try {
-            const prize = await openCase({ caseId: caseData.id, userId: user.id });
+            prize = await openCase({ caseId: caseData.id, userId: user.id });
 
             if (!prize) {
                 showAlert({ title: "Error", description: "Could not determine prize from server." });
@@ -179,18 +192,14 @@ export default function CasePage() {
                 return;
             }
 
-            const onSpinEnd = () => {
-                emblaApi?.off('settle', onSpinEnd);
-                setWonItem(prize);
-                setIsWinModalOpen(true);
-                // Balance is already updated on server, client will sync
-            };
-
-            const targetIndex = Math.floor(reelItems.length / 2) + Math.floor(Math.random() * (reelItems.length / 4));
+            // Find a place for the prize in the reel
+            // To make it look more random, we don't always put it in the middle
+            const targetIndex = Math.floor(reelItems.length * 0.7) + Math.floor(Math.random() * (reelItems.length * 0.2));
             const newReelItems = [...reelItems];
             newReelItems[targetIndex] = prize;
             setReelItems(newReelItems);
 
+            // Give React time to update the state before starting the animation
             setTimeout(() => {
                 if (!emblaApi) return;
                 emblaApi.reInit();
@@ -203,12 +212,13 @@ export default function CasePage() {
             setIsSpinning(false);
         }
 
-    }, [caseData, user, emblaApi, showAlert, reelItems, allItems, isSpinning]);
+    }, [caseData, user, emblaApi, showAlert, reelItems, allItems, isSpinning, updateBalance, addInventoryItem]);
+
 
     const closeModal = () => {
         setIsWinModalOpen(false);
         setWonItem(null);
-        setIsSpinning(false); // Re-enable spinning after modal is closed
+        setIsSpinning(false);
     }
 
     const handleGoToInventory = () => {
@@ -245,7 +255,7 @@ export default function CasePage() {
             <span>Подарки внутри</span>
           </AccordionTrigger>
           <AccordionContent className="bg-card/80 p-4 rounded-b-lg">
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
               {caseItems.map(item => {
                 if (!item) return null;
                 const isStars = item.id.startsWith('item-stars-');
@@ -286,18 +296,12 @@ export default function CasePage() {
     return (
         <div className="flex flex-col h-full">
             {/* Custom Header */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 flex-shrink-0">
                 <Button variant="ghost" size="icon" onClick={() => router.back()}>
                     <ChevronLeft className="h-6 w-6" />
                 </Button>
-                <h1 className="text-xl font-bold">Roulette</h1>
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" className="w-10 h-10 p-0 font-bold">x2</Button>
-                    <Button variant="outline" className="w-10 h-10 p-0 font-bold">x3</Button>
-                    <Button variant="destructive" size="icon" className="w-10 h-10">
-                        <Trash2 className="h-5 w-5"/>
-                    </Button>
-                </div>
+                <h1 className="text-xl font-bold">{caseData.name}</h1>
+                <div className="w-10"></div>
             </div>
 
             {/* Main content */}
@@ -334,7 +338,10 @@ export default function CasePage() {
                 </div>
 
                 {/* Controls */}
-                <div className="w-full mt-auto">
+                <div className="w-full mt-auto flex-shrink-0">
+                    <div className="mb-2">
+                        <GiftsInside />
+                    </div>
                     <Button 
                         onClick={() => handleSpin(false)}
                         onDoubleClick={() => handleSpin(true)}
@@ -350,17 +357,14 @@ export default function CasePage() {
                              <span className="text-xs font-normal text-primary-foreground/70">(Двойное нажатие для быстрого вращения)</span>
                        </div>
                     </Button>
-                    <div className="mt-2">
-                        <GiftsInside />
-                    </div>
                 </div>
             </div>
 
             {/* Win Modal */}
             <Dialog open={isWinModalOpen} onOpenChange={setIsWinModalOpen}>
                  <DialogContent 
-                    className="w-screen h-screen max-w-full max-h-full sm:w-full sm:h-full bg-background/90 backdrop-blur-sm p-4 flex flex-col justify-center items-center border-0" 
-                    onInteractOutside={(e) => e.preventDefault()}
+                    className="w-screen h-screen max-w-full max-h-full sm:w-auto sm:h-auto sm:max-w-md bg-background/90 backdrop-blur-sm p-4 flex flex-col justify-center items-center border-0" 
+                    onInteractOutside={(e) => { if (isSpinning) e.preventDefault(); }}
                 >
                     <DialogTitle className="sr-only">You Won an Item!</DialogTitle>
                      {wonItem && (

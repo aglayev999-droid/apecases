@@ -137,12 +137,12 @@ export default function Home() {
       <div className="space-y-8">
         <div className="mb-8">
            <Skeleton className="h-8 w-48 mb-3" />
-           <div className="flex gap-4">
-            {[...Array(5)].map((_,i) => <Skeleton key={i} className="w-24 h-32" />)}
+           <div className="flex gap-4 overflow-x-auto">
+            {[...Array(5)].map((_,i) => <Skeleton key={i} className="w-24 h-32 flex-shrink-0" />)}
            </div>
         </div>
-        <h1 className="text-2xl font-bold mb-4">APEX Cases</h1>
-        <div className="grid grid-cols-2 gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold mb-4">APEX Cases</h1>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
              <div key={i} className="flex flex-col gap-2">
                 <Skeleton className="aspect-square w-full" />
@@ -159,8 +159,8 @@ export default function Home() {
   return (
     <div className="space-y-8">
        <LiveDrops />
-       <h1 className="text-2xl font-bold mb-4">APEX Cases</h1>
-      <div className="grid grid-cols-2 gap-4">
+       <h1 className="text-2xl md:text-3xl font-bold mb-4">APEX Cases</h1>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {displayCases.map((caseData) => (
           <CaseCard key={caseData.id} caseData={caseData} onOpen={() => handleCaseSelect(caseData)} />
         ))}
