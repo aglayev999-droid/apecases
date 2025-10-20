@@ -170,7 +170,6 @@ export default function CasePage() {
     
         const tick = () => {
             if (isSpinning || !engine) return;
-            // Move the carousel by a tiny amount each frame
             engine.location.add(-0.1); 
             engine.target.set(engine.location);
             engine.scrollLooper.loop(engine.scrollBody.direction());
@@ -180,7 +179,6 @@ export default function CasePage() {
             animationFrame = requestAnimationFrame(tick);
         };
     
-        // Start idle animation
         animationFrame = requestAnimationFrame(tick);
     
         return () => {
@@ -191,6 +189,8 @@ export default function CasePage() {
     const handleSpin = useCallback((isFast: boolean = false) => {
         if (isSpinning || !caseData || !user || !emblaApi || reelItems.length === 0 || allItems.length === 0) return;
         
+        emblaApi?.off('settle', onSpinEnd);
+
         const isFree = caseData.price === 0;
         
         if (isFree) {
@@ -220,7 +220,6 @@ export default function CasePage() {
         }
 
         const reelWithPrize = [...reelItems];
-        // Ensure the prize is in the second half for a good spin
         const targetIndex = Math.floor(reelItems.length / 2) + Math.floor(Math.random() * (reelItems.length / 2 - 5)) + 5;
         reelWithPrize[targetIndex] = prize;
         setReelItems(reelWithPrize);
@@ -244,14 +243,14 @@ export default function CasePage() {
                 }
             }
             setIsSpinning(false);
+            emblaApi?.off('settle', onSpinEnd);
         };
         
-        // This gives the state update a moment to propagate
         setTimeout(() => {
             if (!emblaApi) return;
-            emblaApi.reInit(); // Reinitialize with the new reel items
-            emblaApi.scrollTo(targetIndex, !isFast); // Use Embla's animation
-             emblaApi.on('settle', onSpinEnd);
+            emblaApi.reInit();
+            emblaApi.scrollTo(targetIndex, !isFast);
+            emblaApi.on('settle', onSpinEnd);
         }, 100);
 
     }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, reelItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
@@ -353,9 +352,9 @@ export default function CasePage() {
             {/* Main content */}
             <div className="flex-grow flex flex-col justify-between">
                 {/* Roulette Reel */}
-                 <div className="flex-grow flex flex-col items-center justify-center relative my-4">
-                     <div className="absolute top-1/2 -translate-y-[150%] left-1/2 -translate-x-1/2 text-white z-10">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
+                 <div className="flex flex-col items-center justify-center relative my-4">
+                    <div className="text-white z-10 mb-2">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L2 9H22L12 19Z"/></svg>
                     </div>
                     
                     <div className="overflow-hidden w-full" ref={emblaRef}>
@@ -378,8 +377,8 @@ export default function CasePage() {
                         </div>
                     </div>
 
-                    <div className="absolute top-1/2 translate-y-[150%] left-1/2 -translate-x-1/2 text-white z-10">
-                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L2 9H22L12 19Z"/></svg>
+                    <div className="text-white z-10 mt-2">
+                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
                     </div>
                 </div>
 
@@ -424,7 +423,7 @@ export default function CasePage() {
                             <div>
                                 <h2 className="text-2xl font-bold">Поздравляем с победой!</h2>
                                 <p className="text-muted-foreground">
-                                    Все выигранные призы вы можете увидеть у себя в <Button variant="link" className="p-0 h-auto" onClick={handleGoToInventory}>инвентаре</Button>.
+                                    Все выигранные призы вы можете увидеть у себя в <Button variant="link" className="p-0 h-auto" onClick={handleGoToInventory}>инвентаre</Button>.
                                 </p>
                             </div>
                             
@@ -438,5 +437,7 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
 
     
