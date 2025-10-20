@@ -15,20 +15,19 @@ import { cn } from '@/lib/utils';
 
 
 const RARITY_PROPERTIES = {
-    Common: { border: 'border-gray-500/50' },
-    Uncommon: { border: 'border-green-500/50' },
-    Rare: { border: 'border-blue-500/50' },
-    Epic: { border: 'border-purple-500/ ৫০' },
-    Legendary: { border: 'border-orange-500/50' },
-    NFT: { border: 'border-purple-400/50' },
+    Common: { border: 'border-gray-600/50' },
+    Uncommon: { border: 'border-green-600/50' },
+    Rare: { border: 'border-blue-600/50' },
+    Epic: { border: 'border-purple-600/50' },
+    Legendary: { border: 'border-orange-600/50' },
+    NFT: { border: 'border-purple-500/50' },
 };
 
 const LiveDropItem = ({ item }: { item: Item }) => (
-    <Card className={cn("p-1.5 border-2 bg-card/50 flex-shrink-0 w-24", RARITY_PROPERTIES[item.rarity].border)}>
-        <div className="aspect-square relative">
+    <Card className={cn("p-1 border-2 bg-card/50 flex-shrink-0 w-[72px] h-[72px] rounded-xl", item.rarity ? RARITY_PROPERTIES[item.rarity].border : '')}>
+        <div className="aspect-square relative w-full h-full">
           <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" data-ai-hint={item.imageHint}/>
         </div>
-        <p className="text-xs font-bold truncate mt-1 text-center">{item.name}</p>
     </Card>
 );
 
@@ -40,7 +39,7 @@ const LiveDrops = () => {
     const filteredItems = useMemo(() => {
         return allItems.filter(item => 
             !item.id.startsWith('item-stars-') &&
-            (item.rarity === 'Uncommon' || item.rarity === 'Rare')
+            (item.rarity === 'Uncommon' || item.rarity === 'Rare' || item.rarity === 'Epic' || item.rarity === 'Legendary')
         );
     }, [allItems]);
 
@@ -61,17 +60,17 @@ const LiveDrops = () => {
     useEffect(() => {
         if (filteredItems.length === 0) return;
 
-        const initialDrops = Array.from({ length: 10 }, () => filteredItems[Math.floor(Math.random() * filteredItems.length)]);
-        setLiveDrops(initialDrops);
+        const generateDrops = (count: number) => Array.from({ length: count }, () => filteredItems[Math.floor(Math.random() * filteredItems.length)]);
+        
+        // Start with enough items to fill the view and have a buffer
+        setLiveDrops(generateDrops(30));
 
         const interval = setInterval(() => {
             setLiveDrops(prevDrops => {
                 const newItem = filteredItems[Math.floor(Math.random() * filteredItems.length)];
-                const newDrops = [newItem, ...prevDrops];
-                if (newDrops.length > 15) {
-                    newDrops.pop();
-                }
-                return newDrops;
+                const newDrops = [...prevDrops, newItem];
+                 // Keep a reasonable number of items to prevent performance issues
+                return newDrops.slice(-50);
             });
         }, 3000);
 
@@ -79,33 +78,38 @@ const LiveDrops = () => {
     }, [filteredItems]);
 
     if (filteredItems.length === 0) {
-        return null; // Don't render if there are no items to show
+        return null;
     }
+    
+    // Duplicate the list for a seamless loop effect
+    const displayItems = [...liveDrops, ...liveDrops];
 
     return (
-        <div className="mb-8">
-            <div className="flex items-center gap-2 mb-3">
-                <Gift className="text-green-400 h-6 w-6"/>
-                <h2 className="text-lg font-bold text-green-400 uppercase tracking-wider">LIVE DROPS</h2>
+        <div className="mb-6 flex items-center gap-3">
+             <div className="flex flex-col items-center justify-center gap-1.5 self-stretch">
+                <span className="text-sm font-bold text-green-400 -rotate-90 whitespace-nowrap tracking-wider">LIVE</span>
+                <div className="w-1 h-full bg-green-400/50 rounded-full" />
             </div>
-            <div className="relative">
-                <div className="absolute left-0 top-0 h-full w-8 z-10 bg-gradient-to-r from-background to-transparent" />
-                <div className="absolute right-0 top-0 h-full w-8 z-10 bg-gradient-to-l from-background to-transparent" />
-                <div className="flex w-full overflow-hidden">
-                    <div className="flex gap-4 animate-scroll">
-                        {liveDrops.map((item, index) => (
-                           <LiveDropItem key={`${item.id}-${index}`} item={item} />
-                        ))}
-                    </div>
+
+            <div className="relative w-full overflow-hidden mask-gradient">
+                <div className="flex gap-3 animate-scroll">
+                    {displayItems.map((item, index) => (
+                       <LiveDropItem key={`${item.id}-${index}`} item={item} />
+                    ))}
                 </div>
                  <style jsx>{`
+                    .mask-gradient {
+                        -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+                        mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+                    }
                     @keyframes scroll {
                         from { transform: translateX(0); }
-                        to { transform: translateX(-100%); }
+                        to { transform: translateX(-50%); }
                     }
                     .animate-scroll {
-                        /* This is a placeholder; a proper seamless scroll is more complex */
-                        /* For now, we'll rely on items being added/removed */
+                        display: flex;
+                        width: max-content;
+                        animation: scroll 40s linear infinite;
                     }
                 `}</style>
             </div>
