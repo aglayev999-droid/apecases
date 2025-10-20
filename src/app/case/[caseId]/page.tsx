@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
@@ -6,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import useEmblaCarousel from 'embla-carousel-react';
 import { ChevronLeft, Trash2, X, Gift } from 'lucide-react';
-import { doc, getDoc, getDocs, collection } from 'firebase/firestore';
+import { doc, getDocs, collection } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,57 +17,36 @@ import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { useFirestore, useMemoFirebase } from '@/firebase';
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
+import { openCase } from '@/ai/flows/open-case-flow';
+
 
 const RARITY_PROPERTIES = {
     Common: {
         glow: 'shadow-gray-400/50',
-        border: 'border-gray-500',
         text: 'text-gray-400',
     },
     Uncommon: {
         glow: 'shadow-green-400/60',
-        border: 'border-green-500',
         text: 'text-green-400',
     },
     Rare: {
         glow: 'shadow-blue-400/70',
-        border: 'border-blue-500',
         text: 'text-blue-400',
     },
     Epic: {
         glow: 'shadow-purple-400/80',
-        border: 'border-purple-500',
         text: 'text-purple-400',
     },
     Legendary: {
         glow: 'shadow-orange-400/90',
-        border: 'border-orange-500',
         text: 'text-orange-400',
     },
     NFT: {
         glow: 'shadow-purple-400/90',
-        border: 'border-purple-400',
         text: 'bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-red-500',
     },
 };
 
-const selectItem = (currentCase: Case, allItems: Item[]): Item | undefined => {
-    if (typeof window === 'undefined') {
-        const fallbackItemId = currentCase.items[0].itemId;
-        return allItems.find(i => i.id === fallbackItemId);
-    }
-    const rand = Math.random();
-    let cumulativeProbability = 0;
-    for (const { itemId, probability } of currentCase.items) {
-        cumulativeProbability += probability;
-        if (rand < cumulativeProbability) {
-            return allItems.find(i => i.id === itemId);
-        }
-    }
-    // Fallback to a random item from the case if something goes wrong
-    const fallbackItemId = currentCase.items[Math.floor(Math.random() * currentCase.items.length)].itemId;
-    return allItems.find(i => i.id === fallbackItemId);
-};
 
 export default function CasePage() {
     const params = useParams();
@@ -81,7 +59,7 @@ export default function CasePage() {
     const [isSpinning, setIsSpinning] = useState(false);
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
-    const { user, updateBalance, addInventoryItem, updateSpending, setLastFreeCaseOpen, lastFreeCaseOpen } = useUser();
+    const { user, lastFreeCaseOpen, setLastFreeCaseOpen } = useUser();
     const { showAlert } = useAlertDialog();
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'center' });
     const [reelItems, setReelItems] = useState<Item[]>([]);
@@ -186,71 +164,46 @@ export default function CasePage() {
         };
     }, [emblaApi, isSpinning]);
     
-    const handleSpin = useCallback((isFast: boolean = false) => {
+    const handleSpin = useCallback(async (isFast: boolean = false) => {
         if (isSpinning || !caseData || !user || !emblaApi || reelItems.length === 0 || allItems.length === 0) return;
-
-        const isFree = caseData.price === 0;
-
-        if (isFree) {
-            if (lastFreeCaseOpen && caseData.freeCooldownSeconds) {
-                const now = new Date();
-                const endTime = new Date(lastFreeCaseOpen.getTime() + caseData.freeCooldownSeconds * 1000);
-                if (now < endTime) {
-                    showAlert({ title: "Cooldown Active", description: "You can't open this free case yet." });
-                    return;
-                }
-            }
-        } else {
-            if (user.balance.stars < caseData.price) {
-              showAlert({ title: "Not enough stars", description: "You don't have enough stars to open this case." });
-              return;
-            }
-        }
 
         setIsSpinning(true);
         setWonItem(null);
 
-        const prize = selectItem(caseData, allItems);
-        if (!prize) {
-            console.error("Could not select a prize.");
+        try {
+            const prize = await openCase({ caseId: caseData.id, userId: user.id });
+
+            if (!prize) {
+                showAlert({ title: "Error", description: "Could not determine prize from server." });
+                setIsSpinning(false);
+                return;
+            }
+
+            const onSpinEnd = () => {
+                emblaApi?.off('settle', onSpinEnd);
+                setWonItem(prize);
+                setIsWinModalOpen(true);
+                // Balance is already updated on server, client will sync
+            };
+
+            const targetIndex = Math.floor(reelItems.length / 2) + Math.floor(Math.random() * (reelItems.length / 4));
+            const newReelItems = [...reelItems];
+            newReelItems[targetIndex] = prize;
+            setReelItems(newReelItems);
+
+            setTimeout(() => {
+                if (!emblaApi) return;
+                emblaApi.reInit();
+                emblaApi.on('settle', onSpinEnd);
+                emblaApi.scrollTo(targetIndex, !isFast);
+            }, 100);
+
+        } catch (error: any) {
+            showAlert({ title: "Error", description: error.message || "Failed to open case." });
             setIsSpinning(false);
-            return;
         }
 
-        const onSpinEnd = () => {
-            emblaApi?.off('settle', onSpinEnd);
-            
-            if (isFree) {
-                setLastFreeCaseOpen(new Date());
-            } else {
-                updateBalance(-caseData.price);
-                updateSpending(caseData.price);
-            }
-            
-            setWonItem(prize);
-            setIsWinModalOpen(true);
-            
-            if (prize.id.startsWith('item-stars-')) {
-                updateBalance(prize.value);
-            } else {
-                addInventoryItem(prize);
-            }
-            // isSpinning will be set to false when the modal is closed.
-        };
-        
-        const reelWithPrize = [...reelItems];
-        const targetIndex = Math.floor(reelItems.length / 2) + Math.floor(Math.random() * (reelItems.length / 4));
-        reelWithPrize[targetIndex] = prize;
-        setReelItems(reelWithPrize);
-        
-        setTimeout(() => {
-            if (!emblaApi) return;
-            emblaApi.reInit();
-            emblaApi.on('settle', onSpinEnd);
-            emblaApi.scrollTo(targetIndex, !isFast);
-        }, 100);
-
-    }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, reelItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
+    }, [caseData, user, emblaApi, showAlert, reelItems, allItems, isSpinning]);
 
     const closeModal = () => {
         setIsWinModalOpen(false);
