@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronLeft, Gift } from 'lucide-react';
@@ -12,10 +12,7 @@ import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, Di
 import { useUser } from '@/contexts/UserContext';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import type { Case, Item } from '@/lib/types';
-import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { useFirestore } from '@/firebase';
-import { doc, getDoc } from 'firebase/firestore';
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -26,7 +23,6 @@ export default function CasePage() {
     const params = useParams();
     const router = useRouter();
     const caseId = params.caseId as string;
-    const firestore = useFirestore();
 
     const [caseData, setCaseData] = useState<Case | null>(null);
     const [caseItems, setCaseItems] = useState<Item[]>([]);
@@ -59,7 +55,6 @@ export default function CasePage() {
         const fetchCaseAndItemsData = async () => {
             if (!caseId) return;
 
-            // 1. Fetch Case Data from mock data (or Firestore)
             const caseResult: Case | null = MOCK_CASES.find(c => c.id === caseId) || null;
             
             if (!caseResult) {
@@ -69,7 +64,6 @@ export default function CasePage() {
             }
             setCaseData(caseResult);
 
-            // 2. Hydrate Case Items from the global MOCK_ITEMS list
             const currentCaseItems = caseResult.items
                 .map(i => MOCK_ITEMS.find(item => item.id === i.itemId))
                 .filter((item): item is Item => !!item)
@@ -85,24 +79,22 @@ export default function CasePage() {
         fetchCaseAndItemsData();
     }, [caseId, router, showAlert]);
 
-    // This useEffect is crucial. It runs ONLY when caseItems has been successfully populated.
-    // It generates the initial, visible roulette reel.
     useEffect(() => {
-        if (caseItems.length > 0) {
+        if (caseItems.length > 0 && rouletteItems.length === 0) {
             setRouletteItems(generateInitialReel(caseItems));
         }
-    }, [caseItems, generateInitialReel]);
+    }, [caseItems, generateInitialReel, rouletteItems.length]);
     
     // --- Responsive Item Width Calculation ---
     useEffect(() => {
         const calculateItemWidth = () => {
-            const isSmallScreen = window.innerWidth < 640; // sm breakpoint in tailwind
-            const itemBaseWidth = isSmallScreen ? 96 : 128; // w-24 or sm:w-32
-            const gap = 16; // gap-4
+            const isSmallScreen = window.innerWidth < 640;
+            const itemBaseWidth = isSmallScreen ? 96 : 128;
+            const gap = 16;
             setRouletteItemWidth(itemBaseWidth + gap);
         };
 
-        calculateItemWidth(); // Initial calculation
+        calculateItemWidth();
         window.addEventListener('resize', calculateItemWidth);
         return () => window.removeEventListener('resize', calculateItemWidth);
     }, []);
@@ -118,13 +110,11 @@ export default function CasePage() {
 
         setIsFastSpin(isFast);
         setIsSpinning(true);
-        setRouletteOffset(0); // Reset position before spin for a smooth start
+        setRouletteOffset(0);
 
-        // --- 1. Determine the Prize ---
         const randomNumber = Math.random();
         let cumulativeProbability = 0;
         let prize: Item | undefined;
-        // Sort items by probability to ensure fair selection
         const sortedCaseItemsByProb = [...caseData.items].sort((a, b) => a.probability - b.probability);
         for (const caseItem of sortedCaseItemsByProb) {
             cumulativeProbability += caseItem.probability;
@@ -133,39 +123,31 @@ export default function CasePage() {
                 break;
             }
         }
-        // Fallback prize if something goes wrong with probabilities
         if (!prize) {
             prize = caseItems[0]; 
         }
         
-        // --- 2. Update Backend/Context State ---
         updateBalance(-caseData.price);
         addInventoryItem(prize);
         setWonItem(prize);
 
-        // --- 3. Generate New Reel with Prize in the Winning Spot ---
         const newReel = Array.from({ length: ROULETTE_ITEMS_COUNT }, () => 
             caseItems[Math.floor(Math.random() * caseItems.length)]
         );
         newReel[WINNING_ITEM_INDEX] = prize; 
         setRouletteItems(newReel);
         
-        // --- 4. Calculate Animation and Start it ---
-        // We need a short delay to allow React to re-render the new reel before the animation starts
         setTimeout(() => {
             const containerWidth = rouletteContainerRef.current?.offsetWidth || 0;
-            // Calculate a random "jitter" to make the final position less predictable, but still within the winning item
             const jitter = (Math.random() - 0.5) * rouletteItemWidth * 0.8;
-            // Calculate the exact offset to center the winning item under the pointer
             const targetOffset = (WINNING_ITEM_INDEX * rouletteItemWidth) - (containerWidth / 2) + (rouletteItemWidth / 2) + jitter;
             
             setRouletteOffset(targetOffset);
 
-            // --- 5. Show Win Modal After Animation ---
             const animationDuration = isFast ? 2000 : 5000;
             setTimeout(() => {
                 setIsWinModalOpen(true);
-            }, animationDuration + 500); // Add a small buffer after animation
+            }, animationDuration + 500);
         }, 100);
 
     }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, rouletteItemWidth]);
@@ -173,15 +155,15 @@ export default function CasePage() {
     const closeModal = () => {
         setIsWinModalOpen(false);
         setIsSpinning(false);
-        setIsFastSpin(false);
-        // Reset the reel to a new random state for the next spin
-        setRouletteItems(generateInitialReel(caseItems));
-        setRouletteOffset(0);
         setWonItem(null);
+        
+        // IMPORTANT: Reset state for the next spin
+        setRouletteOffset(0); 
+        setRouletteItems(generateInitialReel(caseItems));
     }
     
     // Loading State
-    if (!caseData || isUserLoading || caseItems.length === 0 || rouletteItems.length === 0) {
+    if (!caseData || isUserLoading || caseItems.length === 0) {
         return (
             <div className="flex flex-col h-full">
                  <div className="flex items-center justify-between mb-4 flex-shrink-0">
@@ -293,8 +275,13 @@ export default function CasePage() {
             </div>
 
             {/* --- Win Modal --- */}
-             <Dialog open={isWinModalOpen} onOpenChange={(isOpen) => !isOpen && closeModal()}>
-                <DialogContent className="max-w-xs text-center" onInteractOutside={(e) => e.preventDefault()}>
+             <Dialog open={isWinModalOpen} onOpenChange={setIsWinModalOpen}>
+                <DialogContent className="max-w-xs text-center" onInteractOutside={(e) => {
+                    e.preventDefault();
+                    if (!isSpinning) {
+                        closeModal();
+                    }
+                }}>
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold">Поздравляем с победой!</DialogTitle>
                     </DialogHeader>
