@@ -12,7 +12,7 @@ const translations = { en, ru, uz };
 interface LanguageContextType {
   language: Locale;
   setLanguage: (language: Locale) => void;
-  t: (key: string) => string;
+  t: (key: string, options?: { [key: string]: string | number }) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -32,22 +32,35 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('language', lang);
   };
 
-  const t = useCallback((key: string): string => {
+  const t = useCallback((key: string, options?: { [key: string]: string | number }): string => {
     const keys = key.split('.');
     let result: any = translations[language];
+    
+    // Find the string in the current language
     for (const k of keys) {
       result = result?.[k];
       if (result === undefined) {
-        // Fallback to English if translation is not found
+        // Fallback to English if not found
         let fallbackResult: any = translations['en'];
         for (const fk of keys) {
             fallbackResult = fallbackResult?.[fk];
-            if (fallbackResult === undefined) return key;
         }
-        return fallbackResult;
+        result = fallbackResult;
+        break; // Exit loop once fallback is found
       }
     }
-    return result || key;
+    
+    let finalString = String(result || key);
+
+    // Replace placeholders
+    if (options) {
+        Object.keys(options).forEach(optKey => {
+            const regex = new RegExp(`{${optKey}}`, 'g');
+            finalString = finalString.replace(regex, String(options[optKey]));
+        });
+    }
+
+    return finalString;
   }, [language]);
   
 
