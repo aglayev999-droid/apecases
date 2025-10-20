@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronLeft, Gift } from 'lucide-react';
+import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -45,7 +46,7 @@ export default function CasePage() {
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
 
-    const { user, isUserLoading } = useUser();
+    const { user, isUserLoading, updateBalance, addInventoryItem } = useUser();
     const { showAlert } = useAlertDialog();
 
     const generateInitialReel = useCallback((items: Item[]) => {
@@ -116,7 +117,7 @@ export default function CasePage() {
         return reel;
     }, [caseItems]);
     
-    const startRoulette = (prize: Item, isFast: boolean) => {
+    const startRoulette = (prize: Item) => {
         const newReel = generateRouletteReel(prize);
         setRouletteItems(newReel);
         
@@ -128,7 +129,7 @@ export default function CasePage() {
             
             setRouletteOffset(targetOffset);
 
-            const animationDuration = isFast ? 2000 : 5000;
+            const animationDuration = isFastSpin ? 2000 : 5000;
             setTimeout(() => {
                 setWonItem(prize);
                 setIsWinModalOpen(true);
@@ -149,19 +150,21 @@ export default function CasePage() {
         setWonItem(null);
         setRouletteOffset(0);
 
-        // This is a temporary client-side simulation since openCase flow was removed.
+        // Deduct price and add item locally as server flow is removed
+        updateBalance(-caseData.price);
         const prize = caseItems[Math.floor(Math.random() * caseItems.length)];
-
+        
         if (!prize) {
             showAlert({ title: "Error Opening Case", description: "Could not determine prize. Please try again." });
             setIsSpinning(false);
+            updateBalance(caseData.price); // Refund
             return;
         }
 
-        // Start the client-side animation with the prize from the server
-        startRoulette(prize, isFast);
+        addInventoryItem(prize);
+        startRoulette(prize);
 
-    }, [caseData, user, caseItems, isSpinning, showAlert, generateRouletteReel]);
+    }, [caseData, user, caseItems, isSpinning, showAlert, generateRouletteReel, updateBalance, addInventoryItem]);
 
     const closeModal = () => {
         setIsWinModalOpen(false);
@@ -281,27 +284,29 @@ export default function CasePage() {
                 </div>
             </div>
 
-            <Dialog open={isWinModalOpen} onOpenChange={(isOpen) => !isOpen && closeModal()}>
-                 <DialogContent className="max-w-xs" onInteractOutside={(e) => e.preventDefault()}>
+             <Dialog open={isWinModalOpen} onOpenChange={(isOpen) => !isOpen && closeModal()}>
+                <DialogContent className="max-w-xs text-center" onInteractOutside={(e) => e.preventDefault()}>
                     <DialogHeader>
-                        <DialogTitle className="text-center text-2xl">Поздравляем!</DialogTitle>
-                        <DialogDescription className="text-center">Вы выиграли:</DialogDescription>
+                        <DialogTitle className="text-2xl font-bold">Balance</DialogTitle>
                     </DialogHeader>
-                     {wonItem && (
-                        <div className="flex flex-col items-center gap-4 py-4">
-                             <Card className={cn("p-4 w-40 h-40 flex flex-col items-center justify-center border-2", RARITY_PROPERTIES[wonItem.rarity]?.bg, RARITY_PROPERTIES[wonItem.rarity]?.border)}>
-                                <div className="aspect-square relative w-28 h-28">
-                                    <Image src={wonItem.image} alt={wonItem.name} fill sizes="30vw" className="object-contain" data-ai-hint={wonItem.imageHint} />
-                                </div>
-                            </Card>
-                            <div className="text-center">
-                                <p className={cn("text-lg font-bold", RARITY_PROPERTIES[wonItem.rarity]?.text)}>{wonItem.name}</p>
-                                <p className="text-sm text-muted-foreground">{wonItem.rarity}</p>
-                            </div>
+                    {wonItem && (
+                    <div className="flex flex-col items-center gap-4 py-4">
+                        <div className="relative w-40 h-40">
+                             <Image src={wonItem.image} alt={wonItem.name} fill sizes="30vw" className="object-contain" data-ai-hint={wonItem.imageHint} />
                         </div>
+                    </div>
                      )}
+                    <DialogDescription className="text-base">
+                        Поздравляем с победой!
+                        <br />
+                        Все выигранные призы вы можете увидеть у себя в{' '}
+                        <Link href="/inventory" className="text-primary underline" onClick={closeModal}>
+                            инвентаре
+                        </Link>
+                        .
+                    </DialogDescription>
                      <DialogFooter>
-                        <Button className="w-full" onClick={closeModal}>Продолжить</Button>
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base" onClick={closeModal}>Получить приз</Button>
                      </DialogFooter>
                 </DialogContent>
             </Dialog>
