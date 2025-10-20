@@ -2,6 +2,7 @@
 import { firestore } from '@/firebase/server'; // Use server-side admin firestore
 import type { User, Case, Item } from '@/lib/types';
 import { increment, serverTimestamp } from 'firebase-admin/firestore';
+import { ALL_ITEMS } from '@/lib/data';
 
 
 async function selectPrize(caseData: Case): Promise<string> {
@@ -53,13 +54,20 @@ export async function openCase(input: { caseId: string; userId: string }): Promi
             // Select prize on server
             const prizeId = await selectPrize(caseData);
             const prizeRef = firestore.doc(`items/${prizeId}`);
-            const prizeDoc = await transaction.get(prizeRef); // get prize within the transaction
+            const prizeDoc = await transaction.get(prizeRef);
             
-            if (!prizeDoc.exists) {
-                 throw new Error(`Prize item with ID ${prizeId} not found in the database.`);
+            let prizeData: Item | null = null;
+            if (prizeDoc.exists) {
+                prizeData = { ...prizeDoc.data(), id: prizeDoc.id } as Item;
+            } else {
+                // Fallback to mock data if item not in DB
+                const mockItem = ALL_ITEMS.find(item => item.id === prizeId);
+                if (mockItem) {
+                    prizeData = mockItem;
+                } else {
+                    throw new Error(`Prize item with ID ${prizeId} not found in the database or mock data.`);
+                }
             }
-
-            const prizeData = { ...prizeDoc.data(), id: prizeDoc.id } as Item;
             
             const updates: { [key: string]: any } = {
                 'balance.stars': increment(-casePrice),
@@ -93,6 +101,10 @@ export async function openCase(input: { caseId: string; userId: string }): Promi
             return prizeData;
         });
         
+        if (!prizeData) {
+            return { prize: null, error: 'Could not determine prize after transaction.' };
+        }
+
         return { prize: prizeData, error: null };
 
     } catch (error: any) {

@@ -46,7 +46,7 @@ export default function CasePage() {
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
 
-    const { user, addInventoryItem, updateBalance, isUserLoading } = useUser();
+    const { user, isUserLoading } = useUser();
     const { showAlert } = useAlertDialog();
 
     const generateInitialReel = useCallback((items: Item[]) => {
@@ -64,21 +64,21 @@ export default function CasePage() {
                 let caseResult: Case | null = null;
                 const mockCase = MOCK_CASES.find(c => c.id === caseId);
                 
-                if (firestore) {
+                if (mockCase) {
+                    caseResult = mockCase;
+                }
+                
+                if(firestore) {
                     const caseSnap = await getDoc(doc(firestore, 'cases', caseId));
                     if (caseSnap.exists()) {
                         caseResult = { ...caseSnap.data(), id: caseSnap.id } as Case;
-                    } else if (mockCase) {
-                        caseResult = mockCase;
                     }
-                } else if (mockCase) {
-                    caseResult = mockCase;
                 }
                 
                 if(caseResult) {
                     setCaseData(caseResult);
                     const currentCaseItems = caseResult.items
-                        .map(i => MOCK_ITEMS.find(item => item.id === i.itemId)) // Always check against MOCK_ITEMS
+                        .map(i => MOCK_ITEMS.find(item => item.id === i.itemId))
                         .filter((item): item is Item => !!item)
                         .sort((a, b) => a.value - b.value);
                     setCaseItems(currentCaseItems);
@@ -102,7 +102,9 @@ export default function CasePage() {
             }
         };
 
-        fetchCaseAndItemsData();
+        if (caseId) {
+            fetchCaseAndItemsData();
+        }
     }, [caseId, firestore, router, showAlert, generateInitialReel]);
 
     const generateRouletteReel = useCallback((prize: Item) => {
@@ -111,10 +113,29 @@ export default function CasePage() {
         for (let i = 0; i < ROULETTE_ITEMS_COUNT; i++) {
             reel.push(caseItems[Math.floor(Math.random() * caseItems.length)]);
         }
-        reel[ROULETTE_ITEMS_COUNT - 4] = prize;
-        setRouletteItems(reel);
+        reel[ROULETTE_ITEMS_COUNT - 4] = prize; // Set prize at a predictable winning position
         return reel;
     }, [caseItems]);
+    
+    const startRoulette = (prize: Item, isFast: boolean) => {
+        const newReel = generateRouletteReel(prize);
+        setRouletteItems(newReel);
+        
+        // Short delay to ensure state update before animation starts
+        setTimeout(() => {
+            const winningItemIndex = ROULETTE_ITEMS_COUNT - 4;
+            const jitter = (Math.random() - 0.5) * ROULETTE_ITEM_WIDTH * 0.8;
+            const targetOffset = (winningItemIndex * ROULETTE_ITEM_WIDTH) - (ROULETTE_ITEM_WIDTH * 2.5) + jitter;
+            
+            setRouletteOffset(targetOffset);
+
+            const animationDuration = isFast ? 2000 : 5000;
+            setTimeout(() => {
+                setWonItem(prize);
+                setIsWinModalOpen(true);
+            }, animationDuration + 500); // Add a small delay for animation to finish
+        }, 100);
+    }
     
     const handleSpin = useCallback(async (isFast: boolean) => {
         if (isSpinning || !caseData || !user || caseItems.length === 0) return;
@@ -129,6 +150,7 @@ export default function CasePage() {
         setWonItem(null);
         setRouletteOffset(0);
 
+        // Call the server to open the case
         const { prize, error } = await openCase({ caseId: caseData.id, userId: user.id });
 
         if (error || !prize) {
@@ -137,38 +159,17 @@ export default function CasePage() {
             return;
         }
 
-        // The balance update is now handled on the server, but we might need to reflect it on the client
-        // The UserProvider listener will eventually catch this, but for immediate feedback:
-        const cost = caseData.price;
-        const gain = prize.id.startsWith('item-stars-') ? prize.value : 0;
-        updateBalance(gain - cost);
-        
-        if (!prize.id.startsWith('item-stars-')) {
-            addInventoryItem(prize);
-        }
+        // Start the client-side animation with the prize from the server
+        startRoulette(prize, isFast);
 
-        generateRouletteReel(prize);
-        
-        const winningItemIndex = ROULETTE_ITEMS_COUNT - 4;
-        const targetOffset = (winningItemIndex * ROULETTE_ITEM_WIDTH) - (ROULETTE_ITEM_WIDTH * 2.5) + (Math.random() * ROULETTE_ITEM_WIDTH);
-        
-        setTimeout(() => {
-            setRouletteOffset(targetOffset);
-        }, 100);
-
-        const animationDuration = isFast ? 2000 : 5000;
-        setTimeout(() => {
-            setWonItem(prize);
-            setIsWinModalOpen(true);
-        }, animationDuration);
-
-    }, [caseData, user, caseItems, isSpinning, updateBalance, showAlert, generateRouletteReel, addInventoryItem]);
+    }, [caseData, user, caseItems, isSpinning, showAlert, generateRouletteReel]);
 
     const closeModal = () => {
         setIsWinModalOpen(false);
         setIsSpinning(false);
         setIsFastSpin(false);
         setRouletteOffset(0);
+        // Reset the reel for the next spin
         setRouletteItems(generateInitialReel(caseItems));
     }
     
