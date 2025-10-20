@@ -307,13 +307,13 @@ export default function CasePage() {
                 <span>Подарки внутри</span>
             </AccordionTrigger>
             <AccordionContent>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-6 gap-2">
                     {caseItems.map(item => {
                         if (!item) return null;
                         return (
-                            <Card key={item.id} className={cn("p-2 border-2", RARITY_PROPERTIES[item.rarity].border)}>
+                            <Card key={item.id} className={cn("p-1 border-2", RARITY_PROPERTIES[item.rarity].border)}>
                                 <div className="aspect-square relative">
-                                    <Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain" data-ai-hint={item.imageHint}/>
+                                    <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain" data-ai-hint={item.imageHint}/>
                                 </div>
                             </Card>
                         )
@@ -358,25 +358,25 @@ export default function CasePage() {
             <div className="flex-grow flex flex-col justify-between">
                 {/* Roulette Reel */}
                  <div className="flex-grow flex flex-col items-center justify-center relative my-4">
-                    <div className="absolute top-1/4 -translate-y-full left-1/2 -translate-x-1/2 text-white z-10">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
+                    <div className="absolute top-1/4 -translate-y-1/2 left-1/2 -translate-x-1/2 text-white z-10">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 5L22 15H2L12 5Z"/></svg>
                     </div>
                     
                     <div className="overflow-hidden w-full" ref={emblaRef}>
                         <div className="flex">
                             {reelItems.length > 0 ? reelItems.map((item, index) => (
-                                <div key={index} className="flex-[0_0_8rem] mx-2">
+                                <div key={index} className="flex-[0_0_6.5rem] mx-1.5">
                                     <Card className={cn(
                                         "p-2 border-2 bg-card/50 transition-all duration-300", 
                                         item ? RARITY_PROPERTIES[item.rarity].border : 'border-gray-500',
                                     )}>
                                         <div className="aspect-square relative">
-                                            {item && <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" data-ai-hint={item.imageHint}/>}
+                                            {item && <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain p-1" data-ai-hint={item.imageHint}/>}
                                         </div>
                                     </Card>
                                 </div>
                             )) : (
-                                <div className="flex-[0_0_8rem] mx-2">
+                                <div className="flex-[0_0_6.5rem] mx-1.5">
                                     <Card className="p-2 border-2 bg-card/50">
                                          <div className="aspect-square relative" />
                                     </Card>
@@ -385,8 +385,8 @@ export default function CasePage() {
                         </div>
                     </div>
 
-                    <div className="absolute bottom-1/4 translate-y-full left-1/2 -translate-x-1/2 text-white z-10">
-                         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L2 9H22L12 19Z"/></svg>
+                    <div className="absolute bottom-1/4 translate-y-1/2 left-1/2 -translate-x-1/2 text-white z-10">
+                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 19L2 9H22L12 19Z"/></svg>
                     </div>
                 </div>
 
