@@ -189,37 +189,8 @@ export default function CasePage() {
     const handleSpin = useCallback((isFast: boolean = false) => {
         if (isSpinning || !caseData || !user || !emblaApi || reelItems.length === 0 || allItems.length === 0) return;
 
-        const prize = selectItem(caseData, allItems);
-        if (!prize) {
-            console.error("Could not select a prize.");
-            setIsSpinning(false);
-            return;
-        }
-
-        const onSpinEnd = () => {
-            emblaApi?.off('settle', onSpinEnd);
-            if (isFree) {
-                setLastFreeCaseOpen(new Date());
-            } else {
-                updateBalance(-caseData.price);
-                updateSpending(caseData.price);
-            }
-            
-            setWonItem(prize);
-            setIsWinModalOpen(true);
-            
-            if (prize.id.startsWith('item-stars-')) {
-                updateBalance(prize.value);
-            } else {
-                addInventoryItem(prize);
-            }
-            setIsSpinning(false);
-        };
-
-        emblaApi?.off('settle', onSpinEnd);
-
         const isFree = caseData.price === 0;
-        
+
         if (isFree) {
             if (lastFreeCaseOpen && caseData.freeCooldownSeconds) {
                 const now = new Date();
@@ -235,20 +206,48 @@ export default function CasePage() {
               return;
             }
         }
-        
+
         setIsSpinning(true);
         setWonItem(null);
+
+        const prize = selectItem(caseData, allItems);
+        if (!prize) {
+            console.error("Could not select a prize.");
+            setIsSpinning(false);
+            return;
+        }
+
+        const onSpinEnd = () => {
+            emblaApi?.off('settle', onSpinEnd);
+            
+            if (isFree) {
+                setLastFreeCaseOpen(new Date());
+            } else {
+                updateBalance(-caseData.price);
+                updateSpending(caseData.price);
+            }
+            
+            setWonItem(prize);
+            setIsWinModalOpen(true);
+            
+            if (prize.id.startsWith('item-stars-')) {
+                updateBalance(prize.value);
+            } else {
+                addInventoryItem(prize);
+            }
+            // isSpinning will be set to false when the modal is closed.
+        };
         
         const reelWithPrize = [...reelItems];
-        const targetIndex = Math.floor(reelItems.length / 2) + Math.floor(Math.random() * (reelItems.length / 2 - 5)) + 5;
+        const targetIndex = Math.floor(reelItems.length / 2) + Math.floor(Math.random() * (reelItems.length / 4));
         reelWithPrize[targetIndex] = prize;
         setReelItems(reelWithPrize);
         
         setTimeout(() => {
             if (!emblaApi) return;
             emblaApi.reInit();
-            emblaApi.scrollTo(targetIndex, !isFast);
             emblaApi.on('settle', onSpinEnd);
+            emblaApi.scrollTo(targetIndex, !isFast);
         }, 100);
 
     }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, reelItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
@@ -256,6 +255,7 @@ export default function CasePage() {
     const closeModal = () => {
         setIsWinModalOpen(false);
         setWonItem(null);
+        setIsSpinning(false); // Re-enable spinning after modal is closed
     }
 
     const handleGoToInventory = () => {
@@ -435,5 +435,3 @@ export default function CasePage() {
         </div>
     );
 }
-
-    
