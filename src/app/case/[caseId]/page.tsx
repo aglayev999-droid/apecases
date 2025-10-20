@@ -37,10 +37,11 @@ export default function CasePage() {
     const caseId = params.caseId as string;
     const firestore = useFirestore();
 
-    const [caseData, setCaseData] = useState<Case | null>(MOCK_CASES.find(c => c.id === caseId) || null);
+    const [caseData, setCaseData] = useState<Case | null>(null);
     const [caseItems, setCaseItems] = useState<Item[]>([]);
     const [rouletteItems, setRouletteItems] = useState<Item[]>([]);
     const [isSpinning, setIsSpinning] = useState(false);
+    const [isFastSpin, setIsFastSpin] = useState(false);
     const [rouletteOffset, setRouletteOffset] = useState(0);
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
@@ -56,6 +57,7 @@ export default function CasePage() {
                 .filter((item): item is Item => !!item)
                 .sort((a, b) => a.value - b.value);
             setCaseItems(items);
+            setCaseData(initialCase);
         }
     }, [caseId]);
 
@@ -116,6 +118,7 @@ export default function CasePage() {
             return;
         }
         
+        setIsFastSpin(isFast);
         setIsSpinning(true);
         setWonItem(null);
         setRouletteOffset(0);
@@ -154,6 +157,7 @@ export default function CasePage() {
     const closeModal = () => {
         setIsWinModalOpen(false);
         setIsSpinning(false);
+        setIsFastSpin(false);
         setRouletteItems([]);
         setRouletteOffset(0);
     }
@@ -224,7 +228,7 @@ export default function CasePage() {
                             className="flex h-full items-center gap-4"
                             style={{
                                 transform: `translateX(calc(50% - ${rouletteOffset}px - ${ROULETTE_ITEM_WIDTH/2}px))`,
-                                transition: isSpinning ? `transform ${isSpinning ? (isFast ? '2s' : '5s') : '0s'} cubic-bezier(0.2, 0.5, 0.1, 1)` : 'none',
+                                transition: isSpinning ? `transform ${isFastSpin ? '2s' : '5s'} cubic-bezier(0.2, 0.5, 0.1, 1)` : 'none',
                             }}
                         >
                             {rouletteItems.length > 0 ? (
