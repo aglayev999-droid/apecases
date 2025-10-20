@@ -5,27 +5,24 @@ import { usePathname } from 'next/navigation';
 import { Box, User as UserIcon, BarChart3, Rocket, Swords } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DiamondIcon } from '@/components/icons/DiamondIcon';
-
-const navItems = [
-  { href: '/inventory', label: 'Inventory', icon: Box },
-  { href: '/profile', label: 'Profile', icon: UserIcon },
-  { href: '/battles', label: 'Battles', icon: Swords },
-  { href: '/', label: 'Cases', icon: Box, isMain: true },
-  { href: '/rocket', label: 'Rocket', icon: Rocket, isBeta: true },
-  { href: '/upgrade', label: 'Upgrade', icon: DiamondIcon, isBeta: true },
-  { href: '/leaderboard', label: 'Rating', icon: BarChart3 },
-];
-
-const mainButtonIndex = navItems.findIndex(item => item.isMain);
+import { useTranslation } from '@/contexts/LanguageContext';
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { t } = useTranslation();
 
-  const getGridPosition = (index: number) => {
-    if (index < mainButtonIndex) return `col-start-${index + 1}`;
-    if (index > mainButtonIndex) return `col-start-${index + 2}`;
-    return `col-start-${mainButtonIndex + 1}`;
-  };
+  const navItems = [
+    { href: '/inventory', label: t('bottomNav.inventory'), icon: Box },
+    { href: '/profile', label: t('bottomNav.profile'), icon: UserIcon },
+    { href: '/battles', label: t('bottomNav.battles'), icon: Swords },
+    { href: '/', label: t('bottomNav.cases'), icon: Box, isMain: true },
+    { href: '/rocket', label: t('bottomNav.rocket'), icon: Rocket, isBeta: true },
+    { href: '/upgrade', label: t('bottomNav.upgrade'), icon: DiamondIcon, isBeta: true },
+    { href: '/leaderboard', label: t('bottomNav.rating'), icon: BarChart3 },
+  ];
+  
+  const mainButtonIndex = navItems.findIndex(item => item.isMain);
+
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-card/80 backdrop-blur-sm border-t border-border md:hidden rounded-t-xl">
@@ -36,7 +33,7 @@ export default function BottomNav() {
 
             if (item.isMain) {
               return (
-                <Link key={item.href} href={item.href} className={cn("flex flex-col items-center justify-center -mt-6", getGridPosition(index))}>
+                <Link key={item.href} href={item.href} className={cn("flex flex-col items-center justify-center -mt-6", `col-start-${mainButtonIndex + 1}`)}>
                   <div className={cn(
                     'rounded-full p-2 transition-all transform',
                     pathname === '/' ? 'bg-primary shadow-lg' : 'bg-card border'
@@ -54,11 +51,13 @@ export default function BottomNav() {
               );
             }
 
+            const gridPos = index < mainButtonIndex ? `col-start-${index + 1}` : `col-start-${index + 2}`;
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={cn("flex flex-col items-center justify-center gap-1", getGridPosition(index))}
+                className={cn("flex flex-col items-center justify-center gap-1", gridPos)}
               >
                 <div className={cn(
                   'flex flex-col items-center justify-center gap-1 rounded-lg p-2 transition-colors w-[60px] relative',

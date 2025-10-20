@@ -14,6 +14,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 const ItemSelectionModal = ({
   isOpen,
@@ -33,6 +34,7 @@ const ItemSelectionModal = ({
   isMultiSelect: boolean;
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
+  const { t } = useTranslation();
 
   const filteredItems = useMemo(() => {
     if (!searchQuery) return items;
@@ -51,7 +53,7 @@ const ItemSelectionModal = ({
         </DialogHeader>
         <div className="relative mb-2">
           <Input 
-            placeholder="Быстрый поиск" 
+            placeholder={t('upgradePage.quickSearch')} 
             className="pl-10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -61,7 +63,7 @@ const ItemSelectionModal = ({
         <ScrollArea className="flex-grow">
           {filteredItems.length === 0 ? (
              <div className="text-center text-muted-foreground py-10">
-                Ничего не найдено
+                {t('upgradePage.notFound')}
             </div>
           ) : (
              <div className="grid grid-cols-3 gap-2">
@@ -83,7 +85,7 @@ const ItemSelectionModal = ({
          {isMultiSelect && (
           <div className="flex-shrink-0 mt-2">
             <Button onClick={onClose} className="w-full">
-              Подтвердить
+              {t('upgradePage.confirm')}
             </Button>
           </div>
         )}
@@ -93,6 +95,7 @@ const ItemSelectionModal = ({
 };
 
 const UpgradeResultModal = ({ isOpen, onClose, isSuccess, item, onAnimationEnd }: { isOpen: boolean, onClose: () => void, isSuccess: boolean, item: Item | null, onAnimationEnd: () => void }) => {
+    const { t } = useTranslation();
     useEffect(() => {
         if (isOpen) {
             const timer = setTimeout(onAnimationEnd, 1500); // Wait for animation
@@ -106,7 +109,7 @@ const UpgradeResultModal = ({ isOpen, onClose, isSuccess, item, onAnimationEnd }
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-w-xs text-center" onInteractOutside={(e) => e.preventDefault()}>
                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold">{isSuccess ? "Успешный апгрейд!" : "Неудача!"}</DialogTitle>
+                    <DialogTitle className="text-2xl font-bold">{isSuccess ? t('upgradePage.successTitle') : t('upgradePage.failureTitle')}</DialogTitle>
                 </DialogHeader>
                  <div className="flex flex-col items-center gap-4 py-4">
                     <Card className={cn("p-4 flex flex-col items-center justify-center w-40 h-40 border-0 shadow-lg", isSuccess ? "bg-green-500/10" : "bg-red-500/10")}>
@@ -118,7 +121,7 @@ const UpgradeResultModal = ({ isOpen, onClose, isSuccess, item, onAnimationEnd }
                         <p className="text-lg font-bold">{item.name}</p>
                     </div>
                  </div>
-                 <Button className="w-full" onClick={onClose}>Продолжить</Button>
+                 <Button className="w-full" onClick={onClose}>{t('upgradePage.continueButton')}</Button>
             </DialogContent>
         </Dialog>
     );
@@ -127,6 +130,7 @@ const UpgradeResultModal = ({ isOpen, onClose, isSuccess, item, onAnimationEnd }
 export default function UpgradePage() {
     const { inventory, addInventoryItem, removeInventoryItems } = useUser();
     const { showAlert } = useAlertDialog();
+    const { t } = useTranslation();
     
     const [yourItems, setYourItems] = useState<InventoryItem[]>([]);
     const [targetItem, setTargetItem] = useState<Item | null>(null);
@@ -206,7 +210,7 @@ export default function UpgradePage() {
         <>
             <div className="flex flex-col h-full text-center">
                 <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent mb-6">
-                    Апгрейд NFT
+                    {t('upgradePage.title')}
                 </h1>
 
                  <div className="relative flex items-center justify-center mb-6">
@@ -250,7 +254,7 @@ export default function UpgradePage() {
                         ) : (
                             <>
                                 <div className="text-4xl text-muted-foreground">+</div>
-                                <p className="text-sm text-muted-foreground">Выберите ваши предметы</p>
+                                <p className="text-sm text-muted-foreground">{t('upgradePage.selectYourItems')}</p>
                             </>
                         )}
                     </Card>
@@ -268,22 +272,22 @@ export default function UpgradePage() {
                         ) : (
                             <>
                                 <div className="text-4xl text-muted-foreground">+</div>
-                                <p className="text-sm text-muted-foreground">Выберите желаемый NFT</p>
+                                <p className="text-sm text-muted-foreground">{t('upgradePage.selectTargetNft')}</p>
                             </>
                         )}
                     </Card>
                 </div>
                 
                  <Button className="w-full h-14 text-lg mb-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white" disabled={yourItems.length === 0 || !targetItem || isUpgrading} onClick={handleUpgrade}>
-                    {isUpgrading ? <Loader2 className="animate-spin" /> : 'Апгрейд'}
+                    {isUpgrading ? <Loader2 className="animate-spin" /> : t('upgradePage.upgradeButton')}
                 </Button>
 
                 <div className="flex-grow flex flex-col bg-card rounded-t-2xl p-4 min-h-0">
-                    <p className="text-center font-bold mb-2">Ваш инвентарь для апгрейда</p>
+                    <p className="text-center font-bold mb-2">{t('upgradePage.yourInventoryForUpgrade')}</p>
                     <ScrollArea className="h-full">
                         {upgradableItems.length === 0 ? (
                             <div className="text-center text-muted-foreground py-10">
-                                В вашем инвентаре нет предметов для апгрейда.
+                                {t('upgradePage.emptyInventory')}
                             </div>
                         ) : (
                             <div className="grid grid-cols-4 gap-2">
@@ -310,7 +314,7 @@ export default function UpgradePage() {
                 items={upgradableItems}
                 selectedItems={yourItems}
                 onSelect={(item) => handleSelectYourItem(item as InventoryItem)}
-                title="Выберите ваши предметы"
+                title={t('upgradePage.selectYourItems')}
                 isMultiSelect={true}
             />
 
@@ -320,7 +324,7 @@ export default function UpgradePage() {
                 items={targetableNfts}
                 selectedItems={targetItem ? [targetItem] : []}
                 onSelect={handleSelectTargetItem}
-                title="Выберите желаемый NFT"
+                title={t('upgradePage.selectTargetNft')}
                 isMultiSelect={false}
             />
 

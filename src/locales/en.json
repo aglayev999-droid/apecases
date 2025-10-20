@@ -1,0 +1,137 @@
+
+{
+  "bottomNav": {
+    "inventory": "Inventory",
+    "profile": "Profile",
+    "battles": "Battles",
+    "cases": "Cases",
+    "rocket": "Rocket",
+    "upgrade": "Upgrade",
+    "rating": "Rating"
+  },
+  "header": {
+    "balanceTopUpTitle": "Choose a top-up method",
+    "balanceTopUpDescription": "Enter the amount to top up",
+    "starsTab": "STARS ★",
+    "tonTab": "TON ♦",
+    "amountPlaceholder": "Amount",
+    "balanceLabel": "Balance",
+    "topUpButton": "Top Up",
+    "orSeparator": "OR",
+    "sendGiftButton": "Send Gift"
+  },
+  "alertDialog": {
+    "ok": "OK"
+  },
+  "userContext": {
+    "accountMismatchTitle": "Account Mismatch",
+    "accountMismatchDescription": "You have switched Telegram accounts. Please log out and log back in to access the correct app data."
+  },
+  "battlesPage": {
+    "title": "Case Battles",
+    "createBattle": "Create Battle",
+    "comingSoonTitle": "Coming Soon!",
+    "comingSoonDescription": "We are working on this feature and will release it soon.",
+    "totalValue": "Total Value",
+    "join": "Join",
+    "view": "View",
+    "players": "Players",
+    "noBattlesTitle": "No active battles right now.",
+    "createFirstBattle": "Create the First Battle!"
+  },
+  "casePage": {
+    "rouletteTitle": "Roulette",
+    "loadingCase": "Loading case...",
+    "giftsInside": "Gifts inside",
+    "spinButton": "Spin for",
+    "winModalTitle": "Congratulations on your win!",
+    "winModalDescription": "You can see all your won prizes in your",
+    "winModalInventoryLink": "inventory",
+    "winModalContinue": "Continue",
+    "errorCaseNotFound": "Case not found.",
+    "errorNoItems": "No items found in this case.",
+    "errorInsufficientFunds": "You do not have enough stars to open this case.",
+    "errorCouldNotDeterminePrize": "Could not determine prize. Please try again."
+  },
+  "inventoryPage": {
+    "title": "Inventory",
+    "sellAll": "Sell All for",
+    "nothingToSellTitle": "Nothing to Sell",
+    "nothingToSellDescription": "You do not have any non-NFT items to sell.",
+    "itemsSoldTitle": "All Items Sold!",
+    "itemsSoldDescription": "You received {value} stars.",
+    "emptyInventoryTitle": "No gifts yet!",
+    "emptyInventoryDescription": "Open cases to win gifts.",
+    "goToCases": "Go to Cases",
+    "inventoryCard": {
+      "sellFor": "Sell for",
+      "withdraw": "Withdraw",
+      "itemSoldTitle": "Item Sold!",
+      "itemSoldDescription": "You sold {name} for {value} stars.",
+      "walletNotConnectedTitle": "Wallet Not Connected",
+      "walletNotConnectedDescription": "Please connect your TON wallet to withdraw an item.",
+      "dbError": "Could not connect to the database. Please try again later.",
+      "withdrawErrorTitle": "Withdrawal Error",
+      "withdrawErrorDescription": "This item ({name}) does not have a collection address configured and cannot be withdrawn.",
+      "withdrawRequestSentTitle": "Withdrawal Request Sent",
+      "withdrawRequestSentDescription": "{name} is being processed. It will be sent to your wallet shortly.",
+      "withdrawFailedTitle": "Withdrawal Failed",
+      "withdrawFailedDescription": "There was a problem sending your request. Please try again."
+    }
+  },
+  "leaderboardPage": {
+    "title": "Weekly Ranking",
+    "description": "See who's on top this week. Resets weekly.",
+    "rank": "Rank",
+    "user": "User",
+    "starsSpent": "Stars Spent"
+  },
+  "mainPage": {
+    "liveDrops": "LIVE",
+    "casesTitle": "APEX Cases"
+  },
+  "profilePage": {
+    "id": "ID",
+    "settingsTitle": "Settings",
+    "balancesTitle": "Balances",
+    "referralProgramTitle": "Referral Program",
+    "referralProgramDescription": "Invite friends and earn commissions.",
+    "friendsReferred": "Friends Referred",
+    "commissionEarned": "Commission Earned",
+    "copySuccessTitle": "Copied!",
+    "copySuccessDescription": "Referral code copied to clipboard.",
+    "themeTitle": "Theme",
+    "lightTheme": "Light",
+    "darkTheme": "Dark",
+    "languageTitle": "Language",
+    "lang_uz": "O'zbekcha",
+    "lang_ru": "Русский",
+    "lang_en": "English"
+  },
+  "rocketPage": {
+    "waiting": "Waiting",
+    "waitingForNextRound": "WAITING FOR NEXT ROUND",
+    "placeBet": "Place Bet",
+    "placeBetForNextRound": "Place Bet for Next Round",
+    "cashOut": "Cash out {value}",
+    "youWon": "You won {value}",
+    "crashed": "Crashed",
+    "players": "Players",
+    "notEnoughStars": "You don't have enough stars to place this bet.",
+    "betPlaced": "You bet {value} stars"
+  },
+  "upgradePage": {
+    "title": "NFT Upgrade",
+    "selectYourItems": "Select your items",
+    "selectTargetNft": "Select desired NFT",
+    "upgradeButton": "Upgrade",
+    "yourInventoryForUpgrade": "Your inventory for upgrade",
+    "emptyInventory": "You have no items for upgrade in your inventory.",
+    "quickSearch": "Quick search",
+    "notFound": "Nothing found",
+    "confirm": "Confirm",
+    "successTitle": "Upgrade successful!",
+    "failureTitle": "Upgrade failed!",
+    "continueButton": "Continue"
+  }
+}

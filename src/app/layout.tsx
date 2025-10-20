@@ -11,6 +11,7 @@ import { FirebaseClientProvider } from '@/firebase';
 import { AlertDialogProvider } from '@/contexts/AlertDialogContext';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { RocketProvider } from '@/contexts/RocketContext';
+import { LanguageProvider } from '@/contexts/LanguageContext';
 
 export const metadata: Metadata = {
   title: '1CASE',
@@ -39,20 +40,22 @@ export default function RootLayout({
         >
           <FirebaseClientProvider>
             <TonConnectProvider>
-              <AlertDialogProvider>
-                <UserProvider>
-                  <RocketProvider>
-                    <div className="flex flex-col min-h-screen">
-                      <AppHeader />
-                      <main className="flex-grow container mx-auto px-4 pt-8 pb-28 md:pb-8 max-w-7xl">
-                        {children}
-                      </main>
-                      <BottomNav />
-                    </div>
-                    <Toaster />
-                  </RocketProvider>
-                </UserProvider>
-              </AlertDialogProvider>
+              <LanguageProvider>
+                <AlertDialogProvider>
+                  <UserProvider>
+                    <RocketProvider>
+                      <div className="flex flex-col min-h-screen">
+                        <AppHeader />
+                        <main className="flex-grow container mx-auto px-4 pt-8 pb-28 md:pb-8 max-w-7xl">
+                          {children}
+                        </main>
+                        <BottomNav />
+                      </div>
+                      <Toaster />
+                    </RocketProvider>
+                  </UserProvider>
+                </AlertDialogProvider>
+              </LanguageProvider>
             </TonConnectProvider>
           </FirebaseClientProvider>
         </ThemeProvider>

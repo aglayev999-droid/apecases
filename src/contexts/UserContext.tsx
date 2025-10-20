@@ -8,6 +8,7 @@ import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
 import { Auth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { useAlertDialog } from './AlertDialogContext';
+import { useTranslation } from './LanguageContext';
 
 // Define the Telegram user structure on the window object
 declare global {
@@ -86,6 +87,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const firestore = useFirestore();
   const { user: firebaseUser, isUserLoading: isAuthLoading, auth } = useFirebaseAuth();
   const { showAlert } = useAlertDialog();
+  const { t } = useTranslation();
   
   const userDocRef = useMemoFirebase(() => 
     firestore && firebaseUser ? doc(firestore, 'users', firebaseUser.uid) : null, 
@@ -142,8 +144,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const tgUserId = String(window.Telegram.WebApp.initDataUnsafe.user.id);
       if (user.telegramId !== tgUserId) {
         showAlert({
-          title: "Account Mismatch",
-          description: "You have switched Telegram accounts. Please log out and log back in to access the correct app data.",
+          title: t('userContext.accountMismatchTitle'),
+          description: t('userContext.accountMismatchDescription'),
           onConfirm: () => {
               auth?.signOut().then(() => {
                   // This will trigger a re-login flow
@@ -153,7 +155,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         });
       }
     }
-  }, [user, auth, showAlert]);
+  }, [user, auth, showAlert, t]);
 
   useEffect(() => {
     if (!isAuthLoading && !isUserDocLoading) {

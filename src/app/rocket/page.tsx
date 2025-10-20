@@ -15,38 +15,43 @@ import { Volume2, VolumeX } from 'lucide-react';
 import { RocketIcon } from '@/components/icons/RocketIcon';
 import { useRocket } from '@/contexts/RocketContext';
 import type { RocketPlayer } from '@/lib/types';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 
 const Badge = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
     return <div className={cn("px-3 py-1 rounded-md text-sm font-bold", className)} {...props} />
 }
 
-const History = React.memo(({ gameState, history }: { gameState: string, history: number[] }) => (
-    <div className="flex items-center gap-2 overflow-x-auto py-2">
-        <HistoryIcon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-        {gameState === 'waiting' && <Badge className="bg-primary/20 text-primary">Ожидание</Badge>}
-        {history.map((h, i) => (
-            <Badge
-                key={i}
-                className={cn(
-                    "flex-shrink-0",
-                    h >= 10 ? "bg-orange-500/20 text-orange-400" :
-                    h >= 3 ? "bg-purple-500/20 text-purple-400" :
-                    h >= 2 ? "bg-blue-500/20 text-blue-400" :
-                    "bg-muted text-muted-foreground"
-                )}
-            >
-                {h.toFixed(2)}x
-            </Badge>
-        ))}
-    </div>
-));
+const History = React.memo(({ gameState, history }: { gameState: string, history: number[] }) => {
+    const { t } = useTranslation();
+    return (
+        <div className="flex items-center gap-2 overflow-x-auto py-2">
+            <HistoryIcon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+            {gameState === 'waiting' && <Badge className="bg-primary/20 text-primary">{t('rocketPage.waiting')}</Badge>}
+            {history.map((h, i) => (
+                <Badge
+                    key={i}
+                    className={cn(
+                        "flex-shrink-0",
+                        h >= 10 ? "bg-orange-500/20 text-orange-400" :
+                        h >= 3 ? "bg-purple-500/20 text-purple-400" :
+                        h >= 2 ? "bg-blue-500/20 text-blue-400" :
+                        "bg-muted text-muted-foreground"
+                    )}
+                >
+                    {h.toFixed(2)}x
+                </Badge>
+            ))}
+        </div>
+    )
+});
 History.displayName = 'History';
 
 const GameScreen = React.memo(({ gameState, multiplier, countdown, isMuted, setIsMuted }: { gameState: string, multiplier: number, countdown: number, isMuted: boolean, setIsMuted: (isMuted: boolean) => void }) => {
     const gameContainerRef = useRef<HTMLDivElement>(null);
     const [position, setPosition] = useState({ x: 0, y: 0, rotation: 0 });
     const [trailPath, setTrailPath] = useState('');
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (!gameContainerRef.current) return;
@@ -180,7 +185,7 @@ const GameScreen = React.memo(({ gameState, multiplier, countdown, isMuted, setI
             ) : gameState === 'waiting' ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center z-30 text-center text-white">
                     <h2 className="text-4xl font-bold tracking-widest text-primary">APEX</h2>
-                    <p className="text-lg uppercase tracking-widest text-muted-foreground">ОЖИДАНИЕ СЛЕДУЮЩЕГО РАУНДА</p>
+                    <p className="text-lg uppercase tracking-widest text-muted-foreground">{t('rocketPage.waitingForNextRound')}</p>
                     <p className="text-8xl font-bold">{countdown}</p>
                  </div>
             ) : (
@@ -198,42 +203,43 @@ GameScreen.displayName = 'GameScreen';
 const BetControls = React.memo(({ betAmount, setBetAmount, handlePlaceBet, handleCashOut, playerStatus, gameState, multiplier, user }: { betAmount: string, setBetAmount: (amount: string) => void, handlePlaceBet: () => void, handleCashOut: () => void, playerStatus?: RocketPlayer, gameState: string, multiplier: number, user: any }) => {
     const parsedBetAmount = parseInt(betAmount) || 0;
     const hasPlacedBet = !!playerStatus?.bet && playerStatus.bet > 0;
+    const { t } = useTranslation();
     
     const canCashOut = gameState === 'playing' && playerStatus?.status === 'playing';
 
-    let buttonText: React.ReactNode = 'Place Bet';
+    let buttonText: React.ReactNode = t('rocketPage.placeBet');
     let buttonAction = handlePlaceBet;
     let buttonClass = 'bg-primary hover:bg-primary/90';
     let isButtonDisabled = false;
 
     if (canCashOut) {
-        buttonText = `Cash out ${Math.floor((playerStatus?.bet || 0) * multiplier).toLocaleString()}`;
+        buttonText = t('rocketPage.cashOut', { value: Math.floor((playerStatus?.bet || 0) * multiplier).toLocaleString() });
         buttonAction = handleCashOut;
         buttonClass = 'bg-green-500 hover:bg-green-600';
         isButtonDisabled = false;
     } else if (hasPlacedBet) {
         if (gameState === 'waiting') {
-            buttonText = 'Waiting for round';
+            buttonText = t('rocketPage.waiting');
             isButtonDisabled = true;
         } else if (playerStatus?.status === 'cashed_out' && playerStatus.cashedOutAt) {
             const winnings = (playerStatus.bet || 0) * playerStatus.cashedOutAt;
-            buttonText = `You won ${winnings.toFixed(0)}`;
+            buttonText = t('rocketPage.youWon', { value: winnings.toFixed(0) });
             buttonClass = 'bg-green-500';
             isButtonDisabled = true;
         } else { // Crashed or waiting for next round after a loss
-            buttonText = 'Place Bet for Next Round';
+            buttonText = t('rocketPage.placeBetForNextRound');
             buttonAction = handlePlaceBet;
             buttonClass = 'bg-primary hover:bg-primary/90';
             isButtonDisabled = gameState !== 'waiting';
         }
     } else { // Hasn't placed a bet
          if (gameState !== 'waiting') {
-            buttonText = 'Waiting for next round';
+            buttonText = t('rocketPage.waitingForNextRound');
             isButtonDisabled = true;
          } else {
             buttonText = (
                 <>
-                    Сделать ставку <RocketIcon className="w-5 h-5" />
+                    {t('rocketPage.placeBet')} <RocketIcon className="w-5 h-5" />
                 </>
             );
             buttonAction = handlePlaceBet;
@@ -270,9 +276,11 @@ const BetControls = React.memo(({ betAmount, setBetAmount, handlePlaceBet, handl
 });
 BetControls.displayName = 'BetControls';
 
-const PlayerList = React.memo(({ players, user, gameState, multiplier }: { players: RocketPlayer[], user: any, gameState: string, multiplier: number }) => (
+const PlayerList = React.memo(({ players, user, gameState, multiplier }: { players: RocketPlayer[], user: any, gameState: string, multiplier: number }) => {
+    const { t } = useTranslation();
+    return (
     <div className="w-full max-w-md mt-4 space-y-2 flex-grow min-h-0">
-        <h3 className="text-lg font-semibold px-2">{players.length} Players</h3>
+        <h3 className="text-lg font-semibold px-2">{players.length} {t('rocketPage.players')}</h3>
          <Card className="h-full">
             <ScrollArea className="h-[200px] md:h-auto md:max-h-[300px]">
                 <CardContent className="p-2 space-y-1">
@@ -308,7 +316,7 @@ const PlayerList = React.memo(({ players, user, gameState, multiplier }: { playe
                                         </div>
                                     )}
                                     {p.status === 'lost' && (
-                                        <span className="font-bold text-red-500">Crashed</span>
+                                        <span className="font-bold text-red-500">{t('rocketPage.crashed')}</span>
                                     )}
                                      {(p.status === 'waiting' || (p.status !== 'cashed_out' && p.status !== 'lost')) && gameState !== 'playing' && (
                                         <span className="font-bold text-gray-500">-</span>
@@ -321,7 +329,7 @@ const PlayerList = React.memo(({ players, user, gameState, multiplier }: { playe
             </ScrollArea>
         </Card>
     </div>
-));
+)});
 PlayerList.displayName = 'PlayerList';
 
 
@@ -338,6 +346,7 @@ export default function RocketPage() {
         getPlayerStatus 
     } = useRocket();
     const { showAlert } = useAlertDialog();
+    const { t } = useTranslation();
     const [betAmount, setBetAmount] = useState('25');
     const musicRef = useRef<HTMLAudioElement>(null);
     const crashSfxRef = useRef<HTMLAudioElement>(null);
@@ -369,14 +378,14 @@ export default function RocketPage() {
     const handlePlaceBet = useCallback(() => {
         const parsedBetAmount = parseInt(betAmount) || 0;
         if (!user || user.balance.stars < parsedBetAmount || parsedBetAmount <= 0) {
-            showAlert({ title: "Not enough stars", description: "You don't have enough stars to place this bet." });
+            showAlert({ title: t('rocketPage.notEnoughStars') });
             return;
         }
         if (gameState === 'waiting') {
             playerBet(parsedBetAmount);
-            showAlert({ title: `You bet ${parsedBetAmount} stars` });
+            showAlert({ title: t('rocketPage.betPlaced', { value: parsedBetAmount }) });
         }
-    }, [user, betAmount, gameState, playerBet, showAlert]);
+    }, [user, betAmount, gameState, playerBet, showAlert, t]);
 
     const handleCashOut = useCallback(() => {
         if (!user || gameState !== 'playing' || playerStatus?.status !== 'playing') return;

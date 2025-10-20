@@ -1,0 +1,137 @@
+
+{
+  "bottomNav": {
+    "inventory": "Inventar",
+    "profile": "Profil",
+    "battles": "Janglar",
+    "cases": "Keyslar",
+    "rocket": "Raketa",
+    "upgrade": "Apgrade",
+    "rating": "Reyting"
+  },
+  "header": {
+    "balanceTopUpTitle": "To'ldirish usulini tanlang",
+    "balanceTopUpDescription": "To'ldirish uchun summani kiriting",
+    "starsTab": "STARS ★",
+    "tonTab": "TON ♦",
+    "amountPlaceholder": "Summa",
+    "balanceLabel": "Balans",
+    "topUpButton": "To'ldirish",
+    "orSeparator": "YOKI",
+    "sendGiftButton": "Sovg'a yuborish"
+  },
+  "alertDialog": {
+    "ok": "OK"
+  },
+  "userContext": {
+    "accountMismatchTitle": "Hisob mos kelmadi",
+    "accountMismatchDescription": "Siz Telegram hisobini o'zgartirdingiz. Iltimos, to'g'ri ilova ma'lumotlariga kirish uchun tizimdan chiqib, qayta kiring."
+  },
+  "battlesPage": {
+    "title": "Keys Janglari",
+    "createBattle": "Jang yaratish",
+    "comingSoonTitle": "Tez Kunda!",
+    "comingSoonDescription": "Bu funksiya ustida ish olib bormoqdamiz va tez orada taqdim etamiz.",
+    "totalValue": "Umumiy qiymat",
+    "join": "Qo'shilish",
+    "view": "Ko'rish",
+    "players": "O'yinchilar",
+    "noBattlesTitle": "Hozircha faol janglar yo'q.",
+    "createFirstBattle": "Birinchi jangni yarating!"
+  },
+  "casePage": {
+    "rouletteTitle": "Ruletka",
+    "loadingCase": "Keys yuklanmoqda...",
+    "giftsInside": "Ichidagi sovg'alar",
+    "spinButton": "Aylantirish",
+    "winModalTitle": "G'alaba bilan tabriklaymiz!",
+    "winModalDescription": "Barcha yutib olingan sovg'alarni o'zingizning",
+    "winModalInventoryLink": "inventaringizda",
+    "winModalContinue": "Davom etish",
+    "errorCaseNotFound": "Keys topilmadi.",
+    "errorNoItems": "Bu keysda sovg'alar topilmadi.",
+    "errorInsufficientFunds": "Ushbu keysni ochish uchun yulduzlaringiz yetarli emas.",
+    "errorCouldNotDeterminePrize": "Yutuqni aniqlab bo'lmadi. Iltimos, qayta urinib ko'ring."
+  },
+  "inventoryPage": {
+    "title": "Inventar",
+    "sellAll": "Hammasini sotish",
+    "nothingToSellTitle": "Sotish uchun hech narsa yo'q",
+    "nothingToSellDescription": "Sizda sotish uchun NFT bo'lmagan narsalar yo'q.",
+    "itemsSoldTitle": "Barcha narsalar sotildi!",
+    "itemsSoldDescription": "{value} yulduz oldingiz.",
+    "emptyInventoryTitle": "Hali sovg'alar yo'q!",
+    "emptyInventoryDescription": "Sovg'alarni yutib olish uchun keyslarni oching.",
+    "goToCases": "Keyslarga o'tish",
+    "inventoryCard": {
+      "sellFor": "Sotish",
+      "withdraw": "Chiqarish",
+      "itemSoldTitle": "Narsa sotildi!",
+      "itemSoldDescription": "{name} ni {value} yulduzga sotdingiz.",
+      "walletNotConnectedTitle": "Hamyon ulanmagan",
+      "walletNotConnectedDescription": "Narsani chiqarib olish uchun TON hamyoningizni ulang.",
+      "dbError": "Ma'lumotlar bazasiga ulanib bo'lmadi. Iltimos, keyinroq qayta urinib ko'ring.",
+      "withdrawErrorTitle": "Chiqarish xatosi",
+      "withdrawErrorDescription": "Ushbu narsa ({name}) uchun kolleksiya manzili sozlanmagan va uni chiqarib bo'lmaydi.",
+      "withdrawRequestSentTitle": "Chiqarish so'rovi yuborildi",
+      "withdrawRequestSentDescription": "{name} qayta ishlanmoqda. Tez orada u sizning hamyoningizga yuboriladi.",
+      "withdrawFailedTitle": "Chiqarish muvaffaqiyatsiz tugadi",
+      "withdrawFailedDescription": "So'rovingizni yuborishda muammo yuzaga keldi. Iltimos, qayta urinib ko'ring."
+    }
+  },
+  "leaderboardPage": {
+    "title": "Haftalik Reyting",
+    "description": "Bu hafta kim yuqorida ekanligini ko'ring. Har hafta yangilanadi.",
+    "rank": "O'rin",
+    "user": "Foydalanuvchi",
+    "starsSpent": "Sarflangan yulduzlar"
+  },
+  "mainPage": {
+    "liveDrops": "JONLI",
+    "casesTitle": "APEX Keyslari"
+  },
+  "profilePage": {
+    "id": "ID",
+    "settingsTitle": "Sozlamalar",
+    "balancesTitle": "Balanslar",
+    "referralProgramTitle": "Referral Dasturi",
+    "referralProgramDescription": "Do'stlarni taklif qiling va komissiya ishlang.",
+    "friendsReferred": "Taklif qilingan do'stlar",
+    "commissionEarned": "Ishlangan komissiya",
+    "copySuccessTitle": "Nusxalandi!",
+    "copySuccessDescription": "Referral kod bufferga nusxalandi.",
+    "themeTitle": "Mavzu",
+    "lightTheme": "Yorug'",
+    "darkTheme": "Qorong'u",
+    "languageTitle": "Til",
+    "lang_uz": "O'zbekcha",
+    "lang_ru": "Русский",
+    "lang_en": "English"
+  },
+  "rocketPage": {
+    "waiting": "Kutish",
+    "waitingForNextRound": "KEYINGI RAUNDNI KUTISH",
+    "placeBet": "Pul tikish",
+    "placeBetForNextRound": "Keyingi raundga pul tikish",
+    "cashOut": "Yechib olish {value}",
+    "youWon": "Siz {value} yutdingiz",
+    "crashed": "Halokat",
+    "players": "O'yinchilar",
+    "notEnoughStars": "Ushbu pulni tikish uchun sizda yulduzlar yetarli emas.",
+    "betPlaced": "Siz {value} yulduz tikdingiz"
+  },
+  "upgradePage": {
+    "title": "NFT Apgrade",
+    "selectYourItems": "O'z narsalaringizni tanlang",
+    "selectTargetNft": "Xohlagan NFT ni tanlang",
+    "upgradeButton": "Apgrade",
+    "yourInventoryForUpgrade": "Apgrade uchun inventaringiz",
+    "emptyInventory": "Inventaringizda apgrade uchun narsalar yo'q.",
+    "quickSearch": "Tezkor qidiruv",
+    "notFound": "Hech narsa topilmadi",
+    "confirm": "Tasdiqlash",
+    "successTitle": "Muvaffaqiyatli apgrade!",
+    "failureTitle": "Muvaffaqiyatsizlik!",
+    "continueButton": "Davom etish"
+  }
+}

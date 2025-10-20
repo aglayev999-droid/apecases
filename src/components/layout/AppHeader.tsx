@@ -14,6 +14,7 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
@@ -21,15 +22,16 @@ const starPackages = [200, 500, 1000, 2500, 5000];
 
 const BalanceTopUpDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (open: boolean) => void }) => {
     const { user } = useUser();
+    const { t } = useTranslation();
     const [amount, setAmount] = useState('');
 
     return (
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-sm p-4">
                 <DialogHeader className="text-center items-center -mb-2">
-                    <DialogTitle className="text-xl font-bold">Выберите способ пополнения</DialogTitle>
+                    <DialogTitle className="text-xl font-bold">{t('header.balanceTopUpTitle')}</DialogTitle>
                     <DialogDescription>
-                        Введите сумму для пополнения
+                        {t('header.balanceTopUpDescription')}
                     </DialogDescription>
                     <DialogClose className="absolute right-2 top-2 p-1">
                         <X className="h-5 w-5" />
@@ -37,15 +39,15 @@ const BalanceTopUpDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenC
                 </DialogHeader>
                 <Tabs defaultValue="stars" className="w-full">
                     <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="stars">STARS ★</TabsTrigger>
-                        <TabsTrigger value="ton" disabled>TON ♦</TabsTrigger>
+                        <TabsTrigger value="stars">{t('header.starsTab')}</TabsTrigger>
+                        <TabsTrigger value="ton" disabled>{t('header.tonTab')}</TabsTrigger>
                     </TabsList>
                     <TabsContent value="stars" className="space-y-4 pt-4">
                         <div className="relative">
                             <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 object-contain" />
                             <Input 
                                 type="number"
-                                placeholder="Сумма"
+                                placeholder={t('header.amountPlaceholder')}
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
                                 className="pl-10 text-base"
@@ -53,7 +55,7 @@ const BalanceTopUpDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenC
                         </div>
 
                         <div className='text-right text-sm text-muted-foreground'>
-                            Баланс: {user?.balance.stars.toLocaleString() || 0} ★
+                            {t('header.balanceLabel')}: {user?.balance.stars.toLocaleString() || 0} ★
                         </div>
 
                         <div className="grid grid-cols-3 gap-2">
@@ -72,18 +74,18 @@ const BalanceTopUpDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenC
 
                         <Button disabled className="w-full h-12 text-base">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-5 w-5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
-                            Пополнить
+                            {t('header.topUpButton')}
                         </Button>
 
                         <div className="flex items-center gap-4">
                             <div className="flex-grow border-t border-dashed"></div>
-                            <span className="text-muted-foreground text-sm">ИЛИ</span>
+                            <span className="text-muted-foreground text-sm">{t('header.orSeparator')}</span>
                             <div className="flex-grow border-t border-dashed"></div>
                         </div>
 
                         <Button variant="secondary" className="w-full h-12 text-base" onClick={() => window.open('https://t.me/onecase_relayer', '_blank')}>
                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-5 w-5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                           Подарки
+                           {t('header.sendGiftButton')}
                            <span className="text-muted-foreground text-xs ml-1">(Отправьте подарок)</span>
                         </Button>
 

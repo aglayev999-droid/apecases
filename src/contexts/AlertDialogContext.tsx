@@ -11,7 +11,7 @@ import {
   AlertDialogTitle,
   AlertDialogOverlay,
 } from "@/components/ui/alert-dialog";
-import { cn } from '@/lib/utils';
+import { useTranslation } from './LanguageContext';
 
 interface AlertOptions {
   title: React.ReactNode;
@@ -28,6 +28,7 @@ const AlertDialogContext = createContext<AlertDialogContextType | undefined>(und
 export const AlertDialogProvider = ({ children }: { children: ReactNode }) => {
   const [alertState, setAlertState] = useState<AlertOptions | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const { t } = useTranslation();
 
   const showAlert = useCallback((options: AlertOptions) => {
     setAlertState(options);
@@ -63,7 +64,7 @@ export const AlertDialogProvider = ({ children }: { children: ReactNode }) => {
               onClick={handleClose}
               className="bg-transparent text-blue-500 hover:bg-neutral-200/50 dark:hover:bg-neutral-700/50 w-full font-bold rounded-none p-3 h-auto text-center"
             >
-              OK
+              {t('alertDialog.ok')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

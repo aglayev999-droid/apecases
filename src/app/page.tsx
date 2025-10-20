@@ -12,6 +12,7 @@ import { Gift } from 'lucide-react';
 import Image from 'next/image';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 
 const LiveDropItem = ({ item }: { item: Item }) => (
@@ -26,6 +27,7 @@ const LiveDrops = () => {
     const [allItems, setAllItems] = useState<Item[]>(MOCK_ITEMS);
     const [liveDrops, setLiveDrops] = useState<Item[]>([]);
     const firestore = useFirestore();
+    const { t } = useTranslation();
 
     const filteredItems = useMemo(() => {
         return allItems.filter(item => 
@@ -79,7 +81,7 @@ const LiveDrops = () => {
         <div className="mb-6 flex items-center gap-4">
              <div className="flex items-center gap-2 self-stretch">
                 <div className="w-1 h-full bg-green-400/50 rounded-full" />
-                <span className="text-sm font-bold text-green-400 tracking-wider">LIVE</span>
+                <span className="text-sm font-bold text-green-400 tracking-wider">{t('mainPage.liveDrops')}</span>
             </div>
 
             <div className="relative w-full overflow-hidden mask-gradient">
@@ -112,6 +114,7 @@ const LiveDrops = () => {
 export default function Home() {
   const router = useRouter();
   const firestore = useFirestore();
+  const { t } = useTranslation();
   
   const casesCollectionRef = useMemoFirebase(() => 
     firestore ? collection(firestore, 'cases') : null
@@ -132,7 +135,7 @@ export default function Home() {
             {[...Array(5)].map((_,i) => <Skeleton key={i} className="w-24 h-32 flex-shrink-0" />)}
            </div>
         </div>
-        <h1 className="text-2xl md:text-3xl font-bold mb-4">APEX Cases</h1>
+        <h1 className="text-2xl md:text-3xl font-bold mb-4">{t('mainPage.casesTitle')}</h1>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
              <div key={i} className="flex flex-col gap-2">
@@ -150,7 +153,7 @@ export default function Home() {
   return (
     <div className="space-y-8">
        <LiveDrops />
-       <h1 className="text-2xl md:text-3xl font-bold mb-4">APEX Cases</h1>
+       <h1 className="text-2xl md:text-3xl font-bold mb-4">{t('mainPage.casesTitle')}</h1>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
         {displayCases.map((caseData) => (
           <CaseCard key={caseData.id} caseData={caseData} onOpen={() => handleCaseSelect(caseData)} />
@@ -159,5 +162,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

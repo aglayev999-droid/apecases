@@ -14,27 +14,27 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
 const LanguageSelector = () => {
-    const [language, setLanguage] = useState('uz'); // 'uz', 'ru', 'en'
-    // In a real app, this would come from a context or i18n library
+    const { language, setLanguage, t } = useTranslation();
     
     return (
         <div className="space-y-2">
-            <h3 className="font-semibold text-foreground">Til</h3>
-            <RadioGroup defaultValue={language} onValueChange={setLanguage}>
+            <h3 className="font-semibold text-foreground">{t('profilePage.languageTitle')}</h3>
+            <RadioGroup defaultValue={language} onValueChange={(value) => setLanguage(value as 'en' | 'ru' | 'uz')}>
                 <Label className="flex items-center justify-between p-4 rounded-lg bg-card cursor-pointer hover:bg-muted">
-                    <span>O'zbekcha</span>
+                    <span>{t('profilePage.lang_uz')}</span>
                     <RadioGroupItem value="uz" id="lang-uz" />
                 </Label>
                 <Label className="flex items-center justify-between p-4 rounded-lg bg-card cursor-pointer hover:bg-muted">
-                    <span>Русский</span>
+                    <span>{t('profilePage.lang_ru')}</span>
                     <RadioGroupItem value="ru" id="lang-ru" />
                 </Label>
                 <Label className="flex items-center justify-between p-4 rounded-lg bg-card cursor-pointer hover:bg-muted">
-                    <span>English</span>
+                    <span>{t('profilePage.lang_en')}</span>
                     <RadioGroupItem value="en" id="lang-en" />
                 </Label>
             </RadioGroup>
@@ -45,6 +45,7 @@ const LanguageSelector = () => {
 const ThemeSelector = () => {
     const { theme, setTheme } = useTheme();
     const [mounted, setMounted] = useState(false);
+    const { t } = useTranslation();
 
     useEffect(() => {
         setMounted(true);
@@ -56,7 +57,7 @@ const ThemeSelector = () => {
 
     return (
          <div className="space-y-2">
-            <h3 className="font-semibold text-foreground">Mavzu</h3>
+            <h3 className="font-semibold text-foreground">{t('profilePage.themeTitle')}</h3>
             <div 
               className={cn(
                 "flex items-center justify-between p-4 rounded-lg cursor-pointer hover:bg-muted",
@@ -66,7 +67,7 @@ const ThemeSelector = () => {
             >
               <div className="flex items-center gap-3">
                 <Sun className="h-5 w-5" />
-                <span>Yorug'</span>
+                <span>{t('profilePage.lightTheme')}</span>
               </div>
               {theme === 'light' && <Check className="h-5 w-5 text-primary" />}
             </div>
@@ -79,7 +80,7 @@ const ThemeSelector = () => {
             >
               <div className="flex items-center gap-3">
                 <Moon className="h-5 w-5" />
-                <span>Qorong'u</span>
+                <span>{t('profilePage.darkTheme')}</span>
               </div>
               {theme === 'dark' && <Check className="h-5 w-5 text-primary" />}
             </div>
@@ -91,6 +92,7 @@ const ThemeSelector = () => {
 export default function ProfilePage() {
   const { user, isUserLoading } = useUser();
   const { showAlert } = useAlertDialog();
+  const { t } = useTranslation();
 
   const formatNumber = (num: number) => {
     if (num === undefined || num === null) return '0';
@@ -101,8 +103,8 @@ export default function ProfilePage() {
     if (!user || !user.referrals || !user.referrals.code) return;
     navigator.clipboard.writeText(user.referrals.code);
     showAlert({
-      title: 'Copied!',
-      description: 'Referral code copied to clipboard.',
+      title: t('profilePage.copySuccessTitle'),
+      description: t('profilePage.copySuccessDescription'),
     });
   }
 
@@ -137,7 +139,7 @@ export default function ProfilePage() {
                 <div className="flex-grow">
                     <h1 className="text-3xl md:text-4xl font-bold tracking-tighter">{user.name}</h1>
                     <div className="flex items-center gap-2 mt-1">
-                        <p className="text-muted-foreground text-sm">ID: {user.telegramId}</p>
+                        <p className="text-muted-foreground text-sm">{t('profilePage.id')}: {user.telegramId}</p>
                     </div>
                 </div>
                  <SheetTrigger asChild>
@@ -148,7 +150,7 @@ export default function ProfilePage() {
             </div>
             <SheetContent>
                 <SheetHeader>
-                    <SheetTitle>Sozlamalar</SheetTitle>
+                    <SheetTitle>{t('profilePage.settingsTitle')}</SheetTitle>
                 </SheetHeader>
                 <div className="mt-6 space-y-6">
                     <ThemeSelector />
@@ -160,7 +162,7 @@ export default function ProfilePage() {
       <div className="grid md:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Balances</CardTitle>
+            <CardTitle className="text-xl">{t('profilePage.balancesTitle')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between p-4 rounded-lg bg-card-foreground/5 dark:bg-card-foreground/5">
@@ -175,16 +177,16 @@ export default function ProfilePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Referral Program</CardTitle>
-            <CardDescription>Invite friends and earn commissions.</CardDescription>
+            <CardTitle className="text-xl">{t('profilePage.referralProgramTitle')}</CardTitle>
+            <CardDescription>{t('profilePage.referralProgramDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Friends Referred</span>
+              <span className="text-muted-foreground">{t('profilePage.friendsReferred')}</span>
               <span className="font-bold text-lg">{user.referrals.count}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Commission Earned</span>
+              <span className="text-muted-foreground">{t('profilePage.commissionEarned')}</span>
               <div className="flex items-center gap-2 font-bold text-lg text-primary">
                 <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain" />
                 {formatNumber(user.referrals.commissionEarned)}

@@ -1,0 +1,137 @@
+
+{
+  "bottomNav": {
+    "inventory": "Инвентарь",
+    "profile": "Профиль",
+    "battles": "Битвы",
+    "cases": "Кейсы",
+    "rocket": "Ракета",
+    "upgrade": "Апгрейд",
+    "rating": "Рейтинг"
+  },
+  "header": {
+    "balanceTopUpTitle": "Выберите способ пополнения",
+    "balanceTopUpDescription": "Введите сумму для пополнения",
+    "starsTab": "STARS ★",
+    "tonTab": "TON ♦",
+    "amountPlaceholder": "Сумма",
+    "balanceLabel": "Баланс",
+    "topUpButton": "Пополнить",
+    "orSeparator": "ИЛИ",
+    "sendGiftButton": "Отправить подарок"
+  },
+  "alertDialog": {
+    "ok": "OK"
+  },
+  "userContext": {
+    "accountMismatchTitle": "Несоответствие аккаунтов",
+    "accountMismatchDescription": "Вы переключили аккаунт Telegram. Пожалуйста, выйдите и войдите снова, чтобы получить доступ к правильным данным приложения."
+  },
+  "battlesPage": {
+    "title": "Битвы кейсов",
+    "createBattle": "Создать битву",
+    "comingSoonTitle": "Скоро!",
+    "comingSoonDescription": "Мы работаем над этой функцией и скоро ее представим.",
+    "totalValue": "Общая стоимость",
+    "join": "Войти",
+    "view": "Смотреть",
+    "players": "Игроки",
+    "noBattlesTitle": "Сейчас нет активных битв.",
+    "createFirstBattle": "Создайте первую битву!"
+  },
+  "casePage": {
+    "rouletteTitle": "Рулетка",
+    "loadingCase": "Загрузка кейса...",
+    "giftsInside": "Подарки внутри",
+    "spinButton": "Крутить за",
+    "winModalTitle": "Поздравляем с победой!",
+    "winModalDescription": "Все выигранные призы вы можете увидеть у себя в",
+    "winModalInventoryLink": "инвентаре",
+    "winModalContinue": "Продолжить",
+    "errorCaseNotFound": "Кейс не найден.",
+    "errorNoItems": "В этом кейсе нет предметов.",
+    "errorInsufficientFunds": "У вас недостаточно звезд, чтобы открыть этот кейс.",
+    "errorCouldNotDeterminePrize": "Не удалось определить приз. Пожалуйста, попробуйте снова."
+  },
+  "inventoryPage": {
+    "title": "Инвентарь",
+    "sellAll": "Продать все за",
+    "nothingToSellTitle": "Нечего продавать",
+    "nothingToSellDescription": "У вас нет предметов (не NFT) для продажи.",
+    "itemsSoldTitle": "Все предметы проданы!",
+    "itemsSoldDescription": "Вы получили {value} звезд.",
+    "emptyInventoryTitle": "Пока нет подарков!",
+    "emptyInventoryDescription": "Открывайте кейсы, чтобы выигрывать подарки.",
+    "goToCases": "Перейти к кейсам",
+    "inventoryCard": {
+      "sellFor": "Продать за",
+      "withdraw": "Вывести",
+      "itemSoldTitle": "Предмет продан!",
+      "itemSoldDescription": "Вы продали {name} за {value} звезд.",
+      "walletNotConnectedTitle": "Кошелек не подключен",
+      "walletNotConnectedDescription": "Пожалуйста, подключите ваш TON кошелек для вывода предмета.",
+      "dbError": "Не удалось подключиться к базе данных. Пожалуйста, попробуйте позже.",
+      "withdrawErrorTitle": "Ошибка вывода",
+      "withdrawErrorDescription": "У этого предмета ({name}) не настроен адрес коллекции, и его нельзя вывести.",
+      "withdrawRequestSentTitle": "Запрос на вывод отправлен",
+      "withdrawRequestSentDescription": "{name} обрабатывается. Скоро он будет отправлен на ваш кошелек.",
+      "withdrawFailedTitle": "Ошибка вывода",
+      "withdrawFailedDescription": "Возникла проблема при отправке вашего запроса. Пожалуйста, попробуйте снова."
+    }
+  },
+  "leaderboardPage": {
+    "title": "Еженедельный рейтинг",
+    "description": "Посмотрите, кто на вершине на этой неделе. Сбрасывается еженедельно.",
+    "rank": "Ранг",
+    "user": "Пользователь",
+    "starsSpent": "Потрачено звезд"
+  },
+  "mainPage": {
+    "liveDrops": "LIVE",
+    "casesTitle": "Кейсы APEX"
+  },
+  "profilePage": {
+    "id": "ID",
+    "settingsTitle": "Настройки",
+    "balancesTitle": "Балансы",
+    "referralProgramTitle": "Реферальная программа",
+    "referralProgramDescription": "Приглашайте друзей и получайте комиссию.",
+    "friendsReferred": "Приглашено друзей",
+    "commissionEarned": "Заработано комиссии",
+    "copySuccessTitle": "Скопировано!",
+    "copySuccessDescription": "Реферальный код скопирован в буфер обмена.",
+    "themeTitle": "Тема",
+    "lightTheme": "Светлая",
+    "darkTheme": "Темная",
+    "languageTitle": "Язык",
+    "lang_uz": "O'zbekcha",
+    "lang_ru": "Русский",
+    "lang_en": "English"
+  },
+  "rocketPage": {
+    "waiting": "Ожидание",
+    "waitingForNextRound": "ОЖИДАНИЕ СЛЕДУЮЩЕГО РАУНДА",
+    "placeBet": "Сделать ставку",
+    "placeBetForNextRound": "Ставка на след. раунд",
+    "cashOut": "Забрать {value}",
+    "youWon": "Вы выиграли {value}",
+    "crashed": "Краш",
+    "players": "Игроки",
+    "notEnoughStars": "У вас недостаточно звезд для этой ставки.",
+    "betPlaced": "Вы поставили {value} звезд"
+  },
+  "upgradePage": {
+    "title": "Апгрейд NFT",
+    "selectYourItems": "Выберите ваши предметы",
+    "selectTargetNft": "Выберите желаемый NFT",
+    "upgradeButton": "Апгрейд",
+    "yourInventoryForUpgrade": "Ваш инвентарь для апгрейда",
+    "emptyInventory": "В вашем инвентаре нет предметов для апгрейда.",
+    "quickSearch": "Быстрый поиск",
+    "notFound": "Ничего не найдено",
+    "confirm": "Подтвердить",
+    "successTitle": "Успешный апгрейд!",
+    "failureTitle": "Неудача!",
+    "continueButton": "Продолжить"
+  }
+}

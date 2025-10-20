@@ -14,11 +14,13 @@ import { useUser } from '@/contexts/UserContext';
 import { cn } from '@/lib/utils';
 import { Trophy } from 'lucide-react';
 import Image from 'next/image';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
 export default function LeaderboardPage() {
   const { user } = useUser();
+  const { t } = useTranslation();
 
   const formatNumber = (num: number) => {
     return new Intl.NumberFormat('en-US').format(num);
@@ -34,17 +36,17 @@ export default function LeaderboardPage() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-tighter">Weekly Ranking</h1>
-        <p className="text-muted-foreground mt-2">See who's on top this week. Resets weekly.</p>
+        <h1 className="text-4xl font-bold tracking-tighter">{t('leaderboardPage.title')}</h1>
+        <p className="text-muted-foreground mt-2">{t('leaderboardPage.description')}</p>
       </div>
 
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[80px] text-center">Rank</TableHead>
-              <TableHead>User</TableHead>
-              <TableHead className="text-right">Stars Spent</TableHead>
+              <TableHead className="w-[80px] text-center">{t('leaderboardPage.rank')}</TableHead>
+              <TableHead>{t('leaderboardPage.user')}</TableHead>
+              <TableHead className="text-right">{t('leaderboardPage.starsSpent')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

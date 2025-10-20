@@ -11,6 +11,7 @@ import type { CaseBattle } from '@/lib/types';
 import { MOCK_CASES } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 const BattleCardLoader = () => (
   <Card className="overflow-hidden">
@@ -38,6 +39,7 @@ const BattleCardLoader = () => (
 export default function BattlesPage() {
   const firestore = useFirestore();
   const { showAlert } = useAlertDialog();
+  const { t } = useTranslation();
   
   const battlesCollectionRef = useMemoFirebase(() => 
     firestore ? collection(firestore, 'battles') : null
@@ -47,8 +49,8 @@ export default function BattlesPage() {
 
   const handleComingSoon = () => {
     showAlert({
-        title: 'Tez Kunda!',
-        description: 'Bu funksiya ustida ish olib bormoqdamiz va tez orada taqdim etamiz.',
+        title: t('battlesPage.comingSoonTitle'),
+        description: t('battlesPage.comingSoonDescription'),
     });
   }
 
@@ -60,9 +62,9 @@ export default function BattlesPage() {
     return (
         <div className="w-full space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold tracking-tighter">Case Battles</h1>
+                <h1 className="text-3xl font-bold tracking-tighter">{t('battlesPage.title')}</h1>
                 <Button onClick={handleComingSoon}>
-                <Swords className="mr-2 h-4 w-4" /> Create Battle
+                <Swords className="mr-2 h-4 w-4" /> {t('battlesPage.createBattle')}
                 </Button>
             </div>
             <div className="space-y-4">
@@ -76,9 +78,9 @@ export default function BattlesPage() {
     <div className="w-full space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold tracking-tighter">Case Battles</h1>
+        <h1 className="text-3xl font-bold tracking-tighter">{t('battlesPage.title')}</h1>
         <Button onClick={handleComingSoon}>
-          <Swords className="mr-2 h-4 w-4" /> Create Battle
+          <Swords className="mr-2 h-4 w-4" /> {t('battlesPage.createBattle')}
         </Button>
       </div>
 
@@ -108,21 +110,21 @@ export default function BattlesPage() {
                       <div className="flex-grow space-y-2">
                       <div className="flex justify-between items-start">
                           <div>
-                          <p className="text-sm text-muted-foreground">Total Value</p>
+                          <p className="text-sm text-muted-foreground">{t('battlesPage.totalValue')}</p>
                           <div className="flex items-center gap-2 font-bold text-lg">
                               <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain" />
                               <span>{totalValue.toLocaleString()}</span>
                           </div>
                           </div>
                           {battle.status === 'waiting' ? (
-                              <Button variant="secondary" size="sm" onClick={handleComingSoon}>Join</Button>
+                              <Button variant="secondary" size="sm" onClick={handleComingSoon}>{t('battlesPage.join')}</Button>
                           ) : (
-                              <Button variant="outline" size="sm" onClick={handleComingSoon}>View</Button>
+                              <Button variant="outline" size="sm" onClick={handleComingSoon}>{t('battlesPage.view')}</Button>
                           )}
                       </div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2">
                           <Users className="h-4 w-4" />
-                          <span>{battle.players.length} / 2 Players</span>
+                          <span>{battle.players.length} / 2 {t('battlesPage.players')}</span>
                       </div>
                       </div>
                   </div>
@@ -133,9 +135,9 @@ export default function BattlesPage() {
         ) : (
             <div className="text-center py-10 text-muted-foreground flex flex-col items-center gap-4">
                 <ShieldAlert className="w-16 h-16 text-primary/50" />
-                <p className="text-lg">No active battles right now.</p>
+                <p className="text-lg">{t('battlesPage.noBattlesTitle')}</p>
                  <Button onClick={handleComingSoon}>
-                    <Swords className="mr-2 h-4 w-4" /> Create the First Battle!
+                    <Swords className="mr-2 h-4 w-4" /> {t('battlesPage.createFirstBattle')}
                 </Button>
             </div>
         )}

@@ -16,6 +16,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 const ROULETTE_ITEMS_COUNT = 50;
 const WINNING_ITEM_INDEX = ROULETTE_ITEMS_COUNT - 5;
@@ -26,6 +27,7 @@ export default function CasePage() {
     const router = useRouter();
     const { user, isUserLoading, updateBalance, addInventoryItem } = useUser();
     const { showAlert } = useAlertDialog();
+    const { t } = useTranslation();
 
     const caseId = params.caseId as string;
     
@@ -37,9 +39,8 @@ export default function CasePage() {
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
     
-    // Using refs for widths to avoid re-renders on window resize
     const rouletteContainerRef = useRef<HTMLDivElement>(null);
-    const itemWidthRef = useRef(128); // Default width (w-32) + gap (16px)
+    const itemWidthRef = useRef(128); // Default width (w-32)
 
     const generateInitialReel = useCallback((items: Item[]): Item[] => {
         if (!items || items.length === 0) return [];
@@ -48,7 +49,6 @@ export default function CasePage() {
         );
     }, []);
 
-    // Effect to load case data
     useEffect(() => {
         const fetchCaseAndItemsData = async () => {
             if (!caseId) return;
@@ -56,7 +56,7 @@ export default function CasePage() {
             const caseResult: Case | null = MOCK_CASES.find(c => c.id === caseId) || null;
             
             if (!caseResult) {
-                showAlert({title: "Error", description: "Case not found."});
+                showAlert({title: t('casePage.errorCaseNotFound'), description: ""});
                 router.push('/');
                 return;
             }
@@ -68,16 +68,15 @@ export default function CasePage() {
                 .sort((a, b) => a.value - b.value);
             
             if (currentCaseItems.length === 0) {
-                showAlert({title: "Error", description: "No items found in this case."});
+                showAlert({title: t('casePage.errorNoItems'), description: ""});
                 return;
             }
             setCaseItems(currentCaseItems);
         };
 
         fetchCaseAndItemsData();
-    }, [caseId, router, showAlert]);
+    }, [caseId, router, showAlert, t]);
     
-    // Effect to populate reel when caseItems are ready or when returning to the page
     useEffect(() => {
         if (caseItems.length > 0 && rouletteItems.length === 0) {
              setRouletteItems(generateInitialReel(caseItems));
@@ -85,47 +84,41 @@ export default function CasePage() {
         }
     }, [caseItems, generateInitialReel, rouletteItems.length]);
 
-     // Effect to handle responsive width calculation without causing re-renders
     useEffect(() => {
         const calculateItemWidth = () => {
-            const itemEl = document.querySelector('.roulette-item');
-            if (itemEl) {
-                const style = window.getComputedStyle(itemEl);
-                const width = itemEl.clientWidth;
-                const marginLeft = parseInt(style.marginLeft, 10) || 0;
-                const marginRight = parseInt(style.marginRight, 10) || 0;
-                const gap = 16; // from gap-4
-                itemWidthRef.current = width + gap;
+            if (rouletteContainerRef.current) {
+                const itemEl = rouletteContainerRef.current.querySelector('.roulette-item');
+                if (itemEl) {
+                    const style = window.getComputedStyle(itemEl);
+                    const width = itemEl.clientWidth;
+                    const gap = parseInt(style.marginRight, 10) || 16; // from gap-4 (1rem = 16px)
+                    itemWidthRef.current = width + gap;
+                }
             }
         };
-
+        
         calculateItemWidth();
         window.addEventListener('resize', calculateItemWidth);
         return () => window.removeEventListener('resize', calculateItemWidth);
     }, []);
 
-    // Main animation effect
     useEffect(() => {
         if (!isSpinning || !wonItem || caseItems.length === 0) {
             return;
         }
 
-        // 1. Create a new reel with the winning item in the correct position
         const newReel = generateInitialReel(caseItems);
         newReel[WINNING_ITEM_INDEX] = wonItem; 
         setRouletteItems(newReel);
 
-        // 2. Calculate the target offset
         const containerWidth = rouletteContainerRef.current?.offsetWidth || 0;
         const jitter = (Math.random() - 0.5) * (itemWidthRef.current * 0.8);
         const targetOffset = (WINNING_ITEM_INDEX * itemWidthRef.current) - (containerWidth / 2) + (itemWidthRef.current / 2) + jitter;
         
-        // Use a short timeout to ensure the state update for the reel is rendered before starting the transition
         const animationTimeout = setTimeout(() => {
             setRouletteOffset(targetOffset);
         }, 100);
 
-        // 3. Set a timer to show the win modal after the animation finishes
         const modalTimeout = setTimeout(() => {
             setIsWinModalOpen(true);
         }, ANIMATION_DURATION_MS + 500);
@@ -134,18 +127,16 @@ export default function CasePage() {
             clearTimeout(animationTimeout);
             clearTimeout(modalTimeout);
         };
-
-    }, [isSpinning, wonItem, caseItems]);
+    }, [isSpinning, wonItem, caseItems, generateInitialReel]);
 
     const handleSpin = useCallback(async () => {
         if (isSpinning || !caseData || !user || caseItems.length === 0) return;
 
         if (user.balance.stars < caseData.price) {
-            showAlert({ title: "Insufficient funds", description: "You do not have enough stars to open this case." });
+            showAlert({ title: t('casePage.errorInsufficientFunds'), description: "" });
             return;
         }
 
-        // Determine the prize
         const randomNumber = Math.random();
         let cumulativeProbability = 0;
         let prize: Item | undefined;
@@ -158,34 +149,34 @@ export default function CasePage() {
             }
         }
         if (!prize) {
-            // Fallback to the first item if something goes wrong
             prize = caseItems.find(item => item.id === sortedCaseItemsByProb[0].itemId);
         }
         if (!prize) {
-            showAlert({ title: "Error", description: "Could not determine prize. Please try again." });
+            showAlert({ title: t('casePage.errorCouldNotDeterminePrize'), description: "" });
             return;
         }
         
-        // Update balance and inventory
         updateBalance(-caseData.price);
         addInventoryItem(prize);
         
-        // Set the winning item and trigger the animation effect
         setWonItem(prize);
         setIsSpinning(true);
 
-    }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem]);
+    }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, t]);
 
     const closeModal = () => {
         setIsWinModalOpen(false);
         setIsSpinning(false);
         setWonItem(null);
         
-        // Use a timeout to reset the reel after the modal has closed
         setTimeout(() => {
-            setRouletteOffset(0); 
-            if (caseItems.length > 0) {
-                 setRouletteItems(generateInitialReel(caseItems));
+            if (rouletteContainerRef.current) {
+                rouletteContainerRef.current.style.transition = 'none';
+                setRouletteOffset(0); 
+                if (caseItems.length > 0) {
+                     const newReel = generateInitialReel(caseItems);
+                     setRouletteItems(newReel);
+                }
             }
         }, 500); 
     }
@@ -201,7 +192,7 @@ export default function CasePage() {
                     <div className="w-10"></div>
                 </div>
                  <div className="flex-grow flex items-center justify-center">
-                    <p className="text-muted-foreground">Loading case...</p>
+                    <p className="text-muted-foreground">{t('casePage.loadingCase')}</p>
                 </div>
             </div>
         );
@@ -212,7 +203,7 @@ export default function CasePage() {
         <AccordionItem value="item-1" className="border-none">
           <AccordionTrigger className="[&[data-state=open]>svg]:rotate-180 justify-center gap-2 text-muted-foreground hover:no-underline font-bold py-3 rounded-lg bg-card/80 transition-colors">
             <Gift className="h-5 w-5" />
-            <span>Подарки внутри</span>
+            <span>{t('casePage.giftsInside')}</span>
           </AccordionTrigger>
           <AccordionContent className="bg-card/80 p-4 rounded-b-lg">
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
@@ -242,15 +233,15 @@ export default function CasePage() {
                 <Button variant="ghost" size="icon" onClick={() => router.back()}>
                     <ChevronLeft className="h-6 w-6" />
                 </Button>
-                <h1 className="text-xl font-bold">Roulette</h1>
+                <h1 className="text-xl font-bold">{t('casePage.rouletteTitle')}</h1>
                 <div className="w-10"></div>
             </div>
 
             <div className="flex-grow flex flex-col items-center justify-center">
-                <div ref={rouletteContainerRef} className="relative w-full flex flex-col items-center justify-center my-8">
+                <div ref={rouletteContainerRef} className="relative w-full flex flex-col items-center justify-center my-4 sm:my-8">
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-white z-10"></div>
                     
-                    <div className="w-full h-32 sm:h-36 overflow-hidden">
+                    <div className="w-full h-28 sm:h-32 md:h-36 overflow-hidden">
                         <div 
                             className="flex h-full items-center gap-4"
                             style={{
@@ -261,7 +252,7 @@ export default function CasePage() {
                             {rouletteItems.map((item, index) => (
                                 <div 
                                     key={`${item.id}-${index}`}
-                                    className="roulette-item flex-shrink-0 w-28 h-28 sm:w-32 sm:h-32"
+                                    className="roulette-item flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32"
                                 >
                                      <Card className="p-2 flex flex-col items-center justify-center w-full h-full border-0 bg-card/80">
                                         <div className="aspect-square relative w-full h-full">
@@ -284,7 +275,7 @@ export default function CasePage() {
                         size="lg"
                     >
                        <div className="flex items-center justify-center gap-2">
-                           <span>{`Крутить ${caseData.price}`}</span>
+                           <span>{`${t('casePage.spinButton')} ${caseData.price}`}</span>
                            <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />
                        </div>
                     </Button>
@@ -295,12 +286,12 @@ export default function CasePage() {
             </div>
 
              <Dialog open={isWinModalOpen} onOpenChange={(isOpen) => !isOpen && closeModal()}>
-                <DialogContent className="max-w-[90vw] sm:max-w-xs text-center" onInteractOutside={(e) => e.preventDefault()}>
-                    <DialogHeader>
-                        <DialogTitle className="text-2xl font-bold">Поздравляем с победой!</DialogTitle>
+                <DialogContent className="max-w-[90vw] sm:max-w-xs text-center p-0 rounded-2xl" onInteractOutside={(e) => e.preventDefault()}>
+                    <DialogHeader className="p-6 pb-4">
+                        <DialogTitle className="text-2xl font-bold">{t('casePage.winModalTitle')}</DialogTitle>
                     </DialogHeader>
                     {wonItem && (
-                     <div className="flex flex-col items-center gap-4 py-4">
+                     <div className="flex flex-col items-center gap-4 py-2">
                         <Card className="p-4 flex flex-col items-center justify-center w-40 h-40 border-0 shadow-lg bg-card">
                            <div className="aspect-square relative w-32 h-32">
                                <Image src={wonItem.image} alt={wonItem.name} fill sizes="30vw" className="object-contain drop-shadow-lg" data-ai-hint={wonItem.imageHint} />
@@ -312,20 +303,18 @@ export default function CasePage() {
                         </div>
                      </div>
                      )}
-                    <DialogDescription className="text-base text-muted-foreground px-4">
-                        Все выигранные призы вы можете увидеть у себя в{' '}
+                    <DialogDescription className="text-base text-muted-foreground px-6">
+                        {t('casePage.winModalDescription')}{' '}
                         <button className="text-primary underline" onClick={() => { closeModal(); router.push('/inventory'); }}>
-                            инвентаre
+                            {t('casePage.winModalInventoryLink')}
                         </button>
                         .
                     </DialogDescription>
-                     <DialogFooter className="sm:justify-center px-4 pb-4">
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base" onClick={closeModal}>Продолжить</Button>
+                     <DialogFooter className="p-4">
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base" onClick={closeModal}>{t('casePage.winModalContinue')}</Button>
                      </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>
     );
 }
-
-    

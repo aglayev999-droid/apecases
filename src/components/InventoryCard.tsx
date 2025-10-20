@@ -11,6 +11,7 @@ import { useUser } from '@/contexts/UserContext';
 import { useTonWallet } from '@tonconnect/ui-react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 interface InventoryCardProps {
   item: InventoryItem;
@@ -21,35 +22,36 @@ export function InventoryCard({ item }: InventoryCardProps) {
   const { removeInventoryItem, updateBalance } = useUser();
   const wallet = useTonWallet();
   const firestore = useFirestore();
+  const { t } = useTranslation();
 
   const handleSell = () => {
     updateBalance(item.value);
-    removeInventoryItem(item.id);
+    removeInventoryItem(item.inventoryId);
     showAlert({
-      title: 'Item Sold!',
-      description: `You sold ${item.name} for ${item.value} stars.`,
+      title: t('inventoryPage.inventoryCard.itemSoldTitle'),
+      description: t('inventoryPage.inventoryCard.itemSoldDescription', { name: item.name, value: item.value }),
     });
   };
 
   const handleWithdraw = async () => {
     if (!wallet) {
       showAlert({
-        title: 'Wallet Not Connected',
-        description: 'Please connect your TON wallet to withdraw an item.',
+        title: t('inventoryPage.inventoryCard.walletNotConnectedTitle'),
+        description: t('inventoryPage.inventoryCard.walletNotConnectedDescription'),
       });
       return;
     }
     if (!firestore) {
         showAlert({
           title: 'Error',
-          description: 'Could not connect to the database. Please try again later.',
+          description: t('inventoryPage.inventoryCard.dbError'),
         });
         return;
     }
     if (!item.collectionAddress) {
        showAlert({
-        title: 'Withdrawal Error',
-        description: `This item (${item.name}) does not have a collection address configured and cannot be withdrawn.`,
+        title: t('inventoryPage.inventoryCard.withdrawErrorTitle'),
+        description: t('inventoryPage.inventoryCard.withdrawErrorDescription', { name: item.name }),
       });
       return;
     }
@@ -64,17 +66,17 @@ export function InventoryCard({ item }: InventoryCardProps) {
         timestamp: serverTimestamp(),
       });
 
-      removeInventoryItem(item.id);
+      removeInventoryItem(item.inventoryId);
 
       showAlert({
-        title: 'Withdrawal Request Sent',
-        description: `${item.name} is being processed. It will be sent to your wallet shortly.`,
+        title: t('inventoryPage.inventoryCard.withdrawRequestSentTitle'),
+        description: t('inventoryPage.inventoryCard.withdrawRequestSentDescription', { name: item.name }),
       });
     } catch (error) {
       console.error("Error sending withdrawal request:", error);
       showAlert({
-        title: 'Withdrawal Failed',
-        description: 'There was a problem sending your request. Please try again.',
+        title: t('inventoryPage.inventoryCard.withdrawFailedTitle'),
+        description: t('inventoryPage.inventoryCard.withdrawFailedDescription'),
       });
     }
   };
@@ -127,11 +129,11 @@ export function InventoryCard({ item }: InventoryCardProps) {
       <CardFooter className="p-2 flex flex-col gap-2">
          <div className="w-full grid grid-cols-2 gap-2">
             <Button variant="destructive" size="sm" onClick={handleSell}>
-                Sell for {item.value}
+                {t('inventoryPage.inventoryCard.sellFor')} {item.value}
                 <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
             </Button>
             <Button variant="default" size="sm" onClick={handleWithdraw}>
-                Withdraw
+                {t('inventoryPage.inventoryCard.withdraw')}
             </Button>
         </div>
       </CardFooter>
