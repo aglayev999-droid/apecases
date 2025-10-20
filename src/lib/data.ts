@@ -82,16 +82,15 @@ export const MOCK_CASES: Case[] = [
       image: 'https://i.ibb.co/twnxRfvP/floor.png',
       imageHint: 'blue apex case',
       items: [
-        { itemId: 'item-desk-calendar-random', probability: 0.25 },
-        { itemId: 'item-candy-cane-random', probability: 0.15 },
-        { itemId: 'item-ring', probability: 0.15 },
-        { itemId: 'item-cup', probability: 0.1 },
-        { itemId: 'item-diamond', probability: 0.1 },
-        { itemId: 'item-evil-eye', probability: 0.1 },
-        { itemId: 'item-witch-hat-random', probability: 0.07 },
-        { itemId: 'item-spy-agaric', probability: 0.05 },
+        { itemId: 'item-ring', probability: 0.20 },
+        { itemId: 'item-cup', probability: 0.20 },
+        { itemId: 'item-diamond', probability: 0.20 },
+        { itemId: 'item-desk-calendar-random', probability: 0.15 },
+        { itemId: 'item-candy-cane-random', probability: 0.10 },
+        { itemId: 'item-evil-eye', probability: 0.05 },
+        { itemId: 'item-witch-hat-random', probability: 0.05 },
+        { itemId: 'item-spy-agaric', probability: 0.03 },
         { itemId: 'item-tama-gadget', probability: 0.02 },
-        { itemId: 'item-nft-helmet-1', probability: 0.01 },
       ],
     },
      {
@@ -166,3 +165,5 @@ export const MOCK_LEADERBOARD: LeaderboardEntry[] = [
   { rank: 9, user: { name: 'Fury', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 15000 },
   { rank: 10, user: { name: 'Wraith', avatar: 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg' }, spent: 8000 },
 ];
+
+    
