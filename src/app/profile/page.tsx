@@ -30,7 +30,17 @@ import { Progress } from "@/components/ui/progress"
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
-const LanguageSelector = () => {
+
+export default function ProfilePage() {
+  const { user, isUserLoading, setHasNewItems } = useUser();
+  const { showAlert } = useAlertDialog();
+  const { t } = useTranslation();
+
+  useEffect(() => {
+    setHasNewItems(false);
+  }, [setHasNewItems]);
+  
+  const LanguageSelector = () => {
     const { language, setLanguage, t } = useTranslation();
     
     return (
@@ -52,55 +62,55 @@ const LanguageSelector = () => {
             </RadioGroup>
         </div>
     )
-}
+  }
 
-const ThemeSelector = () => {
-    const { theme, setTheme } = useTheme();
-    const [mounted, setMounted] = useState(false);
-    const { t } = useTranslation();
+  const ThemeSelector = () => {
+      const { theme, setTheme } = useTheme();
+      const [mounted, setMounted] = useState(false);
+      const { t } = useTranslation();
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-    
-    if (!mounted) {
-        return <Skeleton className="h-28 w-full" />
-    }
+      useEffect(() => {
+          setMounted(true);
+      }, []);
+      
+      if (!mounted) {
+          return <Skeleton className="h-28 w-full" />
+      }
 
-    return (
-         <div className="space-y-2">
-            <h3 className="font-semibold text-foreground">{t('profilePage.themeTitle')}</h3>
-            <div 
-              className={cn(
-                "flex items-center justify-between p-4 rounded-lg cursor-pointer hover:bg-muted",
-                theme === 'light' ? 'bg-card' : 'bg-transparent'
-              )}
-              onClick={() => setTheme('light')}
-            >
-              <div className="flex items-center gap-3">
-                <Sun className="h-5 w-5" />
-                <span>{t('profilePage.lightTheme')}</span>
+      return (
+          <div className="space-y-2">
+              <h3 className="font-semibold text-foreground">{t('profilePage.themeTitle')}</h3>
+              <div 
+                className={cn(
+                  "flex items-center justify-between p-4 rounded-lg cursor-pointer hover:bg-muted",
+                  theme === 'light' ? 'bg-card' : 'bg-transparent'
+                )}
+                onClick={() => setTheme('light')}
+              >
+                <div className="flex items-center gap-3">
+                  <Sun className="h-5 w-5" />
+                  <span>{t('profilePage.lightTheme')}</span>
+                </div>
+                {theme === 'light' && <Check className="h-5 w-5 text-primary" />}
               </div>
-              {theme === 'light' && <Check className="h-5 w-5 text-primary" />}
-            </div>
-            <div 
-              className={cn(
-                "flex items-center justify-between p-4 rounded-lg cursor-pointer hover:bg-muted",
-                theme === 'dark' ? 'bg-card' : 'bg-transparent'
-              )}
-              onClick={() => setTheme('dark')}
-            >
-              <div className="flex items-center gap-3">
-                <Moon className="h-5 w-5" />
-                <span>{t('profilePage.darkTheme')}</span>
+              <div 
+                className={cn(
+                  "flex items-center justify-between p-4 rounded-lg cursor-pointer hover:bg-muted",
+                  theme === 'dark' ? 'bg-card' : 'bg-transparent'
+                )}
+                onClick={() => setTheme('dark')}
+              >
+                <div className="flex items-center gap-3">
+                  <Moon className="h-5 w-5" />
+                  <span>{t('profilePage.darkTheme')}</span>
+                </div>
+                {theme === 'dark' && <Check className="h-5 w-5 text-primary" />}
               </div>
-              {theme === 'dark' && <Check className="h-5 w-5 text-primary" />}
-            </div>
-        </div>
-    )
-}
-
-const EmptyInventory = () => {
+          </div>
+      )
+  }
+  
+  const EmptyInventory = () => {
     const { t } = useTranslation();
     return (
         <div className="flex flex-col items-center justify-center text-center py-16">
@@ -121,233 +131,210 @@ const EmptyInventory = () => {
             </div>
         </div>
     );
-}
+  }
 
-const ItemActionModal = ({ 
-    item, 
-    isOpen, 
-    onClose 
-} : { 
-    item: InventoryItem | null, 
-    isOpen: boolean, 
-    onClose: () => void 
-}) => {
-    const { showAlert } = useAlertDialog();
-    const { removeInventoryItem, updateBalance } = useUser();
-    const wallet = useTonWallet();
-    const firestore = useFirestore();
-    const { t } = useTranslation();
-    const router = useRouter();
+  const ItemActionModal = ({ 
+      item, 
+      isOpen, 
+      onClose 
+  } : { 
+      item: InventoryItem | null, 
+      isOpen: boolean, 
+      onClose: () => void 
+  }) => {
+      const { showAlert } = useAlertDialog();
+      const { removeInventoryItem, updateBalance } = useUser();
+      const wallet = useTonWallet();
+      const firestore = useFirestore();
+      const { t } = useTranslation();
+      const router = useRouter();
 
-    const handleSell = () => {
-        if (!item) return;
-        updateBalance(item.value);
-        removeInventoryItem(item.inventoryId);
-        onClose();
-        showAlert({
-            title: t('inventoryPage.inventoryCard.itemSoldTitle'),
-            description: t('inventoryPage.inventoryCard.itemSoldDescription', { name: item.name, value: item.value }),
-        });
-    };
+      const handleSell = () => {
+          if (!item) return;
+          updateBalance(item.value);
+          removeInventoryItem(item.inventoryId);
+          onClose();
+          showAlert({
+              title: t('inventoryPage.inventoryCard.itemSoldTitle'),
+              description: t('inventoryPage.inventoryCard.itemSoldDescription', { name: item.name, value: item.value }),
+          });
+      };
 
-    const handleWithdraw = async () => {
-        if (!item) return;
-        if (!wallet) {
-            showAlert({
-                title: t('inventoryPage.inventoryCard.walletNotConnectedTitle'),
-                description: t('inventoryPage.inventoryCard.walletNotConnectedDescription'),
-            });
-            return;
-        }
-        if (!firestore) {
-            showAlert({ title: 'Error', description: t('inventoryPage.inventoryCard.dbError') });
-            return;
-        }
-        if (!item.collectionAddress) {
-            showAlert({
-                title: t('inventoryPage.inventoryCard.withdrawErrorTitle'),
-                description: t('inventoryPage.inventoryCard.withdrawErrorDescription', { name: item.name }),
-            });
-            return;
-        }
+      const handleWithdraw = async () => {
+          if (!item) return;
+          if (!wallet) {
+              showAlert({
+                  title: t('inventoryPage.inventoryCard.walletNotConnectedTitle'),
+                  description: t('inventoryPage.inventoryCard.walletNotConnectedDescription'),
+              });
+              return;
+          }
+          if (!firestore) {
+              showAlert({ title: 'Error', description: t('inventoryPage.inventoryCard.dbError') });
+              return;
+          }
+          if (!item.collectionAddress) {
+              showAlert({
+                  title: t('inventoryPage.inventoryCard.withdrawErrorTitle'),
+                  description: t('inventoryPage.inventoryCard.withdrawErrorDescription', { name: item.name }),
+              });
+              return;
+          }
 
-        try {
-            const queueRef = collection(firestore, 'withdrawal_queue');
-            await addDoc(queueRef, {
-                user_wallet_address: wallet.account.address,
-                nft_id: item.id,
-                nft_contract_address: item.collectionAddress,
-                status: 'pending',
-                timestamp: serverTimestamp(),
-            });
-            removeInventoryItem(item.inventoryId);
-            onClose();
-            showAlert({
-                title: t('inventoryPage.inventoryCard.withdrawRequestSentTitle'),
-                description: t('inventoryPage.inventoryCard.withdrawRequestSentDescription', { name: item.name }),
-            });
-        } catch (error) {
-            console.error("Error sending withdrawal request:", error);
-            showAlert({
-                title: t('inventoryPage.inventoryCard.withdrawFailedTitle'),
-                description: t('inventoryPage.inventoryCard.withdrawFailedDescription'),
-            });
-        }
-    };
-    
-    const handleUpgrade = () => {
-        onClose();
-        router.push('/upgrade');
-    }
-    
-    if (!item) return null;
+          try {
+              const queueRef = collection(firestore, 'withdrawal_queue');
+              await addDoc(queueRef, {
+                  user_wallet_address: wallet.account.address,
+                  nft_id: item.id,
+                  nft_contract_address: item.collectionAddress,
+                  status: 'pending',
+                  timestamp: serverTimestamp(),
+              });
+              removeInventoryItem(item.inventoryId);
+              onClose();
+              showAlert({
+                  title: t('inventoryPage.inventoryCard.withdrawRequestSentTitle'),
+                  description: t('inventoryPage.inventoryCard.withdrawRequestSentDescription', { name: item.name }),
+              });
+          } catch (error) {
+              console.error("Error sending withdrawal request:", error);
+              showAlert({
+                  title: t('inventoryPage.inventoryCard.withdrawFailedTitle'),
+                  description: t('inventoryPage.inventoryCard.withdrawFailedDescription'),
+              });
+          }
+      };
+      
+      const handleUpgrade = () => {
+          onClose();
+          router.push('/upgrade');
+      }
+      
+      if (!item) return null;
 
-    const isNFT = item.rarity === 'NFT';
-    const isUpgradable = item.isUpgradable ?? !isNFT;
+      const isNFT = item.rarity === 'NFT';
+      const isUpgradable = item.isUpgradable ?? !isNFT;
 
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="max-w-xs text-center p-0 rounded-2xl" onInteractOutside={onClose}>
-                <DialogHeader className="p-6 pb-4">
-                    <DialogTitle className="text-xl font-bold">{item.name}</DialogTitle>
-                </DialogHeader>
-                <div className="flex flex-col items-center gap-4 px-6">
-                    <Card className="p-4 flex flex-col items-center justify-center w-48 h-48 border-0 shadow-lg bg-card">
-                       <div className="aspect-square relative w-40 h-40">
-                           <Image src={item.image} alt={item.name} fill sizes="40vw" className="object-contain drop-shadow-lg" data-ai-hint={item.imageHint} />
-                       </div>
-                    </Card>
-                    <p className={cn("text-lg font-bold")}>{item.rarity}</p>
-                 </div>
-                 <DialogFooter className="p-4 flex flex-col gap-2">
-                     {isUpgradable && (
-                        <Button className="w-full bg-purple-600 hover:bg-purple-700 h-12 text-base" onClick={handleUpgrade}>
-                           <ArrowRightLeft className="mr-2 h-4 w-4" />
-                           {t('inventoryPage.inventoryCard.upgrade')}
-                        </Button>
-                     )}
-                    <div className="grid grid-cols-2 gap-2">
-                         <Button variant="destructive" className="h-12 text-base" onClick={handleSell}>
-                            {t('inventoryPage.inventoryCard.sellFor')} {item.value}
-                            <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
-                        </Button>
-                        <Button variant="secondary" className="h-12 text-base" onClick={handleWithdraw} disabled={!isNFT}>
-                           {t('inventoryPage.inventoryCard.withdraw')}
-                        </Button>
-                    </div>
-                 </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    )
-}
-
-const InventorySection = () => {
-  const { inventory, removeInventoryItems, updateBalance, isUserLoading } = useUser();
-  const { showAlert } = useAlertDialog();
-  const { t } = useTranslation();
-  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
-
-  const nonNftItems = React.useMemo(() => {
-    if (!inventory) return [];
-    return inventory.filter(item => item.rarity !== 'NFT');
-  }, [inventory]);
-
-  const totalSellValue = React.useMemo(() => {
-    return nonNftItems.reduce((sum, item) => sum + item.value, 0);
-  }, [nonNftItems]);
-
-
-  const handleSellAll = () => {
-    if (nonNftItems.length === 0) {
-      showAlert({
-        title: t('inventoryPage.nothingToSellTitle'),
-        description: t('inventoryPage.nothingToSellDescription'),
-      });
-      return;
-    }
-    
-    const itemIdsToSell = nonNftItems.map(item => item.inventoryId);
-    
-    updateBalance(totalSellValue);
-    removeInventoryItems(itemIdsToSell);
-
-    showAlert({
-      title: t('inventoryPage.itemsSoldTitle'),
-      description: t('inventoryPage.itemsSoldDescription', { value: totalSellValue }),
-    });
-  };
-  
-  if (isUserLoading) {
       return (
-         <div className="space-y-4 mt-8">
-            <div className="flex justify-between items-center">
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tighter">{t('inventoryPage.title')}</h1>
-                <Skeleton className="h-9 w-40" />
-            </div>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-                {[...Array(8)].map((_, i) => (
-                    <div key={i} className="flex flex-col gap-2">
-                        <Skeleton className="aspect-square w-full rounded-xl" />
-                        <Skeleton className="h-5 w-2/3" />
-                    </div>
-                ))}
-            </div>
-        </div>
+          <Dialog open={isOpen} onOpenChange={onClose}>
+              <DialogContent className="max-w-xs text-center p-0 rounded-2xl" onInteractOutside={onClose}>
+                  <DialogHeader className="p-6 pb-4">
+                      <DialogTitle className="text-xl font-bold">{item.name}</DialogTitle>
+                  </DialogHeader>
+                  <div className="flex flex-col items-center gap-4 px-6">
+                      <Card className="p-4 flex flex-col items-center justify-center w-48 h-48 border-0 shadow-lg bg-card">
+                         <div className="aspect-square relative w-40 h-40">
+                             <Image src={item.image} alt={item.name} fill sizes="40vw" className="object-contain drop-shadow-lg" data-ai-hint={item.imageHint} />
+                         </div>
+                      </Card>
+                      <p className={cn("text-lg font-bold")}>{item.rarity}</p>
+                   </div>
+                   <DialogFooter className="p-4 flex flex-col gap-2">
+                       {isUpgradable && (
+                          <Button className="w-full bg-purple-600 hover:bg-purple-700 h-12 text-base" onClick={handleUpgrade}>
+                             <ArrowRightLeft className="mr-2 h-4 w-4" />
+                             {t('inventoryPage.inventoryCard.upgrade')}
+                          </Button>
+                       )}
+                      <div className="grid grid-cols-2 gap-2">
+                           <Button variant="destructive" className="h-12 text-base" onClick={handleSell}>
+                              {t('inventoryPage.inventoryCard.sellFor')} {item.value}
+                              <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
+                          </Button>
+                          <Button variant="secondary" className="h-12 text-base" onClick={handleWithdraw} disabled={!isNFT}>
+                             {t('inventoryPage.inventoryCard.withdraw')}
+                          </Button>
+                      </div>
+                   </DialogFooter>
+              </DialogContent>
+          </Dialog>
       )
   }
 
-  if (!inventory || inventory.length === 0) {
-    return <EmptyInventory />;
-  }
+  const InventorySection = () => {
+    const { inventory, removeInventoryItems, updateBalance, isUserLoading } = useUser();
+    const { showAlert } = useAlertDialog();
+    const { t } = useTranslation();
+    const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
-  return (
-    <>
-      <div className="space-y-4 mt-8">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tighter">{t('inventoryPage.title')}</h1>
-          <Button variant="destructive" size="sm" onClick={handleSellAll} disabled={nonNftItems.length === 0}>
-              <Trash2 className="mr-2 h-4 w-4" />
-              {t('inventoryPage.sellAll')} {totalSellValue}
-               <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
-          </Button>
+    const nonNftItems = React.useMemo(() => {
+      if (!inventory) return [];
+      return inventory.filter(item => item.rarity !== 'NFT');
+    }, [inventory]);
+
+    const totalSellValue = React.useMemo(() => {
+      return nonNftItems.reduce((sum, item) => sum + item.value, 0);
+    }, [nonNftItems]);
+
+
+    const handleSellAll = () => {
+      if (nonNftItems.length === 0) {
+        showAlert({
+          title: t('inventoryPage.nothingToSellTitle'),
+          description: t('inventoryPage.nothingToSellDescription'),
+        });
+        return;
+      }
+      
+      const itemIdsToSell = nonNftItems.map(item => item.inventoryId);
+      
+      updateBalance(totalSellValue);
+      removeInventoryItems(itemIdsToSell);
+
+      showAlert({
+        title: t('inventoryPage.itemsSoldTitle'),
+        description: t('inventoryPage.itemsSoldDescription', { value: totalSellValue }),
+      });
+    };
+    
+    if (isUserLoading) {
+        return (
+           <div className="space-y-4 mt-8">
+              <div className="flex justify-between items-center">
+                  <h1 className="text-2xl md:text-3xl font-bold tracking-tighter">{t('inventoryPage.title')}</h1>
+                  <Skeleton className="h-9 w-40" />
+              </div>
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+                  {[...Array(8)].map((_, i) => (
+                      <div key={i} className="flex flex-col gap-2">
+                          <Skeleton className="aspect-square w-full rounded-xl" />
+                          <Skeleton className="h-5 w-2/3" />
+                      </div>
+                  ))}
+              </div>
+          </div>
+        )
+    }
+
+    if (!inventory || inventory.length === 0) {
+      return <EmptyInventory />;
+    }
+
+    return (
+      <>
+        <div className="space-y-4 mt-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tighter">{t('inventoryPage.title')}</h1>
+            <Button variant="destructive" size="sm" onClick={handleSellAll} disabled={nonNftItems.length === 0}>
+                <Trash2 className="mr-2 h-4 w-4" />
+                {t('inventoryPage.sellAll')} {totalSellValue}
+                 <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+            {inventory.map((item: InventoryItem) => (
+              <InventoryCard 
+                key={item.inventoryId} 
+                item={item} 
+                onClick={() => setSelectedItem(item)}
+              />
+            ))}
+          </div>
         </div>
-        
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-          {inventory.map((item: InventoryItem) => (
-            <InventoryCard 
-              key={item.inventoryId} 
-              item={item} 
-              onClick={() => setSelectedItem(item)}
-            />
-          ))}
-        </div>
-      </div>
-      <ItemActionModal item={selectedItem} isOpen={!!selectedItem} onClose={() => setSelectedItem(null)} />
-    </>
-  );
-}
-
-export default function ProfilePage() {
-  const { user, isUserLoading, setHasNewItems } = useUser();
-  const { showAlert } = useAlertDialog();
-  const { t } = useTranslation();
-
-  useEffect(() => {
-    setHasNewItems(false);
-  }, [setHasNewItems]);
-
-  const formatNumber = (num: number) => {
-    if (num === undefined || num === null) return '0';
-    return new Intl.NumberFormat('en-US').format(num);
-  };
-
-  const copyReferralCode = () => {
-    if (!user || !user.referrals || !user.referrals.code) return;
-    navigator.clipboard.writeText(user.referrals.code);
-    showAlert({
-      title: t('profilePage.copySuccessTitle'),
-      description: t('profilePage.copySuccessDescription'),
-    });
+        <ItemActionModal item={selectedItem} isOpen={!!selectedItem} onClose={() => setSelectedItem(null)} />
+      </>
+    );
   }
   
   const MissionsSheet = ({ user }: { user: any }) => {
@@ -393,7 +380,20 @@ export default function ProfilePage() {
     );
   };
 
+  const formatNumber = (num: number) => {
+    if (num === undefined || num === null) return '0';
+    return new Intl.NumberFormat('en-US').format(num);
+  };
 
+  const copyReferralCode = () => {
+    if (!user || !user.referrals || !user.referrals.code) return;
+    navigator.clipboard.writeText(user.referrals.code);
+    showAlert({
+      title: t('profilePage.copySuccessTitle'),
+      description: t('profilePage.copySuccessDescription'),
+    });
+  }
+  
   if (isUserLoading || !user) {
     return (
       <div className="space-y-8">
@@ -494,3 +494,6 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+
+    
