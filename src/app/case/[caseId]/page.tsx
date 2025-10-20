@@ -16,15 +16,17 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 
-const ROULETTE_ITEMS_COUNT = 50; // Total items in the reel
-const WINNING_ITEM_INDEX = ROULETTE_ITEMS_COUNT - 5; // The prize will be placed at this index
+const ROULETTE_ITEMS_COUNT = 50;
+const WINNING_ITEM_INDEX = ROULETTE_ITEMS_COUNT - 5;
 
 export default function CasePage() {
     const params = useParams();
     const router = useRouter();
-    const caseId = params.caseId as string;
     const { showAlert } = useAlertDialog();
+    const { user, isUserLoading, updateBalance, addInventoryItem } = useUser();
 
+    const caseId = params.caseId as string;
+    
     const [caseData, setCaseData] = useState<Case | null>(null);
     const [caseItems, setCaseItems] = useState<Item[]>([]);
     const [rouletteItems, setRouletteItems] = useState<Item[]>([]);
@@ -33,15 +35,10 @@ export default function CasePage() {
     const [rouletteOffset, setRouletteOffset] = useState(0);
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
-    const [rouletteItemWidth, setRouletteItemWidth] = useState(112); // w-24 (96px) + gap-4 (16px) is a good default
+    const [rouletteItemWidth, setRouletteItemWidth] = useState(112); 
 
     const rouletteContainerRef = useRef<HTMLDivElement>(null);
 
-    const { user, isUserLoading, updateBalance, addInventoryItem } = useUser();
-    
-    // --- Data Fetching and Initial Reel Setup ---
-
-    // Generates a random reel from the available items
     const generateInitialReel = useCallback((items: Item[]): Item[] => {
         if (!items || items.length === 0) return [];
         const reel: Item[] = [];
@@ -85,7 +82,6 @@ export default function CasePage() {
         }
     }, [caseItems, generateInitialReel, rouletteItems.length]);
     
-    // --- Responsive Item Width Calculation ---
     useEffect(() => {
         const calculateItemWidth = () => {
             const isSmallScreen = window.innerWidth < 640;
@@ -99,7 +95,6 @@ export default function CasePage() {
         return () => window.removeEventListener('resize', calculateItemWidth);
     }, []);
 
-    // --- Spin Logic ---
     const handleSpin = useCallback(async (isFast: boolean) => {
         if (isSpinning || !caseData || !user || caseItems.length === 0) return;
 
@@ -157,12 +152,10 @@ export default function CasePage() {
         setIsSpinning(false);
         setWonItem(null);
         
-        // IMPORTANT: Reset state for the next spin
         setRouletteOffset(0); 
         setRouletteItems(generateInitialReel(caseItems));
     }
     
-    // Loading State
     if (!caseData || isUserLoading || caseItems.length === 0) {
         return (
             <div className="flex flex-col h-full">
@@ -221,10 +214,8 @@ export default function CasePage() {
 
             <div className="flex-grow flex flex-col items-center justify-center">
                 <div ref={rouletteContainerRef} className="relative w-full flex flex-col items-center justify-center my-8">
-                    {/* Top Pointer */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-white z-10"></div>
                     
-                    {/* Roulette Reel */}
                     <div className="w-full h-36 overflow-hidden">
                         <div 
                             className="flex h-full items-center gap-4"
@@ -248,7 +239,6 @@ export default function CasePage() {
                         </div>
                     </div>
                     
-                    {/* Bottom Pointer */}
                     <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-white z-10"></div>
                 </div>
 
@@ -274,13 +264,14 @@ export default function CasePage() {
                 </div>
             </div>
 
-            {/* --- Win Modal --- */}
-             <Dialog open={isWinModalOpen} onOpenChange={setIsWinModalOpen}>
+             <Dialog open={isWinModalOpen} onOpenChange={(isOpen) => {
+                if (!isOpen) {
+                    closeModal();
+                }
+             }}>
                 <DialogContent className="max-w-xs text-center" onInteractOutside={(e) => {
                     e.preventDefault();
-                    if (!isSpinning) {
-                        closeModal();
-                    }
+                    closeModal();
                 }}>
                     <DialogHeader>
                         <DialogTitle className="text-2xl font-bold">Поздравляем с победой!</DialogTitle>
@@ -313,3 +304,5 @@ export default function CasePage() {
         </div>
     );
 }
+
+    
