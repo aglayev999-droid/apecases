@@ -1,13 +1,13 @@
+
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronLeft, Gift } from 'lucide-react';
-import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useUser } from '@/contexts/UserContext';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
@@ -20,7 +20,7 @@ import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const ROULETTE_ITEMS_COUNT = 50; // Total items in the reel
-const WINNING_ITEM_INDEX = ROULETTE_ITEMS_COUNT - 4; // Prize will be placed here
+const WINNING_ITEM_INDEX = ROULETTE_ITEMS_COUNT - 5; // Prize will be placed around here
 
 export default function CasePage() {
     const params = useParams();
@@ -36,28 +36,17 @@ export default function CasePage() {
     const [rouletteOffset, setRouletteOffset] = useState(0);
     const [wonItem, setWonItem] = useState<Item | null>(null);
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
-    const [rouletteItemWidth, setRouletteItemWidth] = useState(112); // w-24 (96px) + gap-4 (16px)
+    const [rouletteItemWidth, setRouletteItemWidth] = useState(112); // Default: w-24 (96px) + gap-4 (16px)
 
     const rouletteContainerRef = useRef<HTMLDivElement>(null);
 
     const { user, isUserLoading, updateBalance, addInventoryItem } = useUser();
     const { showAlert } = useAlertDialog();
-
-    useEffect(() => {
-        const calculateItemWidth = () => {
-             // sm breakpoint is 640px
-            const isSmallScreen = window.innerWidth < 640;
-            const itemBaseWidth = isSmallScreen ? 96 : 128; // w-24 or sm:w-32
-            const gap = 16; // gap-4
-            setRouletteItemWidth(itemBaseWidth + gap);
-        };
-
-        calculateItemWidth();
-        window.addEventListener('resize', calculateItemWidth);
-        return () => window.removeEventListener('resize', calculateItemWidth);
-    }, []);
-
-    const generateInitialReel = useCallback((items: Item[]) => {
+    
+    // --- Data Fetching and Initial Setup ---
+    
+    // Generates a random reel from the available items
+    const generateInitialReel = useCallback((items: Item[]): Item[] => {
         if (items.length === 0) return [];
         const reel: Item[] = [];
         for (let i = 0; i < ROULETTE_ITEMS_COUNT; i++) {
@@ -68,7 +57,10 @@ export default function CasePage() {
 
     useEffect(() => {
         const fetchCaseAndItemsData = async () => {
-            let caseResult: Case | null = null;
+            if (!caseId) return;
+
+            // 1. Fetch Case Data
+            let caseResult: Case | null = MOCK_CASES.find(c => c.id === caseId) || null;
             if (firestore) {
                 try {
                     const caseSnap = await getDoc(doc(firestore, 'cases', caseId));
@@ -77,30 +69,50 @@ export default function CasePage() {
                     }
                 } catch (e) { console.error("Error fetching case from FS:", e); }
             }
-            if (!caseResult) {
-                caseResult = MOCK_CASES.find(c => c.id === caseId) || null;
-            }
             
-            if(caseResult) {
-                setCaseData(caseResult);
-                 const currentCaseItems = caseResult.items
-                    .map(i => MOCK_ITEMS.find(item => item.id === i.itemId))
-                    .filter((item): item is Item => !!item)
-                    .sort((a, b) => a.value - b.value);
-                setCaseItems(currentCaseItems);
-                // IMPORTANT: Generate initial reel only after caseItems is set
-                setRouletteItems(generateInitialReel(currentCaseItems));
-            } else {
+            if (!caseResult) {
                 showAlert({title: "Error", description: "Case not found."});
                 router.push('/');
+                return;
             }
+            setCaseData(caseResult);
+
+            // 2. Hydrate Case Items from All Items list
+            const currentCaseItems = caseResult.items
+                .map(i => MOCK_ITEMS.find(item => item.id === i.itemId))
+                .filter((item): item is Item => !!item)
+                .sort((a, b) => a.value - b.value);
+            
+            if(currentCaseItems.length === 0){
+                showAlert({title: "Error", description: "No items found in this case."});
+                return;
+            }
+            setCaseItems(currentCaseItems);
+            
+            // 3. Generate the initial roulette reel ONLY after items are loaded
+            setRouletteItems(generateInitialReel(currentCaseItems));
         };
 
-        if (caseId) {
-            fetchCaseAndItemsData();
-        }
+        fetchCaseAndItemsData();
     }, [caseId, firestore, router, showAlert, generateInitialReel]);
     
+     // --- Responsive Item Width Calculation ---
+    useEffect(() => {
+        const calculateItemWidth = () => {
+            const isSmallScreen = window.innerWidth < 640; // sm breakpoint
+            const itemBaseWidth = isSmallScreen ? 96 : 128; // w-24 or sm:w-32
+            const gap = 16; // gap-4
+            setRouletteItemWidth(itemBaseWidth + gap);
+        };
+
+        calculateItemWidth();
+        window.addEventListener('resize', calculateItemWidth);
+        return () => window.removeEventListener('resize', calculateItemWidth);
+    }, []);
+
+
+    // --- Spin Logic ---
+
     const handleSpin = useCallback(async (isFast: boolean) => {
         if (isSpinning || !caseData || !user || caseItems.length === 0 || rouletteItemWidth === 0) return;
 
@@ -117,6 +129,7 @@ export default function CasePage() {
         const randomNumber = Math.random();
         let cumulativeProbability = 0;
         let prize: Item | undefined;
+        // Sort by probability to ensure fairness
         const sortedCaseItemsByProb = [...caseData.items].sort((a, b) => a.probability - b.probability);
         for (const caseItem of sortedCaseItemsByProb) {
             cumulativeProbability += caseItem.probability;
@@ -125,8 +138,9 @@ export default function CasePage() {
                 break;
             }
         }
+        // Fallback prize if something goes wrong
         if (!prize) {
-            prize = caseItems[0];
+            prize = caseItems[0]; 
         }
         // --- End Prize Selection ---
         
@@ -144,7 +158,9 @@ export default function CasePage() {
         // Let the state update and DOM re-render with the new reel
         setTimeout(() => {
             const containerWidth = rouletteContainerRef.current?.offsetWidth || 0;
+            // Calculate a random "jitter" to make the final position less predictable
             const jitter = (Math.random() - 0.5) * rouletteItemWidth * 0.8;
+            // Calculate the exact offset to center the winning item under the pointer
             const targetOffset = (WINNING_ITEM_INDEX * rouletteItemWidth) - (containerWidth / 2) + (rouletteItemWidth / 2) + jitter;
             
             setRouletteOffset(targetOffset);
@@ -161,13 +177,13 @@ export default function CasePage() {
         setIsWinModalOpen(false);
         setIsSpinning(false);
         setIsFastSpin(false);
-        // Reset the reel for the next spin to a random state
+        // Reset the reel to a new random state for the next spin
         setRouletteItems(generateInitialReel(caseItems));
         setRouletteOffset(0);
         setWonItem(null);
     }
     
-    if (!caseData || isUserLoading || caseItems.length === 0) {
+    if (!caseData || isUserLoading || caseItems.length === 0 || rouletteItems.length === 0) {
         return (
             <div className="flex flex-col h-full">
                  <div className="flex items-center justify-between mb-4 flex-shrink-0">
@@ -225,8 +241,10 @@ export default function CasePage() {
 
             <div className="flex-grow flex flex-col items-center justify-center">
                 <div ref={rouletteContainerRef} className="relative w-full flex flex-col items-center justify-center my-8">
+                    {/* Top Pointer */}
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-white z-10"></div>
                     
+                    {/* Roulette Reel */}
                     <div className="w-full h-36 overflow-hidden">
                         <div 
                             className="flex h-full items-center gap-4"
@@ -250,6 +268,7 @@ export default function CasePage() {
                         </div>
                     </div>
                     
+                    {/* Bottom Pointer */}
                     <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-0 h-0 border-l-8 border-r-8 border-t-8 border-l-transparent border-r-transparent border-t-white z-10"></div>
                 </div>
 
@@ -275,6 +294,7 @@ export default function CasePage() {
                 </div>
             </div>
 
+            {/* --- Win Modal --- */}
              <Dialog open={isWinModalOpen} onOpenChange={(isOpen) => !isOpen && closeModal()}>
                 <DialogContent className="max-w-xs text-center" onInteractOutside={(e) => e.preventDefault()}>
                     <DialogHeader>
@@ -295,9 +315,9 @@ export default function CasePage() {
                      )}
                     <DialogDescription className="text-base text-muted-foreground px-4">
                         Все выигранные призы вы можете увидеть у себя в{' '}
-                        <Link href="/inventory" className="text-primary underline" onClick={closeModal}>
+                        <button className="text-primary underline" onClick={() => { closeModal(); router.push('/inventory'); }}>
                             инвентаре
-                        </Link>
+                        </button>
                         .
                     </DialogDescription>
                      <DialogFooter className="p-4">
@@ -308,3 +328,4 @@ export default function CasePage() {
         </div>
     );
 }
+
