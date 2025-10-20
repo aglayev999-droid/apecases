@@ -20,30 +20,30 @@ export const ALL_ITEMS: Item[] = [
   
   // Uncommon
   { id: 'item-ring', name: 'Silver Ring', rarity: 'Uncommon', image: 'https://i.ibb.co/hxy5rG61/ring.png', imageHint: 'silver diamond ring', value: 100, description: 'A beautiful silver ring.' },
-  { id: 'item-lol-pop-random', name: 'Lol Pop', rarity: 'Uncommon', image: 'https://i.ibb.co/8gfrrt0R/download-removebg-preview-1.png', imageHint: 'swirl lollipop', value: 360, description: 'A colorful lollipop.' },
+  { id: 'item-lol-pop-random', name: 'Lol Pop', rarity: 'Uncommon', image: 'https://i.ibb.co/Q7KdJyRN/Lol-pop.png', imageHint: 'swirl lollipop', value: 360, description: 'A colorful lollipop.' },
   { id: 'item-candy-cane', name: 'Candy Cane', rarity: 'Uncommon', image: 'https://i.ibb.co/ksnfgkCb/Candy-cane.png', imageHint: 'candy cane with bow', value: 300, description: 'A festive candy cane with a bow.' },
   { id: 'item-desk-calendar', name: 'Desk Calendar', rarity: 'Uncommon', image: 'https://i.ibb.co/xNvnLh4/Desk-Calendar.png', imageHint: 'desk calendar', value: 300, description: 'A fun desk calendar.', animationUrl: 'https://player.vimeo.com/video/1128782666?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=1&muted=1&loop=1' },
   { id: 'item-ginger-cookie', name: 'Ginger Cookie', rarity: 'Uncommon', image: 'https://i.ibb.co/sXXQnrY/spy.png', imageHint: 'gingerbread man', value: 440, description: 'A delicious ginger cookie.' },
 
   // Rare
-  { id: 'item-party-sparkler', name: 'Party Sparkler', rarity: 'Rare', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'party sparkler', value: 450, description: 'A festive party sparkler.' },
-  { id: 'item-clover-pin', name: 'Clover Pin', rarity: 'Rare', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'clover pin', value: 470, description: 'A lucky clover pin.' },
-  { id: 'item-input-key', name: 'Input Key', rarity: 'Rare', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'input key', value: 500, description: 'A mysterious input key.' },
-  { id: 'item-fresh-socks', name: 'Fresh Socks', rarity: 'Rare', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'fresh socks', value: 550, description: 'A pair of fresh socks.' },
+  { id: 'item-party-sparkler', name: 'Party Sparkler', rarity: 'Rare', image: 'https://i.ibb.co/TMwFBvD3/Party-Sparkler.png', imageHint: 'party sparkler', value: 450, description: 'A festive party sparkler.' },
+  { id: 'item-clover-pin', name: 'Clover Pin', rarity: 'Rare', image: 'https://i.ibb.co/pj0V0GXp/Clover-Pin.png', imageHint: 'clover pin', value: 470, description: 'A lucky clover pin.' },
+  { id: 'item-input-key', name: 'Input Key', rarity: 'Rare', image: 'https://i.ibb.co/7tpkt39P/Input-key.png', imageHint: 'input key', value: 500, description: 'A mysterious input key.' },
+  { id: 'item-fresh-socks', name: 'Fresh Socks', rarity: 'Rare', image: 'https://i.ibb.co/yFNNdRN7/Fresh-Socks.png', imageHint: 'fresh socks', value: 550, description: 'A pair of fresh socks.' },
   { id: 'item-evil-eye', name: 'Evil Eye', rarity: 'Rare', image: 'https://i.ibb.co/BH7RH5sn/Evil-eye.png', imageHint: 'evil eye amulet', value: 800, description: 'A protective evil eye amulet.' },
   { id: 'item-witch-hat', name: 'Witch Hat', rarity: 'Rare', image: 'https://i.ibb.co/KxtS9HyT/Witch-hat.png', imageHint: 'purple witch hat', value: 380, description: 'A magical witch hat.' },
   
   // Epic
   { id: 'item-spy-agaric', name: 'Spy Agaric', rarity: 'Epic', image: 'https://i.ibb.co/XZBv49Mw/Spy-agariq.png', imageHint: 'mushroom with hat', value: 700, description: 'A mysterious spy mushroom.' },
   { id: 'item-jelly-bunny', name: 'Jelly Bunny', rarity: 'Epic', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'jelly bunny', value: 800, description: 'A sweet jelly bunny.' },
-  { id: 'item-love-potion', name: 'Love Potion', rarity: 'Epic', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'love potion', value: 1800, description: 'A mysterious love potion.' },
+  { id: 'item-love-potion', name: 'Love Potion', rarity: 'Epic', image: 'https://i.ibb.co/sJtXLXmz/Love-Potion.png', imageHint: 'love potion', value: 1800, description: 'A mysterious love potion.' },
 
   // Legendary
   { id: 'item-tama-gadget', name: 'Tama Gadget', rarity: 'Legendary', image: 'https://i.ibb.co/N629KC3k/tama-gadget.png', imageHint: 'tamagotchi device', value: 600, description: 'A nostalgic tama gadget.' },
-  { id: 'item-sakura-flower', name: 'Sakura Flower', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'sakura flower', value: 1200, description: 'A beautiful sakura flower.' },
-  { id: 'item-cupid-charm', name: 'Cupid Charm', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'cupid charm', value: 2000, description: 'A charming cupid charm.' },
-  { id: 'item-diamond-ring', name: 'Diamond Ring', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'diamond ring', value: 4000, description: 'A stunning diamond ring.' },
-  { id: 'item-toy-bear', name: 'Toy Bear', rarity: 'Legendary', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'toy bear', value: 4100, description: 'A cuddly toy bear.' },
+  { id: 'item-sakura-flower', name: 'Sakura Flower', rarity: 'Legendary', image: 'https://i.ibb.co/Dg9V2MvC/Sakura-Flower.png', imageHint: 'sakura flower', value: 1200, description: 'A beautiful sakura flower.' },
+  { id: 'item-cupid-charm', name: 'Cupid Charm', rarity: 'Legendary', image: 'https://i.ibb.co/C3q5PhcK/Diamond-Ring-2.png', imageHint: 'cupid charm', value: 2000, description: 'A charming cupid charm.' },
+  { id: 'item-diamond-ring', name: 'Diamond Ring', rarity: 'Legendary', image: 'https://i.ibb.co/xKYxXh8d/Diamond-Ring-1.png', imageHint: 'diamond ring', value: 4000, description: 'A stunning diamond ring.' },
+  { id: 'item-toy-bear', name: 'Toy Bear', rarity: 'Legendary', image: 'https://i.ibb.co/ccF1j4pZ/Toy-BEar.png', imageHint: 'toy bear', value: 4100, description: 'A cuddly toy bear.' },
 
   // NFT
   { id: 'item-nft-helmet-1', name: 'Cyber Helmet', rarity: 'NFT', image: 'https://i.ibb.co/hYDLm1c/cyber-helmet.png', imageHint: 'cyber helmet', value: 10000, description: 'A rare cybernetic helmet. Part of the first collection.', collectionAddress: 'EQD4-1GaaA32cfxI1x5Y1__UsoLPK9p9s3L243d4kS4wryn0', animationUrl: 'https://cdn.pixabay.com/video/2024/05/29/213089_large.mp4' },
