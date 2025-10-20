@@ -23,6 +23,7 @@ export default function CasePage() {
     const params = useParams();
     const router = useRouter();
     const caseId = params.caseId as string;
+    const { showAlert } = useAlertDialog();
 
     const [caseData, setCaseData] = useState<Case | null>(null);
     const [caseItems, setCaseItems] = useState<Item[]>([]);
@@ -37,7 +38,6 @@ export default function CasePage() {
     const rouletteContainerRef = useRef<HTMLDivElement>(null);
 
     const { user, isUserLoading, updateBalance, addInventoryItem } = useUser();
-    const { showAlert } = useAlertDialog();
     
     // --- Data Fetching and Initial Reel Setup ---
 
@@ -313,5 +313,3 @@ export default function CasePage() {
         </div>
     );
 }
-
-    
