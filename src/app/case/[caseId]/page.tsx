@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronLeft, Gift } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { useUser } from '@/contexts/UserContext';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
@@ -49,18 +49,14 @@ export default function CasePage() {
     const { user, updateBalance, isUserLoading } = useUser();
     const { showAlert } = useAlertDialog();
 
-    useEffect(() => {
-        const initialCase = MOCK_CASES.find(c => c.id === caseId);
-        if (initialCase) {
-             const items = initialCase.items
-                .map(i => MOCK_ITEMS.find(item => item.id === i.itemId))
-                .filter((item): item is Item => !!item)
-                .sort((a, b) => a.value - b.value);
-            setCaseItems(items);
-            setCaseData(initialCase);
+    const generateInitialReel = useCallback((items: Item[]) => {
+        if (items.length === 0) return [];
+        const reel: Item[] = [];
+        for (let i = 0; i < ROULETTE_ITEMS_COUNT; i++) {
+            reel.push(items[Math.floor(Math.random() * items.length)]);
         }
-    }, [caseId]);
-
+        return reel;
+    }, []);
 
     useEffect(() => {
         if (!firestore || !caseId) return;
@@ -85,6 +81,7 @@ export default function CasePage() {
                         .filter((item): item is Item => !!item)
                         .sort((a, b) => a.value - b.value);
                     setCaseItems(currentCaseItems);
+                    setRouletteItems(generateInitialReel(currentCaseItems)); // Pre-fill the roulette
                 } else {
                     showAlert({title: "Error", description: "Case not found."});
                     router.push('/');
@@ -96,7 +93,7 @@ export default function CasePage() {
         };
 
         fetchCaseAndItemsData();
-    }, [caseId, firestore, router, showAlert]);
+    }, [caseId, firestore, router, showAlert, generateInitialReel]);
 
     const generateRouletteReel = useCallback((prize: Item) => {
         if (caseItems.length === 0) return [];
@@ -158,8 +155,8 @@ export default function CasePage() {
         setIsWinModalOpen(false);
         setIsSpinning(false);
         setIsFastSpin(false);
-        setRouletteItems([]);
         setRouletteOffset(0);
+        setRouletteItems(generateInitialReel(caseItems));
     }
     
     if (!caseData || isUserLoading) {
@@ -190,9 +187,16 @@ export default function CasePage() {
             {caseItems.length > 0 ? (
                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                   {caseItems.map(item => (
-                      <Card key={item.id} className={cn("p-1.5 flex flex-col items-center justify-center border-2", RARITY_PROPERTIES[item.rarity]?.bg, RARITY_PROPERTIES[item.rarity]?.border)}>
+                      <Card key={item.id} className={cn("p-1.5 flex flex-col items-center justify-between border-2 bg-transparent", RARITY_PROPERTIES[item.rarity]?.bg, RARITY_PROPERTIES[item.rarity]?.border)}>
                         <div className="aspect-square relative w-full h-full">
                           <Image src={item.image} alt={item.name} fill sizes="15vw" className="object-contain p-1" data-ai-hint={item.imageHint} />
+                        </div>
+                        <div className="text-center w-full mt-1">
+                            <p className="text-xs font-bold truncate">{item.name}</p>
+                            <div className="flex items-center justify-center gap-1 text-xs text-amber-400">
+                                <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12} className="h-3 w-3 object-contain" />
+                                <span>{item.value}</span>
+                            </div>
                         </div>
                       </Card>
                   ))}
@@ -231,21 +235,15 @@ export default function CasePage() {
                                 transition: isSpinning ? `transform ${isFastSpin ? '2s' : '5s'} cubic-bezier(0.2, 0.5, 0.1, 1)` : 'none',
                             }}
                         >
-                            {rouletteItems.length > 0 ? (
-                                rouletteItems.map((item, index) => (
-                                    <div key={index} className="flex-shrink-0 w-32 h-32">
-                                         <Card className={cn("p-2 flex flex-col items-center justify-center w-full h-full border-2", RARITY_PROPERTIES[item.rarity]?.bg, RARITY_PROPERTIES[item.rarity]?.border)}>
-                                            <div className="aspect-square relative w-24 h-24">
-                                                <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain" data-ai-hint={item.imageHint} />
-                                            </div>
-                                        </Card>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                                    Press spin to start...
+                            {rouletteItems.map((item, index) => (
+                                <div key={index} className="flex-shrink-0 w-32 h-32">
+                                     <Card className={cn("p-2 flex flex-col items-center justify-center w-full h-full border-2", RARITY_PROPERTIES[item.rarity]?.bg, RARITY_PROPERTIES[item.rarity]?.border)}>
+                                        <div className="aspect-square relative w-24 h-24">
+                                            <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain" data-ai-hint={item.imageHint} />
+                                        </div>
+                                    </Card>
                                 </div>
-                            )}
+                            ))}
                         </div>
                     </div>
                     
