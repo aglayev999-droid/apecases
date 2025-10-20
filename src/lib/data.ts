@@ -35,7 +35,7 @@ export const ALL_ITEMS: Item[] = [
   
   // Epic
   { id: 'item-spy-agaric', name: 'Spy Agaric', rarity: 'Epic', image: 'https://i.ibb.co/XZBv49Mw/Spy-agariq.png', imageHint: 'mushroom with hat', value: 700, description: 'A mysterious spy mushroom.' },
-  { id: 'item-jelly-bunny', name: 'Jelly Bunny', rarity: 'Epic', image: 'https://placehold.co/100x100/333/FFF?text=?', imageHint: 'jelly bunny', value: 800, description: 'A sweet jelly bunny.' },
+  { id: 'item-jelly-bunny', name: 'Jelly Bunny', rarity: 'Epic', image: 'https://i.ibb.co/kVhkdByX/Jelly-bunny.png', imageHint: 'jelly bunny', value: 800, description: 'A sweet jelly bunny.' },
   { id: 'item-love-potion', name: 'Love Potion', rarity: 'Epic', image: 'https://i.ibb.co/sJtXLXmz/Love-Potion.png', imageHint: 'love potion', value: 1800, description: 'A mysterious love potion.' },
 
   // Legendary
