@@ -8,11 +8,10 @@ import { useUser } from '@/contexts/UserContext';
 import type { Item, InventoryItem } from '@/lib/types';
 import Image from 'next/image';
 import { Search, X, Loader2 } from 'lucide-react';
-import { DiamondIcon } from '@/components/icons/DiamondIcon';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { MOCK_CASES, ALL_ITEMS as MOCK_ITEMS } from '@/lib/data';
+import { MOCK_ITEMS } from '@/lib/data';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 import { useTranslation } from '@/contexts/LanguageContext';
 
@@ -139,6 +138,7 @@ export default function UpgradePage() {
     const [isUpgrading, setIsUpgrading] = useState(false);
     const [upgradeResult, setUpgradeResult] = useState<'success' | 'failure' | null>(null);
     const [showResultModal, setShowResultModal] = useState(false);
+    const [finalRotation, setFinalRotation] = useState(0);
 
     const upgradableItems = useMemo(() => {
         return inventory?.filter(item => item.isUpgradable) || [];
@@ -164,13 +164,14 @@ export default function UpgradePage() {
             multiplier: parseFloat(calculatedMultiplier.toFixed(1)) 
         };
     }, [yourItemsValue, targetItem]);
+    
+    const greenZoneAngle = chance * 3.6;
 
     useEffect(() => {
         if (targetItem && targetItem.value <= yourItemsValue) {
             setTargetItem(null);
         }
     }, [yourItemsValue, targetItem]);
-
 
     const handleSelectYourItem = (item: InventoryItem) => {
         setYourItems(prev => {
@@ -192,9 +193,24 @@ export default function UpgradePage() {
         if (yourItems.length === 0 || !targetItem) return;
 
         setIsUpgrading(true);
+        setUpgradeResult(null);
+
+        const randomChance = Math.random() * 100;
+        const isSuccess = randomChance <= chance;
         
-        const random = Math.random() * 100;
-        const isSuccess = random <= chance;
+        const baseRotations = 5 * 360; 
+        let stopAngle;
+        if (isSuccess) {
+            // Stop in the green zone (from 0 to greenZoneAngle)
+            stopAngle = Math.random() * (greenZoneAngle * 0.9); // stop a bit before the edge
+        } else {
+            // Stop in the red zone (from greenZoneAngle to 360)
+            const redZoneAngle = 360 - greenZoneAngle;
+            stopAngle = greenZoneAngle + (Math.random() * redZoneAngle * 0.9) + (redZoneAngle * 0.05);
+        }
+        
+        const totalRotation = baseRotations + stopAngle;
+        setFinalRotation(totalRotation);
         
         setTimeout(() => {
             const yourItemIds = yourItems.map(i => i.inventoryId);
@@ -207,27 +223,21 @@ export default function UpgradePage() {
                 setUpgradeResult('failure');
             }
 
-            setIsUpgrading(false);
-            setTimeout(() => setShowResultModal(true), 300); // Show modal after animation settles
+            setTimeout(() => {
+                 setIsUpgrading(false);
+                 setShowResultModal(true);
+            }, 1000); // Show result color for a bit
             
-        }, 4000); // Simulate upgrade duration
+        }, 4000); // Animation duration
     };
 
     const resetUpgrade = () => {
-        setUpgradeResult(null);
         setShowResultModal(false);
+        setUpgradeResult(null);
         setYourItems([]);
         setTargetItem(null);
+        setFinalRotation(0);
     };
-
-    const getDiamondRotation = () => {
-        if (!isUpgrading) return 'rotate(0deg)';
-        const isSuccess = Math.random() * 100 <= chance;
-        const baseRotations = 5 * 360; // 5 full spins
-        // Success lands between 0 and 180 deg, failure between 181 and 359
-        const endRotation = isSuccess ? Math.random() * 170 : 190 + Math.random() * 160;
-        return `rotate(${baseRotations + endRotation}deg)`;
-    }
 
     return (
         <>
@@ -236,29 +246,38 @@ export default function UpgradePage() {
                     {t('upgradePage.title')}
                 </h1>
 
-                 <div className="relative flex items-center justify-center mb-6">
+                <div className="relative flex items-center justify-center mb-6">
                     <div className="absolute left-4 text-lg font-bold text-green-400">{chance}%</div>
                      <div className="relative w-40 h-40">
-                         {/* Spinning diamond background */}
-                        <div 
-                            className="absolute inset-0 transition-transform duration-[3500ms] ease-out"
-                            style={{ transform: isUpgrading ? getDiamondRotation() : 'rotate(0deg)' }}
+                         {/* Spinner */}
+                        <div className="absolute inset-0 transition-transform duration-[3500ms] ease-out"
+                             style={{ transform: isUpgrading ? `rotate(${finalRotation}deg)` : 'rotate(0deg)' }}
                         >
                             <div 
                                 className="w-full h-full rounded-full"
                                 style={{
-                                    background: `conic-gradient(from 0deg, #dc2626 0deg 180deg, #16a34a 180deg 360deg)`
+                                    background: upgradeResult
+                                      ? (upgradeResult === 'success' ? '#16a34a' : '#dc2626')
+                                      : `conic-gradient(from 0deg, #16a34a 0deg ${greenZoneAngle}deg, #dc2626 ${greenZoneAngle}deg 360deg)`,
+                                    transition: 'background 0.5s ease-in'
                                 }}
                             />
                         </div>
                         {/* Inner mask and icon */}
                         <div className="absolute inset-2 bg-background rounded-full" />
                         <div className="absolute inset-0 flex items-center justify-center">
-                           <div className="w-0 h-0 border-b-[10px] border-b-white border-l-8 border-l-transparent border-r-8 border-r-transparent absolute top-0 -translate-y-1/2" />
-                            {isUpgrading ? (
+                           <div className="w-0 h-0 border-b-[10px] border-b-white border-l-8 border-l-transparent border-r-8 border-r-transparent absolute top-0 -translate-y-1/2 z-10" />
+                            {isUpgrading && !upgradeResult ? (
                                 <Loader2 className="w-16 h-16 text-primary animate-spin" />
                             ) : (
-                                <DiamondIcon className="w-16 h-16 text-cyan-400" />
+                                 <svg 
+                                    viewBox="0 0 24 24" 
+                                    fill="none" 
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="w-16 h-16 text-cyan-400"
+                                >
+                                    <path d="M12.0001 1.99988L22.0001 8.99988L12.0001 21.9999L2.00006 8.99988L12.0001 1.99988Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
                             )}
                         </div>
                      </div>
@@ -310,7 +329,7 @@ export default function UpgradePage() {
                 </div>
                 
                  <Button className="w-full h-14 text-lg mb-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white" disabled={yourItems.length === 0 || !targetItem || isUpgrading} onClick={handleUpgrade}>
-                    {isUpgrading ? <Loader2 className="animate-spin" /> : t('upgradePage.upgradeButton')}
+                    {isUpgrading && !upgradeResult ? <Loader2 className="animate-spin" /> : t('upgradePage.upgradeButton')}
                 </Button>
 
                 <div className="flex-grow flex flex-col bg-card rounded-t-2xl p-4 min-h-0">
