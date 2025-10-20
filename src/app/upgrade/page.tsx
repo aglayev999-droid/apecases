@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
@@ -138,7 +139,7 @@ export default function UpgradePage() {
     const [isUpgrading, setIsUpgrading] = useState(false);
     const [upgradeResult, setUpgradeResult] = useState<'success' | 'failure' | null>(null);
     const [showResultModal, setShowResultModal] = useState(false);
-    const [finalRotation, setFinalRotation] = useState(0);
+    const [spinnerRotation, setSpinnerRotation] = useState(0);
 
     const upgradableItems = useMemo(() => {
         return inventory?.filter(item => item.isUpgradable) || [];
@@ -195,22 +196,26 @@ export default function UpgradePage() {
         setIsUpgrading(true);
         setUpgradeResult(null);
 
-        const randomChance = Math.random() * 100;
-        const isSuccess = randomChance <= chance;
+        const randomOutcome = Math.random() * 100;
+        const isSuccess = randomOutcome <= chance;
         
-        const baseRotations = 5 * 360; 
+        const baseRotations = 4 * 360; 
         let stopAngle;
+
         if (isSuccess) {
-            // Stop in the green zone (from 0 to greenZoneAngle)
-            stopAngle = Math.random() * (greenZoneAngle * 0.9); // stop a bit before the edge
+            // Land in the green zone (0 to greenZoneAngle degrees)
+            // Add a small margin from the edges
+            const margin = greenZoneAngle > 5 ? 2 : 0;
+            stopAngle = margin + Math.random() * (greenZoneAngle - margin * 2);
         } else {
-            // Stop in the red zone (from greenZoneAngle to 360)
-            const redZoneAngle = 360 - greenZoneAngle;
-            stopAngle = greenZoneAngle + (Math.random() * redZoneAngle * 0.9) + (redZoneAngle * 0.05);
+            // Land in the red zone (greenZoneAngle to 360 degrees)
+            const redZoneSize = 360 - greenZoneAngle;
+            const margin = redZoneSize > 5 ? 2 : 0;
+            stopAngle = greenZoneAngle + margin + Math.random() * (redZoneSize - margin * 2);
         }
         
         const totalRotation = baseRotations + stopAngle;
-        setFinalRotation(totalRotation);
+        setSpinnerRotation(totalRotation);
         
         setTimeout(() => {
             const yourItemIds = yourItems.map(i => i.inventoryId);
@@ -228,7 +233,7 @@ export default function UpgradePage() {
                  setShowResultModal(true);
             }, 1000); // Show result color for a bit
             
-        }, 4000); // Animation duration
+        }, 5000); // Animation duration (should match transition duration)
     };
 
     const resetUpgrade = () => {
@@ -236,7 +241,7 @@ export default function UpgradePage() {
         setUpgradeResult(null);
         setYourItems([]);
         setTargetItem(null);
-        setFinalRotation(0);
+        setSpinnerRotation(0);
     };
 
     return (
@@ -249,36 +254,40 @@ export default function UpgradePage() {
                 <div className="relative flex items-center justify-center mb-6">
                     <div className="absolute left-4 text-lg font-bold text-green-400">{chance}%</div>
                      <div className="relative w-40 h-40">
-                         {/* Spinner */}
-                        <div className="absolute inset-0 transition-transform duration-[3500ms] ease-out"
-                             style={{ transform: isUpgrading ? `rotate(${finalRotation}deg)` : 'rotate(0deg)' }}
-                        >
-                            <div 
-                                className="w-full h-full rounded-full"
-                                style={{
-                                    background: upgradeResult
-                                      ? (upgradeResult === 'success' ? '#16a34a' : '#dc2626')
-                                      : `conic-gradient(from 0deg, #16a34a 0deg ${greenZoneAngle}deg, #dc2626 ${greenZoneAngle}deg 360deg)`,
-                                    transition: 'background 0.5s ease-in'
-                                }}
-                            />
-                        </div>
-                        {/* Inner mask and icon */}
+                         {/* Static Wheel */}
+                        <div 
+                            className="w-full h-full rounded-full transition-colors duration-500"
+                            style={{
+                                background: upgradeResult
+                                    ? (upgradeResult === 'success' ? '#16a34a' : '#dc2626')
+                                    : `conic-gradient(from 0deg, #16a34a 0deg ${greenZoneAngle}deg, #dc2626 ${greenZoneAngle}deg 360deg)`,
+                            }}
+                        />
+                        
+                        {/* Inner mask */}
                         <div className="absolute inset-2 bg-background rounded-full" />
+                        
+                        {/* Spinning Pointer */}
+                        <div 
+                            className="absolute inset-0 flex items-center justify-center"
+                            style={{ 
+                                transform: `rotate(${spinnerRotation}deg)`,
+                                transition: isUpgrading ? `transform 4500ms ease-out` : 'none',
+                             }}
+                        >
+                            <div className="w-0 h-0 border-b-[10px] border-b-white border-l-8 border-l-transparent border-r-8 border-r-transparent absolute top-0 -translate-y-1/2" />
+                        </div>
+
+                         {/* Center Icon */}
                         <div className="absolute inset-0 flex items-center justify-center">
-                           <div className="w-0 h-0 border-b-[10px] border-b-white border-l-8 border-l-transparent border-r-8 border-r-transparent absolute top-0 -translate-y-1/2 z-10" />
-                            {isUpgrading && !upgradeResult ? (
-                                <Loader2 className="w-16 h-16 text-primary animate-spin" />
-                            ) : (
-                                 <svg 
-                                    viewBox="0 0 24 24" 
-                                    fill="none" 
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="w-16 h-16 text-cyan-400"
-                                >
-                                    <path d="M12.0001 1.99988L22.0001 8.99988L12.0001 21.9999L2.00006 8.99988L12.0001 1.99988Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                            )}
+                           <svg 
+                                viewBox="0 0 24 24" 
+                                fill="none" 
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-16 h-16 text-cyan-400"
+                            >
+                                <path d="M12.0001 1.99988L22.0001 8.99988L12.0001 21.9999L2.00006 8.99988L12.0001 1.99988Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
                         </div>
                      </div>
                     <div className="absolute right-4 text-lg font-bold text-cyan-400">x{multiplier.toFixed(1)}</div>
@@ -329,7 +338,7 @@ export default function UpgradePage() {
                 </div>
                 
                  <Button className="w-full h-14 text-lg mb-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white" disabled={yourItems.length === 0 || !targetItem || isUpgrading} onClick={handleUpgrade}>
-                    {isUpgrading && !upgradeResult ? <Loader2 className="animate-spin" /> : t('upgradePage.upgradeButton')}
+                    {isUpgrading ? <Loader2 className="animate-spin" /> : t('upgradePage.upgradeButton')}
                 </Button>
 
                 <div className="flex-grow flex flex-col bg-card rounded-t-2xl p-4 min-h-0">
@@ -387,3 +396,4 @@ export default function UpgradePage() {
         </>
     );
 }
+
