@@ -26,7 +26,7 @@ const RARITY_PROPERTIES = {
 const LiveDropItem = ({ item }: { item: Item }) => (
     <Card className={cn("p-1 border-2 bg-card/50 flex-shrink-0 w-[72px] h-[72px] rounded-xl", item.rarity ? RARITY_PROPERTIES[item.rarity].border : '')}>
         <div className="aspect-square relative w-full h-full">
-          <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" data-ai-hint={item.imageHint}/>
+          <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain p-1" data-ai-hint={item.imageHint}/>
         </div>
     </Card>
 );
@@ -85,10 +85,10 @@ const LiveDrops = () => {
     const displayItems = [...liveDrops, ...liveDrops];
 
     return (
-        <div className="mb-6 flex items-center gap-3">
-             <div className="flex flex-col items-center justify-center gap-1.5 self-stretch">
-                <span className="text-sm font-bold text-green-400 -rotate-90 whitespace-nowrap tracking-wider">LIVE</span>
+        <div className="mb-6 flex items-center gap-4">
+             <div className="flex items-center gap-2 self-stretch">
                 <div className="w-1 h-full bg-green-400/50 rounded-full" />
+                <span className="text-sm font-bold text-green-400 tracking-wider">LIVE</span>
             </div>
 
             <div className="relative w-full overflow-hidden mask-gradient">
@@ -99,8 +99,8 @@ const LiveDrops = () => {
                 </div>
                  <style jsx>{`
                     .mask-gradient {
-                        -webkit-mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
-                        mask-image: linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%);
+                        -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+                        mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
                     }
                     @keyframes scroll {
                         from { transform: translateX(0); }
@@ -109,7 +109,7 @@ const LiveDrops = () => {
                     .animate-scroll {
                         display: flex;
                         width: max-content;
-                        animation: scroll 40s linear infinite;
+                        animation: scroll 60s linear infinite;
                     }
                 `}</style>
             </div>
