@@ -7,29 +7,30 @@ let app: App | undefined;
 let firestore: Firestore | undefined;
 
 try {
-  const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-    ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY)
-    : undefined;
+  const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
 
-  if (serviceAccount) {
-    app = getApps().length
-      ? getApp()
-      : initializeApp({
-          credential: cert(serviceAccount),
-          databaseURL: `https://${firebaseConfig.projectId}.firebaseio.com`,
-        });
-
-    firestore = getFirestore(app);
-  } else {
-    if (process.env.NODE_ENV === 'production') {
-      console.warn(
-        'Firebase service account key not found. Server-side features will be disabled.'
-      );
+  if (serviceAccountKey) {
+    const serviceAccount = JSON.parse(serviceAccountKey);
+    
+    if (getApps().length === 0) {
+      app = initializeApp({
+        credential: cert(serviceAccount),
+        databaseURL: `https://${firebaseConfig.projectId}.firebaseio.com`,
+      });
+    } else {
+      app = getApp();
     }
+    
+    firestore = getFirestore(app);
+
+  } else {
+    // This will be logged on the server, not visible to the client.
+    console.warn(
+      'Firebase Admin SDK service account key is not set in environment variables. Server-side features requiring auth will be disabled.'
+    );
   }
 } catch (error) {
   console.error("Failed to initialize Firebase Admin SDK:", error);
 }
-
 
 export { firestore };
