@@ -225,15 +225,6 @@ export default function CasePage() {
         reelWithPrize[targetIndex] = prize;
         setReelItems(reelWithPrize);
         
-        // This gives the state update a moment to propagate
-        setTimeout(() => {
-            if (!emblaApi) return;
-            emblaApi.reInit(); // Reinitialize with the new reel items
-            emblaApi.scrollTo(targetIndex, !isFast); // Use Embla's animation
-        }, 100);
-
-        const spinTime = isFast ? 1000 : 4000;
-        
         const onSpinEnd = () => {
             if (isFree) {
                 setLastFreeCaseOpen(new Date());
@@ -254,17 +245,14 @@ export default function CasePage() {
             }
             setIsSpinning(false);
         };
-
-        // Listen for the scroll event to end
-        const handleScrollEnd = () => {
-            onSpinEnd();
-            emblaApi.off('scroll', handleScrollEnd);
-            emblaApi.off('settle', handleScrollEnd);
-        };
-
-        emblaApi.on('scroll', handleScrollEnd);
-        emblaApi.on('settle', handleScrollEnd);
-
+        
+        // This gives the state update a moment to propagate
+        setTimeout(() => {
+            if (!emblaApi) return;
+            emblaApi.reInit(); // Reinitialize with the new reel items
+            emblaApi.scrollTo(targetIndex, !isFast); // Use Embla's animation
+             emblaApi.on('settle', onSpinEnd);
+        }, 100);
 
     }, [caseData, user, emblaApi, updateBalance, updateSpending, addInventoryItem, showAlert, reelItems, allItems, setLastFreeCaseOpen, lastFreeCaseOpen, isSpinning]);
 
@@ -373,19 +361,16 @@ export default function CasePage() {
                     <div className="overflow-hidden w-full" ref={emblaRef}>
                         <div className="flex">
                             {reelItems.length > 0 ? reelItems.map((item, index) => (
-                                <div key={index} className="flex-[0_0_6rem] mx-1">
-                                    <Card className={cn(
-                                        "p-1.5 border-2 bg-card/50 transition-all duration-300 h-24 w-24", 
-                                        item ? RARITY_PROPERTIES[item.rarity].border : 'border-gray-500',
-                                    )}>
+                                <div key={index} className="flex-[0_0_8rem] mx-2">
+                                     <Card className="p-2 bg-card-foreground/5 border-border h-32 w-32">
                                         <div className="aspect-square relative">
-                                            {item && <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain p-1" data-ai-hint={item.imageHint}/>}
+                                            {item && <Image src={item.image} alt={item.name} fill sizes="15vw" className="object-contain p-1" data-ai-hint={item.imageHint}/>}
                                         </div>
                                     </Card>
                                 </div>
                             )) : (
-                                <div className="flex-[0_0_6rem] mx-1">
-                                    <Card className="p-1.5 border-2 bg-card/50 h-24 w-24">
+                                <div className="flex-[0_0_8rem] mx-2">
+                                    <Card className="p-2 bg-card-foreground/5 border-border h-32 w-32">
                                          <div className="aspect-square relative" />
                                     </Card>
                                 </div>
