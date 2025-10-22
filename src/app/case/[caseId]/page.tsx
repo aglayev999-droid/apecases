@@ -205,16 +205,16 @@ export default function CasePage() {
     
     if (!caseData || isUserLoading || caseItems.length === 0) {
         return (
-            <div class="flex flex-col h-full">
-                 <div class="flex items-center justify-between mb-4 flex-shrink-0 px-4">
+            <div className="flex flex-col h-full">
+                 <div className="flex items-center justify-between mb-4 flex-shrink-0 px-4">
                     <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                        <ChevronLeft class="h-6 w-6" />
+                        <ChevronLeft className="h-6 w-6" />
                     </Button>
-                    <Skeleton class="h-6 w-32" />
-                    <div class="w-10"></div>
+                    <Skeleton className="h-6 w-32" />
+                    <div className="w-10"></div>
                 </div>
-                 <div class="flex-grow flex items-center justify-center">
-                    <p class="text-muted-foreground">{t('casePage.loadingCase')}</p>
+                 <div className="flex-grow flex items-center justify-center">
+                    <p className="text-muted-foreground">{t('casePage.loadingCase')}</p>
                 </div>
             </div>
         );
