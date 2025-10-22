@@ -17,9 +17,21 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
 
-const ROULETTE_ITEMS_COUNT = 50;
-const WINNING_ITEM_INDEX = ROULETTE_ITEMS_COUNT - 5;
+const ROULETTE_ITEMS_COUNT = 51; // Should be an odd number
+const WINNING_ITEM_INDEX = Math.floor(ROULETTE_ITEMS_COUNT / 2); // Center item
 const ANIMATION_DURATION_MS = 5000;
+
+// These should match Tailwind classes w-24/sm:w-28/md:w-32 and gap-2/sm:gap-4
+const ITEM_SIZES = {
+    mobile: 96,
+    sm: 112,
+    md: 128
+};
+const GAP_SIZES = {
+    mobile: 8,
+    sm: 16,
+    md: 16
+};
 
 export default function CasePage() {
     const params = useParams();
@@ -39,8 +51,7 @@ export default function CasePage() {
     const [isWinModalOpen, setIsWinModalOpen] = useState(false);
     const [multiplier, setMultiplier] = useState(1);
     
-    const rouletteContainerRef = useRef<HTMLDivElement>(null);
-    const itemWidthRef = useRef(128); // Default width (w-32)
+    const itemWidthRef = useRef(ITEM_SIZES.md + GAP_SIZES.md);
 
     const generateReel = useCallback((items: Item[]): Item[] => {
         if (!items || items.length === 0) return [];
@@ -52,28 +63,23 @@ export default function CasePage() {
     useEffect(() => {
         const fetchCaseAndItemsData = async () => {
             if (!caseId) return;
-
             const caseResult: Case | null = MOCK_CASES.find(c => c.id === caseId) || null;
-            
             if (!caseResult) {
                 showAlert({title: t('casePage.errorCaseNotFound'), description: ""});
                 router.push('/');
                 return;
             }
             setCaseData(caseResult);
-
             const currentCaseItems = caseResult.items
                 .map(i => MOCK_ITEMS.find(item => item.id === i.itemId))
                 .filter((item): item is Item => !!item)
                 .sort((a, b) => a.value - b.value);
-            
             if (currentCaseItems.length === 0) {
                 showAlert({title: t('casePage.errorNoItems'), description: ""});
                 return;
             }
             setCaseItems(currentCaseItems);
         };
-
         fetchCaseAndItemsData();
     }, [caseId, router, showAlert, t]);
     
@@ -85,16 +91,15 @@ export default function CasePage() {
         }
     }, [caseItems, generateReel, multiplier]);
 
-    useEffect(() => {
+     useEffect(() => {
         const calculateItemWidth = () => {
-            if (rouletteContainerRef.current) {
-                const itemEl = rouletteContainerRef.current.querySelector('.roulette-item');
-                if (itemEl) {
-                    const style = window.getComputedStyle(itemEl);
-                    const width = itemEl.clientWidth;
-                    const gap = parseInt(style.marginRight, 10) || 16; // from gap-4 (1rem = 16px)
-                    itemWidthRef.current = width + gap;
-                }
+            const screenWidth = window.innerWidth;
+            if (screenWidth < 640) { // Tailwind 'sm' breakpoint
+                itemWidthRef.current = ITEM_SIZES.mobile + GAP_SIZES.mobile;
+            } else if (screenWidth < 768) { // Tailwind 'md' breakpoint
+                itemWidthRef.current = ITEM_SIZES.sm + GAP_SIZES.sm;
+            } else {
+                itemWidthRef.current = ITEM_SIZES.md + GAP_SIZES.md;
             }
         };
         
@@ -103,37 +108,35 @@ export default function CasePage() {
         return () => window.removeEventListener('resize', calculateItemWidth);
     }, []);
 
-    useEffect(() => {
-        if (!isSpinning || wonItems.length === 0 || caseItems.length === 0) {
-            return;
-        }
+    const startSpin = (prizes: Item[]) => {
+        if (isSpinning || prizes.length === 0 || caseItems.length === 0) return;
 
-        const newReels = wonItems.map(wonItem => {
+        const newReels = prizes.map(prize => {
             const newReel = generateReel(caseItems);
-            newReel[WINNING_ITEM_INDEX] = wonItem;
+            newReel[WINNING_ITEM_INDEX] = prize;
             return newReel;
         });
+
         setRouletteItems(newReels);
-
-        const containerWidth = rouletteContainerRef.current?.offsetWidth || 0;
-        const newOffsets = newReels.map(() => {
-             const jitter = (Math.random() - 0.5) * (itemWidthRef.current * 0.8);
-             return (WINNING_ITEM_INDEX * itemWidthRef.current) - (containerWidth / 2) + (itemWidthRef.current / 2) + jitter;
-        });
+        setWonItems(prizes);
+        setIsSpinning(true);
         
-        const animationTimeout = setTimeout(() => {
-            setRouletteOffsets(newOffsets);
-        }, 100);
+        setTimeout(() => {
+            const finalOffsets = newReels.map(() => {
+                const jitter = (Math.random() - 0.5) * (itemWidthRef.current * 0.8);
+                // Offset is to the center of the winning item, minus half the item width to center it
+                const targetPosition = WINNING_ITEM_INDEX * itemWidthRef.current;
+                return targetPosition + jitter;
+            });
 
-        const modalTimeout = setTimeout(() => {
-            setIsWinModalOpen(true);
-        }, ANIMATION_DURATION_MS + 500);
-        
-        return () => {
-            clearTimeout(animationTimeout);
-            clearTimeout(modalTimeout);
-        };
-    }, [isSpinning, wonItems, caseItems, generateReel]);
+            setRouletteOffsets(finalOffsets);
+
+            setTimeout(() => {
+                setIsWinModalOpen(true);
+            }, ANIMATION_DURATION_MS + 500);
+
+        }, 100); // Small delay to ensure state is updated before animation starts
+    };
     
     const getPrize = useCallback(() => {
         if (!caseData || caseItems.length === 0) return null;
@@ -177,8 +180,7 @@ export default function CasePage() {
         updateStarsSpent(totalCost);
         prizes.forEach(prize => addInventoryItem(prize));
         
-        setWonItems(prizes);
-        setIsSpinning(true);
+        startSpin(prizes);
 
     }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, t, multiplier, getPrize, updateStarsSpent]);
 
@@ -187,16 +189,12 @@ export default function CasePage() {
         setIsSpinning(false);
         setWonItems([]);
         
-        setTimeout(() => {
-            if (rouletteContainerRef.current) {
-                rouletteContainerRef.current.style.transition = 'none';
-                setRouletteOffsets(new Array(multiplier).fill(0));
-                if (caseItems.length > 0) {
-                     const newReels = Array.from({ length: multiplier }, () => generateReel(caseItems));
-                     setRouletteItems(newReels);
-                }
-            }
-        }, 500); 
+        // Reset reels to a random state without animation
+        if (caseItems.length > 0) {
+             const newReels = Array.from({ length: multiplier }, () => generateReel(caseItems));
+             setRouletteItems(newReels);
+        }
+        setRouletteOffsets(new Array(multiplier).fill(0));
     }
     
     if (!caseData || isUserLoading || caseItems.length === 0) {
@@ -271,22 +269,17 @@ export default function CasePage() {
             </div>
 
             <div className="flex-grow flex flex-col items-center justify-center">
-                 <div ref={rouletteContainerRef} className="relative w-full flex flex-col items-center justify-center my-4 sm:my-8 gap-2">
-                    {rouletteItems.map((reel, reelIndex) => {
-                         const showTopArrow = (multiplier === 1) || (multiplier === 2 && reelIndex === 0) || (multiplier === 3 && reelIndex === 0);
-                         const showBottomArrow = (multiplier === 1) || (multiplier === 2 && reelIndex === 1) || (multiplier === 3 && reelIndex === 2);
-                         
-                        return (
+                 <div className="relative w-full flex flex-col items-center justify-center my-4 sm:my-8 gap-2">
+                    {rouletteItems.map((reel, reelIndex) => (
                         <div key={reelIndex} className="relative w-full flex items-center justify-center">
-                           {showTopArrow && (
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-white z-10"></div>
-                            )}
+                           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-white z-10"></div>
                             
                             <div className="w-full h-28 sm:h-32 md:h-36 overflow-hidden">
                                 <div 
-                                    className="flex h-full items-center gap-4"
+                                    className="flex h-full items-center gap-2 sm:gap-4"
                                     style={{
-                                        transform: `translateX(-${rouletteOffsets[reelIndex] || 0}px)`,
+                                        // The calculation now centers the list on the target item
+                                        transform: `translateX(calc(50% - ${rouletteOffsets[reelIndex] || 0}px - ${itemWidthRef.current / 2}px))`,
                                         transition: isSpinning ? `transform ${ANIMATION_DURATION_MS}ms cubic-bezier(0.2, 0.5, 0.1, 1)` : 'none',
                                     }}
                                 >
@@ -305,11 +298,9 @@ export default function CasePage() {
                                 </div>
                             </div>
                             
-                             {showBottomArrow && (
-                                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-b-[8px] border-l-transparent border-r-transparent border-b-white z-10"></div>
-                             )}
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-b-[8px] border-l-transparent border-r-transparent border-b-white z-10"></div>
                         </div>
-                    )})}
+                    ))}
                 </div>
 
 
