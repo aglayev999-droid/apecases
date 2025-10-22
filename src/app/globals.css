@@ -67,19 +67,3 @@
     padding: 4px 12px !important;
   }
 }
-
-@layer utilities {
-    .animate-fade-out {
-        animation: fadeOut 0.5s ease-in-out;
-    }
-
-    @keyframes fadeOut {
-        from {
-            opacity: 1;
-        }
-        to {
-            opacity: 0;
-            visibility: hidden;
-        }
-    }
-}

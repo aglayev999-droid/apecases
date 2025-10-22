@@ -3,27 +3,23 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { User as UserIcon, BarChart3, Rocket, Swords } from 'lucide-react';
+import { Home, User as UserIcon, BarChart3, Rocket, Swords } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DiamondIcon } from '@/components/icons/DiamondIcon';
 import { useTranslation } from '@/contexts/LanguageContext';
-import { useUser } from '@/contexts/UserContext';
 
 export default function BottomNav() {
   const pathname = usePathname();
   const { t } = useTranslation();
-  const { user, hasNewItems } = useUser();
-
-  const battlesUnlocked = (user?.starsSpentOnCases || 0) >= 1000;
 
   const navItems = [
-    { href: '/upgrade', label: t('bottomNav.upgrade'), icon: DiamondIcon, isBeta: true, show: true },
-    { href: '/rocket', label: t('bottomNav.rocket'), icon: Rocket, isBeta: true, show: true },
-    { href: '/battles', label: t('bottomNav.battles'), icon: Swords, show: battlesUnlocked },
-    { href: '/', label: t('bottomNav.cases'), icon: 'main', isMain: true, show: true },
-    { href: '/leaderboard', label: t('bottomNav.rating'), icon: BarChart3, show: true },
-    { href: '/profile', label: t('bottomNav.profile'), icon: UserIcon, show: true },
-  ].filter(item => item.show);
+    { href: '/battles', label: t('bottomNav.battles'), icon: Swords },
+    { href: '/upgrade', label: t('bottomNav.upgrade'), icon: DiamondIcon, isBeta: true },
+    { href: '/rocket', label: t('bottomNav.rocket'), icon: Rocket, isBeta: true },
+    { href: '/', label: t('bottomNav.cases'), icon: 'main', isMain: true },
+    { href: '/leaderboard', label: t('bottomNav.rating'), icon: BarChart3 },
+    { href: '/profile', label: t('bottomNav.profile'), icon: UserIcon },
+  ];
   
   const mainButtonIndex = navItems.findIndex(item => item.isMain);
 
@@ -35,10 +31,8 @@ export default function BottomNav() {
             const isActive = item.href === '/' ? pathname === item.href : pathname.startsWith(item.href) && item.href.length > 1;
 
             if (item.isMain) {
-              // Adjust col-start based on its new position
-              const colStart = navItems.findIndex(i => i.isMain) + 1;
               return (
-                <div key={item.href} className="flex flex-col items-center justify-center -mt-6" style={{ gridColumnStart: colStart }}>
+                <div key={item.href} className="flex flex-col items-center justify-center -mt-6" style={{ gridColumnStart: mainButtonIndex + 1 }}>
                   <Link href={item.href} className={cn(
                     'rounded-full p-2 transition-all transform',
                     pathname === '/' ? 'bg-primary shadow-lg' : 'bg-card border'
@@ -57,7 +51,6 @@ export default function BottomNav() {
             }
 
             const IconComponent = item.icon as React.ElementType; // Cast icon to a valid component type
-            const isProfile = item.href === '/profile';
 
             return (
               <Link
@@ -71,12 +64,6 @@ export default function BottomNav() {
                 )}>
                   {item.isBeta && <span className="absolute top-0 right-0 text-[8px] bg-accent text-accent-foreground px-1 rounded-full">beta</span>}
                   
-                  {isProfile && hasNewItems && (
-                    <div className="absolute top-0 right-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
-                      +1
-                    </div>
-                  )}
-
                   <IconComponent className={cn(
                       'h-6 w-6',
                       isActive ? 'text-primary' : 'text-muted-foreground'
