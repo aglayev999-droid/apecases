@@ -20,18 +20,18 @@ export const ALL_ITEMS: Item[] = [
   
   // Uncommon
   { id: 'item-ring', name: 'Silver Ring', rarity: 'Uncommon', image: 'https://i.ibb.co/hxy5rG61/ring.png', imageHint: 'silver diamond ring', value: 100, description: 'A beautiful silver ring.', isUpgradable: true, isTargetable: false },
-  { id: 'item-lol-pop-random', name: 'Lol Pop', rarity: 'Uncommon', image: 'https://i.ibb.co/Q7KdJyRN/Lol-pop.png', imageHint: 'swirl lollipop', value: 360, description: 'A colorful lollipop.', isUpgradable: true, isTargetable: false },
-  { id: 'item-candy-cane', name: 'Candy Cane', rarity: 'Uncommon', image: 'https://i.ibb.co/ksnfgkCb/Candy-cane.png', imageHint: 'candy cane with bow', value: 300, description: 'A festive candy cane with a bow.', isUpgradable: true, isTargetable: false },
-  { id: 'item-desk-calendar', name: 'Desk Calendar', rarity: 'Uncommon', image: 'https://i.ibb.co/xNvnLh4/Desk-Calendar.png', imageHint: 'desk calendar', value: 300, description: 'A fun desk calendar.', isUpgradable: true, isTargetable: false },
-  { id: 'item-ginger-cookie', name: 'Ginger Cookie', rarity: 'Uncommon', image: 'https://i.ibb.co/sXXQnrY/spy.png', imageHint: 'gingerbread man', value: 440, description: 'A delicious ginger cookie.', isUpgradable: true, isTargetable: false },
+  { id: 'item-lol-pop-random', name: 'Lol Pop', rarity: 'Uncommon', image: 'https://i.ibb.co/Q7KdJyRN/Lol-pop.png', imageHint: 'swirl lollipop', value: 245, description: 'A colorful lollipop.', isUpgradable: true, isTargetable: false },
+  { id: 'item-candy-cane', name: 'Candy Cane', rarity: 'Uncommon', image: 'https://i.ibb.co/ksnfgkCb/Candy-cane.png', imageHint: 'candy cane with bow', value: 273, description: 'A festive candy cane with a bow.', isUpgradable: true, isTargetable: false },
+  { id: 'item-desk-calendar', name: 'Desk Calendar', rarity: 'Uncommon', image: 'https://i.ibb.co/xNvnLh4/Desk-Calendar.png', imageHint: 'desk calendar', value: 235, description: 'A fun desk calendar.', isUpgradable: true, isTargetable: false },
+  { id: 'item-ginger-cookie', name: 'Ginger Cookie', rarity: 'Uncommon', image: 'https://i.ibb.co/sXXQnrY/spy.png', imageHint: 'gingerbread man', value: 325, description: 'A delicious ginger cookie.', isUpgradable: true, isTargetable: false },
 
   // Rare
-  { id: 'item-party-sparkler', name: 'Party Sparkler', rarity: 'Rare', image: 'https://i.ibb.co/TMwFBvD3/Party-Sparkler.png', imageHint: 'party sparkler', value: 450, description: 'A festive party sparkler.', isUpgradable: true, isTargetable: false },
+  { id: 'item-party-sparkler', name: 'Party Sparkler', rarity: 'Rare', image: 'https://i.ibb.co/TMwFBvD3/Party-Sparkler.png', imageHint: 'party sparkler', value: 373, description: 'A festive party sparkler.', isUpgradable: true, isTargetable: false },
   { id: 'item-clover-pin', name: 'Clover Pin', rarity: 'Rare', image: 'https://i.ibb.co/pj0V0GXp/Clover-Pin.png', imageHint: 'clover pin', value: 470, description: 'A lucky clover pin.', isUpgradable: true, isTargetable: false },
   { id: 'item-input-key', name: 'Input Key', rarity: 'Rare', image: 'https://i.ibb.co/7tpkt39P/Input-key.png', imageHint: 'input key', value: 500, description: 'A mysterious input key.', isUpgradable: true, isTargetable: false },
   { id: 'item-fresh-socks', name: 'Fresh Socks', rarity: 'Rare', image: 'https://i.ibb.co/yFNNdRN7/Fresh-Socks.png', imageHint: 'fresh socks', value: 550, description: 'A pair of fresh socks.', isUpgradable: true, isTargetable: false },
-  { id: 'item-evil-eye', name: 'Evil Eye', rarity: 'Rare', image: 'https://i.ibb.co/BH7RH5sn/Evil-eye.png', imageHint: 'evil eye amulet', value: 800, description: 'A protective evil eye amulet.', isUpgradable: true, isTargetable: false },
-  { id: 'item-witch-hat', name: 'Witch Hat', rarity: 'Rare', image: 'https://i.ibb.co/KxtS9HyT/Witch-hat.png', imageHint: 'purple witch hat', value: 380, description: 'A magical witch hat.', isUpgradable: true, isTargetable: false },
+  { id: 'item-evil-eye', name: 'Evil Eye', rarity: 'Rare', image: 'https://i.ibb.co/BH7RH5sn/Evil-eye.png', imageHint: 'evil eye amulet', value: 629, description: 'A protective evil eye amulet.', isUpgradable: true, isTargetable: false },
+  { id: 'item-witch-hat', name: 'Witch Hat', rarity: 'Rare', image: 'https://i.ibb.co/KxtS9HyT/Witch-hat.png', imageHint: 'purple witch hat', value: 461, description: 'A magical witch hat.', isUpgradable: true, isTargetable: false },
   
   // Epic
   { id: 'item-spy-agaric', name: 'Spy Agaric', rarity: 'Epic', image: 'https://i.ibb.co/XZBv49Mw/Spy-agariq.png', imageHint: 'mushroom with hat', value: 700, description: 'A mysterious spy mushroom.', isUpgradable: true, isTargetable: false },
@@ -39,12 +39,12 @@ export const ALL_ITEMS: Item[] = [
   { id: 'item-love-potion', name: 'Love Potion', rarity: 'Epic', image: 'https://i.ibb.co/sJtXLXmz/Love-Potion.png', imageHint: 'love potion', value: 1800, description: 'A mysterious love potion.', isUpgradable: true, isTargetable: true },
 
   // Legendary
-  { id: 'item-tama-gadget', name: 'Tama Gadget', rarity: 'Legendary', image: 'https://i.ibb.co/N629KC3k/tama-gadget.png', imageHint: 'tamagotchi device', value: 600, description: 'A nostalgic tama gadget.', isUpgradable: true, isTargetable: true },
-  { id: 'item-sakura-flower', name: 'Sakura Flower', rarity: 'Legendary', image: 'https://i.ibb.co/Dg9V2MvC/Sakura-Flower.png', imageHint: 'sakura flower', value: 1200, description: 'A beautiful sakura flower.', isUpgradable: true, isTargetable: true },
+  { id: 'item-tama-gadget', name: 'Tama Gadget', rarity: 'Legendary', image: 'https://i.ibb.co/N629KC3k/tama-gadget.png', imageHint: 'tamagotchi device', value: 377, description: 'A nostalgic tama gadget.', isUpgradable: true, isTargetable: true },
+  { id: 'item-sakura-flower', name: 'Sakura Flower', rarity: 'Legendary', image: 'https://i.ibb.co/Dg9V2MvC/Sakura-Flower.png', imageHint: 'sakura flower', value: 660, description: 'A beautiful sakura flower.', isUpgradable: true, isTargetable: true },
   { id: 'item-cupid-charm', name: 'Cupid Charm', rarity: 'Legendary', image: 'https://i.ibb.co/C3q5PhcK/Diamond-Ring-2.png', imageHint: 'cupid charm', value: 2000, description: 'A charming cupid charm.', isUpgradable: true, isTargetable: true },
-  { id: 'item-voodoo-doll', name: 'Voodoo Doll', rarity: 'Legendary', image: 'https://i.ibb.co/LdGL6vR1/woodoo-doll.png', imageHint: 'voodoo doll', value: 3800, description: 'A spooky voodoo doll.', isUpgradable: true, isTargetable: true },
+  { id: 'item-voodoo-doll', name: 'Voodoo Doll', rarity: 'Legendary', image: 'https://i.ibb.co/LdGL6vR1/woodoo-doll.png', imageHint: 'voodoo doll', value: 2438, description: 'A spooky voodoo doll.', isUpgradable: true, isTargetable: true },
   { id: 'item-diamond-ring', name: 'Diamond Ring', rarity: 'Legendary', image: 'https://i.ibb.co/xKYxXh8d/Diamond-Ring-1.png', imageHint: 'diamond ring', value: 4000, description: 'A stunning diamond ring.', isUpgradable: true, isTargetable: true },
-  { id: 'item-toy-bear', name: 'Toy Bear', rarity: 'Legendary', image: 'https://i.ibb.co/ccF1j4pZ/Toy-BEar.png', imageHint: 'toy bear', value: 4100, description: 'A cuddly toy bear.', isUpgradable: true, isTargetable: true },
+  { id: 'item-toy-bear', name: 'Toy Bear', rarity: 'Legendary', image: 'https://i.ibb.co/ccF1j4pZ/Toy-BEar.png', imageHint: 'toy bear', value: 3027, description: 'A cuddly toy bear.', isUpgradable: true, isTargetable: true },
   { id: 'item-bonded-ring', name: 'Bonded Ring', rarity: 'Legendary', image: 'https://i.ibb.co/MxGnGgSG/Bonded-ring.png', imageHint: 'luxury gold ring', value: 8700, description: 'A ring signifying a powerful bond.', isUpgradable: true, isTargetable: true },
   { id: 'item-scared-cat', name: 'Scared Cat', rarity: 'Legendary', image: 'https://i.ibb.co/B2R0XSQn/scared-cat.png', imageHint: 'surprised black cat', value: 10000, description: 'This cat has seen things.', isUpgradable: true, isTargetable: true },
   
