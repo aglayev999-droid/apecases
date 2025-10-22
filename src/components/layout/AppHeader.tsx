@@ -20,7 +20,6 @@ import { ScrollArea } from '../ui/scroll-area';
 import { useAlertDialog } from '@/contexts/AlertDialogContext';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
-const OFFICIAL_DEPOSIT_ID = '@nullprime';
 
 const starPackages = [200, 500, 1000, 2500, 5000];
 
@@ -33,12 +32,13 @@ const DepositViaItemDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpe
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
 
-    const giftableItems = useMemo(() => {
+    // These are items from the user's inventory that can be redeemed for stars.
+    const redeemableItems = useMemo(() => {
         return inventory || [];
     }, [inventory]);
 
     const filteredAndSortedItems = useMemo(() => {
-        let items = [...giftableItems];
+        let items = [...redeemableItems];
         if (searchQuery) {
             items = items.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
         }
@@ -47,25 +47,29 @@ const DepositViaItemDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpe
             return a.value - b.value;
         });
         return items;
-    }, [giftableItems, searchQuery, sortOrder]);
+    }, [redeemableItems, searchQuery, sortOrder]);
 
     const handleConfirmDeposit = () => {
         if (!selectedItem) return;
         
+        // Add the item's value to the user's balance
         updateBalance(selectedItem.value);
+        // Remove the item from the user's inventory
         removeInventoryItem(selectedItem.inventoryId);
 
         showAlert({
             title: t('header.depositSuccessTitle'),
-            description: t('header.depositSuccessDescription', { value: selectedItem.value }),
+            description: t('header.depositSuccessDescription', { value: selectedItem.value.toLocaleString() }),
         });
         
-        onOpenChange(false);
+        onOpenChange(false); // Close the dialog
     }
     
     useEffect(() => {
+        // Reset selection when dialog is closed
         if (!isOpen) {
             setSelectedItem(null);
+            setSearchQuery('');
         }
     }, [isOpen]);
 
@@ -122,14 +126,6 @@ const DepositViaItemDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpe
                 </ScrollArea>
                 
                 <DialogFooter className="flex-col gap-2 pt-2 border-t">
-                     <div className="flex items-center justify-between p-2 rounded-lg bg-muted">
-                        <div className="flex items-center gap-2">
-                            <ShieldCheck className="h-5 w-5 text-green-500" />
-                            <span className="text-sm font-bold text-muted-foreground">{t('header.recipientFixedLabel')}</span>
-                        </div>
-                        <span className="text-sm font-mono">{OFFICIAL_DEPOSIT_ID}</span>
-                    </div>
-
                     {selectedItem && (
                         <div className="text-center my-2 text-primary font-bold">
                             {t('header.amountToCredit', { value: selectedItem.value.toLocaleString() })}
@@ -156,8 +152,8 @@ const BalanceTopUpDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenC
     const [isDepositViaItemOpen, setIsDepositViaItemOpen] = useState(false);
 
     const handleDepositViaItemClick = () => {
-        onOpenChange(false);
-        setIsDepositViaItemOpen(true);
+        onOpenChange(false); // Close the current dialog
+        setIsDepositViaItemOpen(true); // Open the new dialog
     };
 
     return (
@@ -232,6 +228,7 @@ const BalanceTopUpDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenC
                 </Tabs>
             </DialogContent>
         </Dialog>
+        {/* This is the separate dialog for depositing items */}
         <DepositViaItemDialog isOpen={isDepositViaItemOpen} onOpenChange={setIsDepositViaItemOpen} />
         </>
     )

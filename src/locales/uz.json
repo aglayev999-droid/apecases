@@ -20,7 +20,7 @@
     "orSeparator": "YOKI",
     "depositViaItemButton": "Predmet orqali depozit",
     "depositViaItemTitle": "Predmet orqali depozit",
-    "depositViaItemDescription": "Predmetni rasmiy depozit manziliga yuboring. Predmetning Yulduz qiymati avtomatik ravishda balansingizga qo'shiladi.",
+    "depositViaItemDescription": "Balansingizga yulduz qiymatini o'tkazish uchun inventaringizdan predmet tanlang.",
     "sortByValue": "Saralash",
     "recipientFixedLabel": "Rasmiy depozit manzili",
     "confirmDepositButton": "Depozitni tasdiqlash",

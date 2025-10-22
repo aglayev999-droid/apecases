@@ -20,7 +20,7 @@
     "orSeparator": "OR",
     "depositViaItemButton": "Deposit via Item",
     "depositViaItemTitle": "Deposit via Item",
-    "depositViaItemDescription": "Send an item to the official deposit address. The item's Star value will be automatically added to your balance.",
+    "depositViaItemDescription": "Select an item from your inventory to convert its Star value into your balance.",
     "sortByValue": "Sort",
     "recipientFixedLabel": "Official Deposit Address",
     "confirmDepositButton": "Confirm Deposit",

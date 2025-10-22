@@ -20,7 +20,7 @@
     "orSeparator": "ИЛИ",
     "depositViaItemButton": "Депозит предметом",
     "depositViaItemTitle": "Депозит предметом",
-    "depositViaItemDescription": "Отправьте предмет на официальный адрес для депозита. Стоимость предмета в Stars будет автоматически зачислена на ваш баланс.",
+    "depositViaItemDescription": "Выберите предмет из инвентаря, чтобы обменять его стоимость в звездах на ваш баланс.",
     "sortByValue": "Сортировать",
     "recipientFixedLabel": "Официальный адрес депозита",
     "confirmDepositButton": "Подтвердить депозит",
