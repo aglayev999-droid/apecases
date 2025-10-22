@@ -11,19 +11,22 @@
   },
   "header": {
     "balanceTopUpTitle": "Выберите способ пополнения",
-    "balanceTopUpDescription": "Введите сумму для пополнения",
+    "balanceTopUpDescription": "Выберите предпочтительный способ пополнения Stars",
     "starsTab": "STARS ★",
     "tonTab": "TON ♦",
     "amountPlaceholder": "Сумма",
     "balanceLabel": "Баланс",
-    "topUpButton": "Пополнить",
+    "topUpButton": "Пополнить картой",
     "orSeparator": "ИЛИ",
-    "sendGiftButton": "Отправить подарок",
-    "sendGiftTitle": "Отправить подарок",
+    "depositViaItemButton": "Депозит предметом",
+    "depositViaItemTitle": "Депозит предметом",
+    "depositViaItemDescription": "Отправьте предмет на официальный адрес для депозита. Стоимость предмета в Stars будет автоматически зачислена на ваш баланс.",
     "sortByValue": "Сортировать",
-    "recipientIdLabel": "ID получателя",
-    "recipientIdPlaceholder": "Введите ID или никнейм",
-    "confirmSendButton": "Отправить подарок"
+    "recipientFixedLabel": "Официальный адрес депозита",
+    "confirmDepositButton": "Подтвердить депозит",
+    "amountToCredit": "Будет зачислено на баланс: {value} ★",
+    "depositSuccessTitle": "Депозит успешен!",
+    "depositSuccessDescription": "{value} звезд было добавлено на ваш баланс."
   },
   "alertDialog": {
     "ok": "OK"

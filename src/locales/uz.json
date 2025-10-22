@@ -11,19 +11,22 @@
   },
   "header": {
     "balanceTopUpTitle": "To'ldirish usulini tanlang",
-    "balanceTopUpDescription": "To'ldirish uchun summani kiriting",
+    "balanceTopUpDescription": "Stars qo'shish uchun afzal ko'rgan usulingizni tanlang",
     "starsTab": "STARS ★",
     "tonTab": "TON ♦",
     "amountPlaceholder": "Summa",
     "balanceLabel": "Balans",
-    "topUpButton": "To'ldirish",
+    "topUpButton": "Karta orqali to'ldirish",
     "orSeparator": "YOKI",
-    "sendGiftButton": "Sovg'a yuborish",
-    "sendGiftTitle": "Sovg'a yuborish",
+    "depositViaItemButton": "Predmet orqali depozit",
+    "depositViaItemTitle": "Predmet orqali depozit",
+    "depositViaItemDescription": "Predmetni rasmiy depozit manziliga yuboring. Predmetning Yulduz qiymati avtomatik ravishda balansingizga qo'shiladi.",
     "sortByValue": "Saralash",
-    "recipientIdLabel": "Qabul qiluvchi IDsi",
-    "recipientIdPlaceholder": "Foydalanuvchi IDsi yoki nomini kiriting",
-    "confirmSendButton": "Sovg'ani yuborish"
+    "recipientFixedLabel": "Rasmiy depozit manzili",
+    "confirmDepositButton": "Depozitni tasdiqlash",
+    "amountToCredit": "Balansingizga {value} ★ qo'shiladi",
+    "depositSuccessTitle": "Depozit muvaffaqiyatli!",
+    "depositSuccessDescription": "Balansingizga {value} yulduz qo'shildi."
   },
   "alertDialog": {
     "ok": "OK"

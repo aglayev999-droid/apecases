@@ -2,7 +2,7 @@
 
 import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
-import { Plus, X, Search, ArrowUpDown, Send } from 'lucide-react';
+import { Plus, X, Search, ArrowUpDown, Send, ShieldCheck, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { TonConnectButton, useTonWallet } from '@tonconnect/ui-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -17,21 +17,24 @@ import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
 import type { InventoryItem } from '@/lib/types';
 import { ScrollArea } from '../ui/scroll-area';
+import { useAlertDialog } from '@/contexts/AlertDialogContext';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
+const OFFICIAL_DEPOSIT_ID = '@nullprime';
 
 const starPackages = [200, 500, 1000, 2500, 5000];
 
-const SendGiftDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (open: boolean) => void }) => {
-    const { inventory } = useUser();
+const DepositViaItemDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (open: boolean) => void }) => {
+    const { inventory, updateBalance, removeInventoryItem } = useUser();
     const { t } = useTranslation();
+    const { showAlert } = useAlertDialog();
+    
     const [searchQuery, setSearchQuery] = useState('');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
-    const [recipientId, setRecipientId] = useState('');
 
     const giftableItems = useMemo(() => {
-        return inventory?.filter(item => item.isUpgradable) || [];
+        return inventory || [];
     }, [inventory]);
 
     const filteredAndSortedItems = useMemo(() => {
@@ -46,16 +49,23 @@ const SendGiftDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChang
         return items;
     }, [giftableItems, searchQuery, sortOrder]);
 
-    const handleSendGift = () => {
-        // Placeholder for gift sending logic
-        console.log(`Sending item ${selectedItem?.id} to user ${recipientId}`);
+    const handleConfirmDeposit = () => {
+        if (!selectedItem) return;
+        
+        updateBalance(selectedItem.value);
+        removeInventoryItem(selectedItem.inventoryId);
+
+        showAlert({
+            title: t('header.depositSuccessTitle'),
+            description: t('header.depositSuccessDescription', { value: selectedItem.value }),
+        });
+        
         onOpenChange(false);
     }
     
     useEffect(() => {
         if (!isOpen) {
             setSelectedItem(null);
-            setRecipientId('');
         }
     }, [isOpen]);
 
@@ -63,7 +73,10 @@ const SendGiftDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChang
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-md p-4 flex flex-col h-[80vh]">
                 <DialogHeader className="text-center items-center">
-                    <DialogTitle className="text-xl font-bold text-primary">{t('header.sendGiftTitle')}</DialogTitle>
+                    <DialogTitle className="text-xl font-bold text-primary">{t('header.depositViaItemTitle')}</DialogTitle>
+                     <DialogDescription className="text-center px-4">
+                        {t('header.depositViaItemDescription')}
+                    </DialogDescription>
                 </DialogHeader>
                 
                  <div className="flex gap-2">
@@ -88,13 +101,13 @@ const SendGiftDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChang
                             <Card 
                                 key={item.inventoryId}
                                 className={cn(
-                                    "p-2 flex items-center justify-between cursor-pointer border-2",
-                                    selectedItem?.inventoryId === item.inventoryId ? 'border-primary' : 'border-transparent'
+                                    "p-2 flex items-center justify-between cursor-pointer border-2 transition-all",
+                                    selectedItem?.inventoryId === item.inventoryId ? 'border-primary shadow-lg shadow-primary/20' : 'border-transparent'
                                 )}
                                 onClick={() => setSelectedItem(item)}
                             >
                                 <div className="flex items-center gap-3">
-                                    <div className="relative w-12 h-12 rounded-md overflow-hidden bg-card p-1">
+                                    <div className="relative w-12 h-12 rounded-md overflow-hidden bg-card p-1 border">
                                         <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" />
                                     </div>
                                     <span className="font-semibold">{item.name}</span>
@@ -108,26 +121,29 @@ const SendGiftDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChang
                     </div>
                 </ScrollArea>
                 
-                {selectedItem && (
-                    <DialogFooter className="flex-col gap-2 pt-2 border-t">
-                        <div className="w-full">
-                             <label className="text-sm font-bold text-primary">{t('header.recipientIdLabel')}</label>
-                            <Input 
-                                placeholder={t('header.recipientIdPlaceholder')}
-                                value={recipientId}
-                                onChange={(e) => setRecipientId(e.target.value)}
-                            />
+                <DialogFooter className="flex-col gap-2 pt-2 border-t">
+                     <div className="flex items-center justify-between p-2 rounded-lg bg-muted">
+                        <div className="flex items-center gap-2">
+                            <ShieldCheck className="h-5 w-5 text-green-500" />
+                            <span className="text-sm font-bold text-muted-foreground">{t('header.recipientFixedLabel')}</span>
                         </div>
-                        <Button
-                            className="w-full h-12 text-lg font-bold bg-gradient-to-r from-primary to-amber-400 hover:from-primary/90 hover:to-amber-400/90 text-black"
-                            disabled={!recipientId}
-                            onClick={handleSendGift}
-                        >
-                            <Send className="mr-2 h-5 w-5" />
-                            {t('header.confirmSendButton')}
-                        </Button>
-                    </DialogFooter>
-                )}
+                        <span className="text-sm font-mono">{OFFICIAL_DEPOSIT_ID}</span>
+                    </div>
+
+                    {selectedItem && (
+                        <div className="text-center my-2 text-primary font-bold">
+                            {t('header.amountToCredit', { value: selectedItem.value.toLocaleString() })}
+                        </div>
+                    )}
+                    
+                    <Button
+                        className="w-full h-12 text-lg font-bold bg-gradient-to-r from-primary to-amber-400 hover:from-primary/90 hover:to-amber-400/90 text-black"
+                        disabled={!selectedItem}
+                        onClick={handleConfirmDeposit}
+                    >
+                        {t('header.confirmDepositButton')}
+                    </Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     );
@@ -137,11 +153,11 @@ const BalanceTopUpDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenC
     const { user } = useUser();
     const { t } = useTranslation();
     const [amount, setAmount] = useState('');
-    const [isSendGiftOpen, setIsSendGiftOpen] = useState(false);
+    const [isDepositViaItemOpen, setIsDepositViaItemOpen] = useState(false);
 
-    const handleSendGiftClick = () => {
-        onOpenChange(false); // Close top-up dialog
-        setIsSendGiftOpen(true); // Open send gift dialog
+    const handleDepositViaItemClick = () => {
+        onOpenChange(false);
+        setIsDepositViaItemOpen(true);
     };
 
     return (
@@ -187,13 +203,13 @@ const BalanceTopUpDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenC
                                     className="flex-1"
                                     onClick={() => setAmount(String(pkg))}
                                 >
-                                    {pkg} ★
+                                    {pkg.toLocaleString()} ★
                                 </Button>
                             ))}
                         </div>
 
-                        <Button disabled className="w-full h-12 text-base">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-5 w-5"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+                        <Button disabled className="w-full h-12 text-base bg-gradient-to-r from-primary/50 to-amber-400/50 text-black">
+                            <CreditCard className="mr-2 h-5 w-5" />
                             {t('header.topUpButton')}
                         </Button>
 
@@ -203,16 +219,20 @@ const BalanceTopUpDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenC
                             <div className="flex-grow border-t border-dashed"></div>
                         </div>
 
-                        <Button variant="secondary" className="w-full h-12 text-base" onClick={handleSendGiftClick}>
-                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-5 w-5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                           {t('header.sendGiftButton')}
+                        <Button 
+                            variant="secondary" 
+                            className="w-full h-12 text-base font-bold bg-gradient-to-r from-primary to-amber-400 hover:from-primary/90 hover:to-amber-400/90 text-black" 
+                            onClick={handleDepositViaItemClick}
+                        >
+                           <Send className="mr-2 h-5 w-5"/>
+                           {t('header.depositViaItemButton')}
                         </Button>
 
                     </TabsContent>
                 </Tabs>
             </DialogContent>
         </Dialog>
-        <SendGiftDialog isOpen={isSendGiftOpen} onOpenChange={setIsSendGiftOpen} />
+        <DepositViaItemDialog isOpen={isDepositViaItemOpen} onOpenChange={setIsDepositViaItemOpen} />
         </>
     )
 }

@@ -11,19 +11,22 @@
   },
   "header": {
     "balanceTopUpTitle": "Choose a top-up method",
-    "balanceTopUpDescription": "Enter the amount to top up",
+    "balanceTopUpDescription": "Select your preferred way to add Stars",
     "starsTab": "STARS ★",
     "tonTab": "TON ♦",
     "amountPlaceholder": "Amount",
     "balanceLabel": "Balance",
-    "topUpButton": "Top Up",
+    "topUpButton": "Top Up via Card",
     "orSeparator": "OR",
-    "sendGiftButton": "Send Gift",
-    "sendGiftTitle": "Send a Gift",
+    "depositViaItemButton": "Deposit via Item",
+    "depositViaItemTitle": "Deposit via Item",
+    "depositViaItemDescription": "Send an item to the official deposit address. The item's Star value will be automatically added to your balance.",
     "sortByValue": "Sort",
-    "recipientIdLabel": "Recipient's ID",
-    "recipientIdPlaceholder": "Enter user ID or nickname",
-    "confirmSendButton": "Send Gift"
+    "recipientFixedLabel": "Official Deposit Address",
+    "confirmDepositButton": "Confirm Deposit",
+    "amountToCredit": "Amount to be credited: {value} ★",
+    "depositSuccessTitle": "Deposit Successful!",
+    "depositSuccessDescription": "{value} stars have been added to your balance."
   },
   "alertDialog": {
     "ok": "OK"
