@@ -255,74 +255,74 @@ export default function UpgradePage() {
             setUseTransition(true);
         }, 50);
     };
-
+    
     const resultGlowClass = upgradeResult === 'success' 
-        ? 'shadow-[0_0_20px_5px_#16a34a]' 
+        ? 'shadow-[0_0_30px_8px_theme(colors.green.500)]' 
         : upgradeResult === 'failure' 
-        ? 'shadow-[0_0_20px_5px_#dc2626]' 
+        ? 'shadow-[0_0_30px_8px_theme(colors.red.600)]'
         : '';
+        
+    const spinnerBgClass = isUpgrading 
+        ? 'animate-pulse' 
+        : (upgradeResult === 'success' 
+            ? 'bg-green-500' 
+            : (upgradeResult === 'failure' ? 'bg-red-600' : ''));
 
     return (
         <>
             <div className="flex flex-col h-full text-center">
-                <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 via-pink-500 to-red-500 bg-clip-text text-transparent mb-6">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-amber-400 to-primary bg-clip-text text-transparent mb-6">
                     {t('upgradePage.title')}
                 </h1>
 
                 <div className="relative flex items-center justify-center mb-6">
-                    <div className="absolute left-4 text-lg font-bold text-green-400">{chance}%</div>
+                    <div className="absolute left-0 text-lg font-bold text-green-400">{chance}%</div>
                      <div className="relative w-40 h-40">
-                        <div 
+                         <div 
                             className={cn(
                                 "w-full h-full rounded-full transition-all duration-500",
+                                spinnerBgClass,
                                 resultGlowClass
                             )}
                             style={{
-                                background: upgradeResult
-                                    ? (upgradeResult === 'success' ? '#16a34a' : '#dc2626')
-                                    : `conic-gradient(from 0deg, #16a34a 0deg ${greenZoneAngle}deg, #dc2626 ${greenZoneAngle}deg 360deg)`,
+                                background: !isUpgrading && !upgradeResult
+                                    ? `conic-gradient(from 0deg, hsl(var(--primary)) 0deg ${greenZoneAngle}deg, #3f3f46 ${greenZoneAngle}deg 360deg)`
+                                    : '',
                             }}
                         />
                         
-                        <div className="absolute inset-2 bg-background rounded-full" />
+                        <div className="absolute inset-1.5 bg-card rounded-full" />
                         
                         <div 
                             ref={spinnerRef}
                             className="absolute inset-0 flex items-start justify-center"
                             style={{ 
                                 transform: `rotate(${spinnerRotation}deg)`,
-                                transition: useTransition ? `transform 4500ms ease-out` : 'none',
+                                transition: useTransition ? `transform 4500ms cubic-bezier(0.25, 1, 0.5, 1)` : 'none',
                              }}
                         >
-                             <div className="h-1/2 w-1 -translate-y-1 bg-white shadow-lg" style={{ clipPath: 'polygon(50% 0, 100% 20%, 100% 20%, 0 20%, 0 20%)' }}/>
+                             <div className="h-1/2 w-0.5 bg-white shadow-lg" style={{ boxShadow: '0 0 10px white' }}/>
                         </div>
 
-                        <div className="absolute inset-0 flex items-center justify-center">
-                           <svg 
-                                viewBox="0 0 24 24" 
-                                fill="none" 
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="w-16 h-16 text-cyan-400"
-                            >
-                                <path d="M12.0001 1.99988L22.0001 8.99988L12.0001 21.9999L2.00006 8.99988L12.0001 1.99988Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
+                        <div className="absolute inset-0 flex items-center justify-center text-primary text-4xl font-bold">
+                            {isUpgrading ? '' : `x${multiplier.toFixed(1)}`}
                         </div>
                      </div>
-                    <div className="absolute right-4 text-lg font-bold text-cyan-400">x{multiplier.toFixed(1)}</div>
+                    <div className="absolute right-0 text-lg font-bold text-primary">x{multiplier.toFixed(1)}</div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                     <Card className="h-32 flex flex-col items-center justify-center bg-card/50 border-dashed border-2 cursor-pointer hover:bg-card/70 relative group" onClick={() => !isUpgrading && setIsYourItemsModalOpen(true)}>
+                     <Card className="h-32 flex flex-col items-center justify-center bg-card/50 border-dashed border-2 border-muted cursor-pointer hover:border-primary relative group" onClick={() => !isUpgrading && setIsYourItemsModalOpen(true)}>
                         {yourItems.length > 0 ? (
                             <>
-                                <div className="absolute top-1 right-1 flex items-center gap-1 text-xs bg-black/50 text-white px-1.5 py-0.5 rounded-full z-10">
+                                <div className="absolute top-1.5 right-1.5 flex items-center gap-1 text-xs bg-black/50 text-white px-1.5 py-0.5 rounded-full z-10">
                                     <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12}/>
                                     {yourItemsValue.toLocaleString()}
                                 </div>
                                 <div className="grid grid-cols-2 gap-1 p-1">
                                     {yourItems.slice(0, 4).map(item => (
                                          <div key={item.inventoryId} className="relative w-12 h-12">
-                                            <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" />
+                                            <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" data-ai-hint={item.imageHint}/>
                                         </div>
                                     ))}
                                 </div>
@@ -335,10 +335,10 @@ export default function UpgradePage() {
                             </>
                         )}
                     </Card>
-                     <Card className="h-32 flex flex-col items-center justify-center bg-card/50 border-dashed border-2 cursor-pointer hover:bg-card/70 relative" onClick={() => !isUpgrading && setIsTargetItemModalOpen(true)}>
+                     <Card className="h-32 flex flex-col items-center justify-center bg-card/50 border-dashed border-2 border-muted cursor-pointer hover:border-primary relative" onClick={() => !isUpgrading && setIsTargetItemModalOpen(true)}>
                          {targetItem ? (
                              <>
-                                <div className="absolute top-1 right-1 flex items-center gap-1 text-xs bg-black/50 text-white px-1.5 py-0.5 rounded-full z-10">
+                                <div className="absolute top-1.5 right-1.5 flex items-center gap-1 text-xs bg-black/50 text-white px-1.5 py-0.5 rounded-full z-10">
                                     <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12}/>
                                     {targetItem.value.toLocaleString()}
                                 </div>
@@ -355,12 +355,19 @@ export default function UpgradePage() {
                     </Card>
                 </div>
                 
-                 <Button className="w-full h-14 text-lg mb-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white" disabled={yourItems.length === 0 || !targetItem || isUpgrading} onClick={handleUpgrade}>
+                 <Button className="w-full h-14 text-lg mb-4 bg-gradient-to-r from-primary to-amber-400 hover:from-primary/90 hover:to-amber-400/90 text-black" disabled={yourItems.length === 0 || !targetItem || isUpgrading} onClick={handleUpgrade}>
                     {isUpgrading ? "Upgrading..." : t('upgradePage.upgradeButton')}
                 </Button>
 
                 <div className="flex-grow flex flex-col bg-card rounded-t-2xl p-4 min-h-0">
-                    <p className="text-center font-bold mb-2">{t('upgradePage.yourInventoryForUpgrade')}</p>
+                    <div className="flex justify-between items-center mb-2">
+                        <p className="text-center font-bold">{t('upgradePage.yourInventoryForUpgrade')}</p>
+                        {yourItems.length > 0 && (
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setYourItems([])}>
+                                <X className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
                     <ScrollArea className="h-full">
                         {upgradableItems.length === 0 ? (
                             <div className="text-center text-muted-foreground py-10">
@@ -414,3 +421,5 @@ export default function UpgradePage() {
         </>
     );
 }
+
+    
