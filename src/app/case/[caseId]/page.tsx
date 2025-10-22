@@ -113,6 +113,7 @@ export default function CasePage() {
 
         const newReels = prizes.map(prize => {
             const newReel = generateReel(caseItems);
+            // *** CRITICAL FIX: Ensure the winning item is placed at the winning index ***
             newReel[WINNING_ITEM_INDEX] = prize;
             return newReel;
         });
@@ -151,6 +152,7 @@ export default function CasePage() {
                 return caseItems.find(item => item.id === caseItem.itemId) || null;
             }
         }
+        // Fallback to the most common item if something goes wrong
         return caseItems.find(item => item.id === sortedCaseItemsByProb[0].itemId) || null;
 
     }, [caseData, caseItems]);
@@ -165,21 +167,25 @@ export default function CasePage() {
             return;
         }
         
+        // *** CRITICAL FIX: Determine prizes BEFORE starting the spin ***
         const prizes: Item[] = [];
         for (let i = 0; i < multiplier; i++) {
             const prize = getPrize();
             if (prize) {
                 prizes.push(prize);
             } else {
+                 // This should ideally never happen with the fallback in getPrize
                  showAlert({ title: t('casePage.errorCouldNotDeterminePrize'), description: "" });
                  return;
             }
         }
         
+        // Deduct balance and add items to inventory
         updateBalance(-totalCost);
         updateStarsSpent(totalCost);
         prizes.forEach(prize => addInventoryItem(prize));
         
+        // Now start the spin with the actual prizes
         startSpin(prizes);
 
     }, [caseData, user, caseItems, isSpinning, showAlert, updateBalance, addInventoryItem, t, multiplier, getPrize, updateStarsSpent]);
@@ -278,7 +284,6 @@ export default function CasePage() {
                                 <div 
                                     className="flex h-full items-center gap-2 sm:gap-4"
                                     style={{
-                                        // The calculation now centers the list on the target item
                                         transform: `translateX(calc(50% - ${rouletteOffsets[reelIndex] || 0}px - ${itemWidthRef.current / 2}px))`,
                                         transition: isSpinning ? `transform ${ANIMATION_DURATION_MS}ms cubic-bezier(0.2, 0.5, 0.1, 1)` : 'none',
                                     }}
@@ -331,7 +336,7 @@ export default function CasePage() {
                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 px-6 py-2 max-h-[50vh] overflow-y-auto">
                         {wonItems.map((item, index) => (
                             <div key={index} className="flex flex-col items-center gap-2">
-                                <Card className="p-2 flex flex-col items-center justify-center w-28 h-28 border-0 shadow-lg bg-card">
+                                <Card className="p-2 flex flex-col items-center justify-center w-28 h-28 border-0 shadow-lg bg-card animate-pulse" style={{ animationIterationCount: 'infinite', boxShadow: '0 0 15px 3px hsl(var(--primary))' }}>
                                    <div className="aspect-square relative w-24 h-24">
                                        <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain drop-shadow-lg" data-ai-hint={item.imageHint} />
                                    </div>
@@ -346,7 +351,7 @@ export default function CasePage() {
                      )}
                     <DialogDescription className="text-base text-muted-foreground px-6 py-4">
                         {t('casePage.winModalDescription')}{' '}
-                        <button className="text-primary underline" onClick={() => { closeModal(); router.push('/profile'); }}>
+                        <button className="text-primary underline font-bold" onClick={() => { closeModal(); router.push('/profile'); }}>
                             {t('casePage.winModalInventoryLink')}
                         </button>
                         .
