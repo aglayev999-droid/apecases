@@ -29,8 +29,6 @@ export default function UpgradePage() {
     const [upgradeResult, setUpgradeResult] = useState<'success' | 'failure' | null>(null);
     const [showResultModal, setShowResultModal] = useState(false);
     const [spinnerRotation, setSpinnerRotation] = useState(0);
-    const [useTransition, setUseTransition] = useState(true);
-    const spinnerRef = useRef<HTMLDivElement>(null);
 
     const ItemSelectionModal = ({
       isOpen,
@@ -197,7 +195,6 @@ export default function UpgradePage() {
     const handleUpgrade = () => {
         if (yourItems.length === 0 || !targetItem || isUpgrading) return;
         
-        setUseTransition(true);
         setIsUpgrading(true);
         setUpgradeResult(null);
 
@@ -208,9 +205,11 @@ export default function UpgradePage() {
         let stopAngle;
 
         if (isSuccess) {
-            const margin = greenZoneAngle > 5 ? 2 : 0;
+            // Land within the golden success zone
+            const margin = greenZoneAngle > 5 ? 2 : 0; // Small margin to not land on the edge
             stopAngle = margin + Math.random() * (greenZoneAngle - margin * 2);
         } else {
+            // Land within the dark failure zone
             const redZoneSize = 360 - greenZoneAngle;
             const margin = redZoneSize > 5 ? 2 : 0;
             stopAngle = greenZoneAngle + margin + Math.random() * (redZoneSize - margin * 2);
@@ -234,7 +233,7 @@ export default function UpgradePage() {
                  setShowResultModal(true);
             }, 1000);
             
-        }, 5000);
+        }, 5000); // Corresponds to animation duration + a little extra
     };
 
     const resetUpgrade = () => {
@@ -243,30 +242,16 @@ export default function UpgradePage() {
         setYourItems([]);
         setTargetItem(null);
         setIsUpgrading(false);
-        
-        setUseTransition(false);
         setSpinnerRotation(0);
-        
-        if(spinnerRef.current) {
-            void spinnerRef.current.offsetHeight;
-        }
-
-        setTimeout(() => {
-            setUseTransition(true);
-        }, 50);
     };
     
     const resultGlowClass = upgradeResult === 'success' 
-        ? 'shadow-[0_0_30px_8px_theme(colors.primary)]' 
+        ? 'shadow-[0_0_30px_8px_hsl(var(--primary))]' 
         : upgradeResult === 'failure' 
         ? 'shadow-[0_0_30px_8px_theme(colors.red.600)]'
         : '';
         
-    const spinnerBgClass = isUpgrading && !upgradeResult
-        ? 'animate-pulse' 
-        : (upgradeResult === 'success' 
-            ? 'bg-primary' 
-            : (upgradeResult === 'failure' ? 'bg-red-600' : ''));
+    const spinnerPulseClass = isUpgrading && !upgradeResult ? 'animate-pulse' : '';
 
     return (
         <>
@@ -276,37 +261,29 @@ export default function UpgradePage() {
                 </h1>
 
                 <div className="relative flex items-center justify-center mb-6">
-                     <div className="relative w-40 h-40">
+                     <div className={cn(
+                        "relative w-40 h-40 rounded-full transition-all duration-500",
+                        spinnerPulseClass,
+                        resultGlowClass
+                     )}>
                          <div 
-                            className={cn(
-                                "w-full h-full rounded-full transition-all duration-500",
-                                isUpgrading && upgradeResult && 'opacity-50',
-                                spinnerBgClass,
-                                resultGlowClass
-                            )}
+                            className="w-full h-full rounded-full"
                             style={{
-                                background: `conic-gradient(from 0deg, hsl(var(--primary)) 0deg ${greenZoneAngle}deg, #202020 ${greenZoneAngle}deg 360deg)`
+                                background: `conic-gradient(hsl(var(--primary)) 0deg ${greenZoneAngle}deg, #3f3f46 ${greenZoneAngle}deg 360deg)`
                             }}
                         />
                         
                         <div className="absolute inset-1.5 bg-background rounded-full" />
-
-                        { /* Pointer */}
-                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-b-[10px] border-l-transparent border-r-transparent border-b-white z-10"/>
                         
                         <div 
-                            ref={spinnerRef}
-                            className="absolute inset-0"
+                            className="absolute inset-0 transition-transform"
                             style={{ 
                                 transform: `rotate(${spinnerRotation}deg)`,
-                                transition: useTransition ? `transform 4500ms cubic-bezier(0.25, 1, 0.5, 1)` : 'none',
+                                transition: isUpgrading ? `transform 4500ms cubic-bezier(0.25, 1, 0.5, 1)` : 'none',
                              }}
                         >
-                            <div className="absolute inset-0 rounded-full" style={{
-                                background: `conic-gradient(from 0deg, hsl(var(--primary)) 0deg ${greenZoneAngle}deg, #3f3f46 ${greenZoneAngle}deg 360deg)`,
-                                opacity: isUpgrading ? 1 : 0,
-                                transition: 'opacity 0.3s ease-in-out'
-                            }}/>
+                            {/* This is the spinning arrow */}
+                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-b-[12px] border-l-transparent border-r-transparent border-b-white z-10"/>
                         </div>
 
 
@@ -361,7 +338,11 @@ export default function UpgradePage() {
                     </Card>
                 </div>
                 
-                 <Button className="w-full h-14 text-lg mb-4 bg-gradient-to-r from-primary to-amber-400 hover:from-primary/90 hover:to-amber-400/90 text-black font-bold" disabled={yourItems.length === 0 || !targetItem || isUpgrading} onClick={handleUpgrade}>
+                 <Button 
+                    className="w-full h-14 text-lg mb-4 bg-gradient-to-r from-primary to-amber-400 hover:from-primary/90 hover:to-amber-400/90 text-black font-bold" 
+                    disabled={yourItems.length === 0 || !targetItem || isUpgrading} 
+                    onClick={handleUpgrade}
+                >
                     {isUpgrading ? "Upgrading..." : t('upgradePage.upgradeButton')}
                 </Button>
 
@@ -427,7 +408,3 @@ export default function UpgradePage() {
         </>
     );
 }
-
-    
-
-    
