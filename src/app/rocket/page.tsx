@@ -190,7 +190,7 @@ const GameScreen = React.memo(({ gameState, multiplier, countdown, isMuted, setI
                  </div>
             ) : (
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center z-30">
-                    <h1 className="text-8xl font-bold text-white">
+                    <h1 className="text-8xl font-bold text-white" style={{textShadow: '0 0 15px hsl(var(--primary))'}}>
                         x{multiplier.toFixed(2)}
                     </h1>
                 </div>
@@ -209,7 +209,7 @@ const BetControls = React.memo(({ betAmount, setBetAmount, handlePlaceBet, handl
 
     let buttonText: React.ReactNode = t('rocketPage.placeBet');
     let buttonAction = handlePlaceBet;
-    let buttonClass = 'bg-primary hover:bg-primary/90';
+    let buttonClass = 'bg-gradient-to-r from-primary to-amber-400 hover:from-primary/90 hover:to-amber-400/90 text-black';
     let isButtonDisabled = false;
 
     if (canCashOut) {
@@ -229,7 +229,6 @@ const BetControls = React.memo(({ betAmount, setBetAmount, handlePlaceBet, handl
         } else { // Crashed or waiting for next round after a loss
             buttonText = t('rocketPage.placeBetForNextRound');
             buttonAction = handlePlaceBet;
-            buttonClass = 'bg-primary hover:bg-primary/90';
             isButtonDisabled = gameState !== 'waiting';
         }
     } else { // Hasn't placed a bet
@@ -267,7 +266,7 @@ const BetControls = React.memo(({ betAmount, setBetAmount, handlePlaceBet, handl
              <Button 
                 onClick={buttonAction}
                 disabled={isButtonDisabled}
-                className={cn( "w-full h-14 text-xl", buttonClass )}
+                className={cn( "w-full h-14 text-lg", buttonClass )}
             >
                 {buttonText}
             </Button>
