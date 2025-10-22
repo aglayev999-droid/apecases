@@ -16,7 +16,7 @@ import { useTranslation } from '@/contexts/LanguageContext';
 
 
 const LiveDropItem = ({ item }: { item: Item }) => (
-    <Card className={cn("p-1 border-2 bg-card/50 flex-shrink-0 w-[72px] h-[72px] rounded-xl")}>
+    <Card className={cn("p-1 border-0 bg-card/80 flex-shrink-0 w-[72px] h-[72px] rounded-xl")}>
         <div className="aspect-square relative w-full h-full">
           <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain p-1" data-ai-hint={item.imageHint}/>
         </div>
@@ -26,6 +26,7 @@ const LiveDropItem = ({ item }: { item: Item }) => (
 const LiveDrops = () => {
     const [allItems, setAllItems] = useState<Item[]>(MOCK_ITEMS);
     const [liveDrops, setLiveDrops] = useState<Item[]>([]);
+    const [liveCounter, setLiveCounter] = useState(0);
     const firestore = useFirestore();
     const { t } = useTranslation();
 
@@ -51,18 +52,27 @@ const LiveDrops = () => {
     }, [firestore]);
     
     useEffect(() => {
+        const generateRandomCount = () => Math.floor(Math.random() * (100 - 20 + 1)) + 20;
+        setLiveCounter(generateRandomCount());
+
+        const countInterval = setInterval(() => {
+            setLiveCounter(generateRandomCount());
+        }, 3000); // Update every 3 seconds
+
+        return () => clearInterval(countInterval);
+    }, []);
+
+    useEffect(() => {
         if (filteredItems.length === 0) return;
 
         const generateDrops = (count: number) => Array.from({ length: count }, () => filteredItems[Math.floor(Math.random() * filteredItems.length)]);
         
-        // Start with enough items to fill the view and have a buffer
         setLiveDrops(generateDrops(30));
 
         const interval = setInterval(() => {
             setLiveDrops(prevDrops => {
                 const newItem = filteredItems[Math.floor(Math.random() * filteredItems.length)];
                 const newDrops = [...prevDrops, newItem];
-                 // Keep a reasonable number of items to prevent performance issues
                 return newDrops.slice(-50);
             });
         }, 3000);
@@ -74,14 +84,18 @@ const LiveDrops = () => {
         return null;
     }
     
-    // Duplicate the list for a seamless loop effect
     const displayItems = [...liveDrops, ...liveDrops];
 
     return (
         <div className="mb-6 flex items-center gap-4">
-             <div className="flex items-center gap-2 self-stretch">
-                <div className="w-1 h-full bg-green-400/50 rounded-full shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
-                <span className="text-sm font-bold text-green-400 tracking-wider">{t('mainPage.liveDrops')}</span>
+            <div className="flex flex-col items-center justify-center bg-card/80 text-green-400 rounded-full px-2 py-3 h-[72px] w-12">
+                <div className="w-2 h-2 rounded-full bg-green-400/80 shadow-[0_0_8px_rgba(52,211,153,0.7)] mb-1"></div>
+                <span 
+                    className="font-bold text-sm tracking-tighter" 
+                    style={{ writingMode: 'vertical-rl', textOrientation: 'mixed' }}
+                >
+                    {liveCounter}
+                </span>
             </div>
 
             <div className="relative w-full overflow-hidden mask-gradient">
@@ -135,10 +149,7 @@ export default function Home() {
     return (
       <div className="space-y-8">
         <div className="mb-8">
-           <Skeleton className="h-8 w-48 mb-3" />
-           <div className="flex gap-4 overflow-x-auto">
-            {[...Array(5)].map((_,i) => <Skeleton key={i} className="w-24 h-32 flex-shrink-0" />)}
-           </div>
+           <Skeleton className="h-20 w-full mb-3" />
         </div>
         <h1 className="text-2xl md:text-3xl font-bold mb-4">{t('mainPage.casesTitle')}</h1>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
