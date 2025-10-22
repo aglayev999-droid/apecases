@@ -205,16 +205,16 @@ export default function CasePage() {
     
     if (!caseData || isUserLoading || caseItems.length === 0) {
         return (
-            <div className="flex flex-col h-full">
-                 <div className="flex items-center justify-between mb-4 flex-shrink-0 px-4">
+            <div class="flex flex-col h-full">
+                 <div class="flex items-center justify-between mb-4 flex-shrink-0 px-4">
                     <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                        <ChevronLeft className="h-6 w-6" />
+                        <ChevronLeft class="h-6 w-6" />
                     </Button>
-                    <Skeleton className="h-6 w-32" />
-                    <div className="w-10"></div>
+                    <Skeleton class="h-6 w-32" />
+                    <div class="w-10"></div>
                 </div>
-                 <div className="flex-grow flex items-center justify-center">
-                    <p className="text-muted-foreground">{t('casePage.loadingCase')}</p>
+                 <div class="flex-grow flex items-center justify-center">
+                    <p class="text-muted-foreground">{t('casePage.loadingCase')}</p>
                 </div>
             </div>
         );
@@ -224,19 +224,19 @@ export default function CasePage() {
       <Accordion type="single" collapsible className="w-full">
         <AccordionItem value="item-1" className="border-none">
           <AccordionTrigger className="[&[data-state=open]>svg]:rotate-180 justify-center gap-2 text-muted-foreground hover:no-underline font-bold py-3 rounded-lg bg-card/80 transition-colors">
-            <Gift className="h-5 w-5" />
+            <Gift class="h-5 w-5" />
             <span>{t('casePage.giftsInside')}</span>
           </AccordionTrigger>
           <AccordionContent className="bg-card/80 p-4 rounded-b-lg">
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
               {caseItems.map(item => (
                   <Card key={item.id} className="p-1.5 flex flex-col items-center justify-between border-0 bg-transparent">
-                    <div className="aspect-square relative w-full h-full">
+                    <div class="aspect-square relative w-full h-full">
                       <Image src={item.image} alt={item.name} fill sizes="15vw" className="object-contain p-1" data-ai-hint={item.imageHint} />
                     </div>
-                    <div className="text-center w-full mt-1">
-                        <p className="text-xs font-bold truncate">{item.name}</p>
-                        <div className="flex items-center justify-center gap-1 text-xs text-primary">
+                    <div class="text-center w-full mt-1">
+                        <p class="text-xs font-bold truncate">{item.name}</p>
+                        <div class="flex items-center justify-center gap-1 text-xs text-primary">
                             <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12} className="h-3 w-3 object-contain" />
                             <span>{item.value}</span>
                         </div>
@@ -250,7 +250,7 @@ export default function CasePage() {
     );
     
     const MultiplierControls = () => (
-        <div className="flex items-center gap-2">
+        <div class="flex items-center gap-2">
             {[1, 2, 3].map(m => (
                  <Button 
                     key={m}
@@ -265,22 +265,22 @@ export default function CasePage() {
     );
 
     return (
-        <div className="flex flex-col h-full text-white">
-             <div className="flex items-center justify-between mb-4 flex-shrink-0 px-4">
+        <div class="flex flex-col h-full text-white">
+             <div class="flex items-center justify-between mb-4 flex-shrink-0 px-4">
                 <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                    <ChevronLeft className="h-6 w-6" />
+                    <ChevronLeft class="h-6 w-6" />
                 </Button>
-                <h1 className="text-xl font-bold">{t('casePage.rouletteTitle')}</h1>
+                <h1 class="text-xl font-bold">{t('casePage.rouletteTitle')}</h1>
                 <MultiplierControls />
             </div>
 
-            <div className="flex-grow flex flex-col items-center justify-center">
-                 <div className="relative w-full flex flex-col items-center justify-center my-4 sm:my-8 gap-2">
+            <div class="flex-grow flex flex-col items-center justify-center">
+                 <div class="relative w-full flex flex-col items-center justify-center my-4 sm:my-8 gap-2">
                     {rouletteItems.map((reel, reelIndex) => (
                         <div key={reelIndex} className="relative w-full flex items-center justify-center">
-                           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-primary z-10"></div>
+                           <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-primary z-10"></div>
                             
-                            <div className="w-full h-28 sm:h-32 md:h-36 overflow-hidden">
+                            <div class="w-full h-28 sm:h-32 md:h-36 overflow-hidden">
                                 <div 
                                     className="flex h-full items-center gap-2 sm:gap-4"
                                     style={{
@@ -294,7 +294,7 @@ export default function CasePage() {
                                             className="roulette-item flex-shrink-0 w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32"
                                         >
                                              <Card className="p-2 flex flex-col items-center justify-center w-full h-full border-0 bg-card/80">
-                                                <div className="aspect-square relative w-full h-full">
+                                                <div class="aspect-square relative w-full h-full">
                                                     <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain p-1" data-ai-hint={item.imageHint} />
                                                 </div>
                                             </Card>
@@ -303,25 +303,25 @@ export default function CasePage() {
                                 </div>
                             </div>
                             
-                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-b-[8px] border-l-transparent border-r-transparent border-b-primary z-10"></div>
+                            <div class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-b-[8px] border-l-transparent border-r-transparent border-b-primary z-10"></div>
                         </div>
                     ))}
                 </div>
 
 
-                <div className="w-full mt-auto flex-shrink-0 px-4">
+                <div class="w-full mt-auto flex-shrink-0 px-4">
                      <Button 
                         onClick={handleSpin}
                         disabled={isSpinning} 
                         className="w-full h-14 text-lg"
                         size="lg"
                     >
-                       <div className="flex items-center justify-center gap-2">
+                       <div class="flex items-center justify-center gap-2">
                            <span className="text-primary-foreground">{`${t('casePage.spinButton')} ${caseData.price * multiplier}`}</span>
                            <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />
                        </div>
                     </Button>
-                    <div className="mt-4">
+                    <div class="mt-4">
                         <GiftsInside />
                     </div>
                 </div>
@@ -333,17 +333,17 @@ export default function CasePage() {
                         <DialogTitle className="text-2xl font-bold">{t('casePage.winModalTitle')}</DialogTitle>
                     </DialogHeader>
                     {wonItems.length > 0 && (
-                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 px-6 py-2 max-h-[50vh] overflow-y-auto">
+                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 px-6 py-2 max-h-[50vh] overflow-y-auto">
                         {wonItems.map((item, index) => (
                             <div key={index} className="flex flex-col items-center gap-2">
                                 <Card className="p-2 flex flex-col items-center justify-center w-28 h-28 border-0 shadow-lg bg-card animate-pulse" style={{ animationIterationCount: 'infinite', boxShadow: '0 0 15px 3px hsl(var(--primary))' }}>
-                                   <div className="aspect-square relative w-24 h-24">
+                                   <div class="aspect-square relative w-24 h-24">
                                        <Image src={item.image} alt={item.name} fill sizes="20vw" className="object-contain drop-shadow-lg" data-ai-hint={item.imageHint} />
                                    </div>
                                 </Card>
                                  <div>
-                                    <p className="text-base font-bold">{item.name}</p>
-                                    <p className="text-xs font-bold text-muted-foreground">{item.rarity}</p>
+                                    <p class="text-base font-bold">{item.name}</p>
+                                    <p class="text-xs font-bold text-muted-foreground">{item.rarity}</p>
                                 </div>
                             </div>
                         ))}

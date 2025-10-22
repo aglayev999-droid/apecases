@@ -42,8 +42,8 @@ export default function ProfilePage() {
     const { language, setLanguage, t } = useTranslation();
     
     return (
-        <div className="space-y-2">
-            <h3 className="font-semibold text-foreground">{t('profilePage.languageTitle')}</h3>
+        <div class="space-y-2">
+            <h3 class="font-semibold text-foreground">{t('profilePage.languageTitle')}</h3>
             <RadioGroup defaultValue={language} onValueChange={(value) => setLanguage(value as 'en' | 'ru' | 'uz')}>
                 <Label className="flex items-center justify-between p-4 rounded-lg bg-card cursor-pointer hover:bg-muted">
                     <span>{t('profilePage.lang_uz')}</span>
@@ -72,12 +72,12 @@ export default function ProfilePage() {
       }, []);
       
       if (!mounted) {
-          return <Skeleton className="h-28 w-full" />
+          return <Skeleton class="h-28 w-full" />
       }
 
       return (
-          <div className="space-y-2">
-              <h3 className="font-semibold text-foreground">{t('profilePage.themeTitle')}</h3>
+          <div class="space-y-2">
+              <h3 class="font-semibold text-foreground">{t('profilePage.themeTitle')}</h3>
               <div 
                 className={cn(
                   "flex items-center justify-between p-4 rounded-lg cursor-pointer hover:bg-muted",
@@ -85,11 +85,11 @@ export default function ProfilePage() {
                 )}
                 onClick={() => setTheme('light')}
               >
-                <div className="flex items-center gap-3">
-                  <Sun className="h-5 w-5" />
+                <div class="flex items-center gap-3">
+                  <Sun class="h-5 w-5" />
                   <span>{t('profilePage.lightTheme')}</span>
                 </div>
-                {theme === 'light' && <Check className="h-5 w-5 text-primary" />}
+                {theme === 'light' && <Check class="h-5 w-5 text-primary" />}
               </div>
               <div 
                 className={cn(
@@ -98,11 +98,11 @@ export default function ProfilePage() {
                 )}
                 onClick={() => setTheme('dark')}
               >
-                <div className="flex items-center gap-3">
-                  <Moon className="h-5 w-5" />
+                <div class="flex items-center gap-3">
+                  <Moon class="h-5 w-5" />
                   <span>{t('profilePage.darkTheme')}</span>
                 </div>
-                {theme === 'dark' && <Check className="h-5 w-5 text-primary" />}
+                {theme === 'dark' && <Check class="h-5 w-5 text-primary" />}
               </div>
           </div>
       )
@@ -111,15 +111,15 @@ export default function ProfilePage() {
   const EmptyInventory = () => {
     const { t } = useTranslation();
     return (
-        <div className="flex flex-col items-center justify-center text-center py-16">
-            <div className="relative w-40 h-40">
+        <div class="flex flex-col items-center justify-center text-center py-16">
+            <div class="relative w-40 h-40">
                 <Image src="https://i.ibb.co/27KjDLVY/model0emoji-5936013938331222567-by-Gift-Changes-Helper2-Bot-Ag-AD6-Fo.png" alt="No Items" width={160} height={160} />
             </div>
-            <h2 className="text-2xl font-bold mt-6">{t('inventoryPage.emptyInventoryTitle')}</h2>
-            <p className="text-muted-foreground mt-2">
+            <h2 class="text-2xl font-bold mt-6">{t('inventoryPage.emptyInventoryTitle')}</h2>
+            <p class="text-muted-foreground mt-2">
                 {t('inventoryPage.emptyInventoryDescription')}
             </p>
-            <div className="mt-8 space-y-4 w-full max-w-xs">
+            <div class="mt-8 space-y-4 w-full max-w-xs">
                <Link href="/" passHref>
                     <Button className="w-full" size="lg">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-box mr-2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" x2="12" y1="22.08" y2="12"/></svg>
@@ -219,9 +219,9 @@ export default function ProfilePage() {
                   <DialogHeader className="p-6 pb-4">
                       <DialogTitle className="text-xl font-bold">{item.name}</DialogTitle>
                   </DialogHeader>
-                  <div className="flex flex-col items-center gap-4 px-6">
+                  <div class="flex flex-col items-center gap-4 px-6">
                       <Card className="p-4 flex flex-col items-center justify-center w-48 h-48 border-0 shadow-lg bg-card">
-                         <div className="aspect-square relative w-40 h-40">
+                         <div class="aspect-square relative w-40 h-40">
                              <Image src={item.image} alt={item.name} fill sizes="40vw" className="object-contain drop-shadow-lg" data-ai-hint={item.imageHint} />
                          </div>
                       </Card>
@@ -230,11 +230,11 @@ export default function ProfilePage() {
                    <DialogFooter className="p-4 flex flex-col gap-2">
                        {isUpgradable && (
                           <Button className="w-full bg-purple-600 hover:bg-purple-700 h-12 text-base" onClick={handleUpgrade}>
-                             <ArrowRightLeft className="mr-2 h-4 w-4" />
+                             <ArrowRightLeft class="mr-2 h-4 w-4" />
                              {t('inventoryPage.inventoryCard.upgrade')}
                           </Button>
                        )}
-                      <div className="grid grid-cols-2 gap-2">
+                      <div class="grid grid-cols-2 gap-2">
                            <Button variant="destructive" className="h-12 text-base" onClick={handleSell}>
                               {t('inventoryPage.inventoryCard.sellFor')} {item.value}
                               <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
@@ -287,16 +287,16 @@ export default function ProfilePage() {
     
     if (isUserLoading) {
         return (
-           <div className="space-y-4 mt-8">
-              <div className="flex justify-between items-center">
-                  <h1 className="text-2xl md:text-3xl font-bold tracking-tighter">{t('inventoryPage.title')}</h1>
-                  <Skeleton className="h-9 w-40" />
+           <div class="space-y-4 mt-8">
+              <div class="flex justify-between items-center">
+                  <h1 class="text-2xl md:text-3xl font-bold tracking-tighter">{t('inventoryPage.title')}</h1>
+                  <Skeleton class="h-9 w-40" />
               </div>
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+              <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
                   {[...Array(8)].map((_, i) => (
                       <div key={i} className="flex flex-col gap-2">
-                          <Skeleton className="aspect-square w-full rounded-xl" />
-                          <Skeleton className="h-5 w-2/3" />
+                          <Skeleton class="aspect-square w-full rounded-xl" />
+                          <Skeleton class="h-5 w-2/3" />
                       </div>
                   ))}
               </div>
@@ -310,17 +310,17 @@ export default function ProfilePage() {
 
     return (
       <>
-        <div className="space-y-4 mt-8">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-2">
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tighter">{t('inventoryPage.title')}</h1>
+        <div class="space-y-4 mt-8">
+          <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
+            <h1 class="text-2xl md:text-3xl font-bold tracking-tighter">{t('inventoryPage.title')}</h1>
             <Button variant="destructive" size="sm" onClick={handleSellAll} disabled={nonNftItems.length === 0}>
-                <Trash2 className="mr-2 h-4 w-4" />
+                <Trash2 class="mr-2 h-4 w-4" />
                 {t('inventoryPage.sellAll')} {totalSellValue}
                  <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="w-4 h-4 ml-1 object-contain" />
             </Button>
           </div>
           
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+          <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
             {inventory.map((item: InventoryItem) => (
               <InventoryCard 
                 key={item.inventoryId} 
@@ -346,28 +346,28 @@ export default function ProfilePage() {
         <Sheet>
             <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="flex-shrink-0">
-                    <Goal className="h-6 w-6" />
+                    <Goal class="h-6 w-6" />
                 </Button>
             </SheetTrigger>
             <SheetContent>
                 <SheetHeader>
                     <SheetTitle>{t('profilePage.missionsTitle')}</SheetTitle>
                 </SheetHeader>
-                <div className="mt-6 space-y-6">
+                <div class="mt-6 space-y-6">
                     <Card className="p-4">
-                        <div className="flex items-start gap-4">
+                        <div class="flex items-start gap-4">
                             <div className={cn("p-3 rounded-lg", isCompleted ? "bg-green-500/20" : "bg-primary/20")}>
                                <Swords className={cn("h-6 w-6", isCompleted ? "text-green-500" : "text-primary")} />
                             </div>
-                            <div className="flex-grow">
-                                <p className="font-bold">{t('profilePage.missionUnlockBattles')}</p>
-                                <p className="text-sm text-muted-foreground">{t('profilePage.missionUnlockBattlesDescription')}</p>
+                            <div class="flex-grow">
+                                <p class="font-bold">{t('profilePage.missionUnlockBattles')}</p>
+                                <p class="text-sm text-muted-foreground">{t('profilePage.missionUnlockBattlesDescription')}</p>
                                 <Progress value={progressPercentage} className="mt-2 h-2" />
-                                <div className="flex justify-between items-center mt-1">
+                                <div class="flex justify-between items-center mt-1">
                                     <span className="text-xs text-muted-foreground">
                                         {currentProgress.toLocaleString()} / {goal.toLocaleString()} ★
                                     </span>
-                                    {isCompleted && <Check className="h-5 w-5 text-green-500" />}
+                                    {isCompleted && <Check class="h-5 w-5 text-green-500" />}
                                 </div>
                             </div>
                         </div>
@@ -396,42 +396,42 @@ export default function ProfilePage() {
   
   if (isUserLoading || !user) {
     return (
-      <div className="space-y-8">
-        <div className="flex flex-col items-center text-center sm:flex-row sm:text-left sm:items-center gap-6">
-          <Skeleton className="h-24 w-24 rounded-full" />
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-48 mx-auto sm:mx-0" />
-            <Skeleton className="h-6 w-64 mx-auto sm:mx-0" />
+      <div class="space-y-8">
+        <div class="flex flex-col items-center text-center sm:flex-row sm:text-left sm:items-center gap-6">
+          <Skeleton class="h-24 w-24 rounded-full" />
+          <div class="space-y-2">
+            <Skeleton class="h-8 w-48 mx-auto sm:mx-0" />
+            <Skeleton class="h-6 w-64 mx-auto sm:mx-0" />
           </div>
         </div>
-        <div className="grid md:grid-cols-2 gap-8">
-          <Skeleton className="h-64 w-full" />
-          <Skeleton className="h-64 w-full" />
+        <div class="grid md:grid-cols-2 gap-8">
+          <Skeleton class="h-64 w-full" />
+          <Skeleton class="h-64 w-full" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8">
+    <div class="space-y-8">
         <Sheet>
-            <div className="flex items-center gap-4">
-                <div className="flex-shrink-0">
+            <div class="flex items-center gap-4">
+                <div class="flex-shrink-0">
                     <Avatar className="h-24 w-24 border-4 border-primary">
                         <AvatarImage src={user.avatar || DEFAULT_AVATAR} alt={user.name} />
                         <AvatarFallback className="text-3xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                 </div>
-                <div className="flex-grow">
-                    <h1 className="text-3xl md:text-4xl font-bold tracking-tighter">{user.name}</h1>
-                    <div className="flex items-center gap-2 mt-1">
-                        <p className="text-muted-foreground text-sm">{t('profilePage.id')}: {user.telegramId}</p>
+                <div class="flex-grow">
+                    <h1 class="text-3xl md:text-4xl font-bold tracking-tighter">{user.name}</h1>
+                    <div class="flex items-center gap-2 mt-1">
+                        <p class="text-muted-foreground text-sm">{t('profilePage.id')}: {user.telegramId}</p>
                     </div>
                 </div>
                  <MissionsSheet user={user} />
                  <SheetTrigger asChild>
                     <Button variant="ghost" size="icon" className="flex-shrink-0">
-                        <Settings className="h-6 w-6" />
+                        <Settings class="h-6 w-6" />
                     </Button>
                 </SheetTrigger>
             </div>
@@ -439,21 +439,21 @@ export default function ProfilePage() {
                 <SheetHeader>
                     <SheetTitle>{t('profilePage.settingsTitle')}</SheetTitle>
                 </SheetHeader>
-                <div className="mt-6 space-y-6">
+                <div class="mt-6 space-y-6">
                     <ThemeSelector />
                     <LanguageSelector />
                 </div>
             </SheetContent>
         </Sheet>
       
-      <div className="grid md:grid-cols-2 gap-4">
+      <div class="grid md:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
             <CardTitle className="text-xl">{t('profilePage.balancesTitle')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between p-4 rounded-lg bg-card-foreground/5 dark:bg-card-foreground/5">
-              <div className="flex items-center gap-3">
+            <div class="flex items-center justify-between p-4 rounded-lg bg-card-foreground/5 dark:bg-card-foreground/5">
+              <div class="flex items-center gap-3">
                 <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={32} height={32} className="h-8 w-8 object-contain" />
                 <span className="text-lg font-bold">Stars</span>
               </div>
@@ -468,21 +468,21 @@ export default function ProfilePage() {
             <CardDescription>{t('profilePage.referralProgramDescription')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div class="flex items-center justify-between">
               <span className="text-muted-foreground">{t('profilePage.friendsReferred')}</span>
               <span className="font-bold text-lg">{user.referrals.count}</span>
             </div>
-            <div className="flex items-center justify-between">
+            <div class="flex items-center justify-between">
               <span className="text-muted-foreground">{t('profilePage.commissionEarned')}</span>
-              <div className="flex items-center gap-2 font-bold text-lg text-primary">
+              <div class="flex items-center gap-2 font-bold text-lg text-primary">
                 <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain" />
                 {formatNumber(user.referrals.commissionEarned)}
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div class="flex items-center gap-2">
               <input readOnly value={referralLink} className="w-full bg-background border p-2 rounded-md font-mono text-sm" />
               <Button size="icon" variant="ghost" onClick={copyReferralLink}>
-                <Copy className="h-5 w-5" />
+                <Copy class="h-5 w-5" />
               </Button>
             </div>
           </CardContent>
