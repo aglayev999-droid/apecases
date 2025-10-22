@@ -36,11 +36,11 @@ export default function LeaderboardPage() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-tighter">{t('leaderboardPage.title')}</h1>
+        <h1 className="text-4xl font-bold tracking-tighter bg-gradient-to-r from-primary via-amber-300 to-primary bg-clip-text text-transparent">{t('leaderboardPage.title')}</h1>
         <p className="text-muted-foreground mt-2">{t('leaderboardPage.description')}</p>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="border rounded-lg bg-card/50">
         <Table>
           <TableHeader>
             <TableRow>
@@ -54,14 +54,13 @@ export default function LeaderboardPage() {
               <TableRow key={entry.rank} className={cn(entry.user.name === user?.name && 'bg-primary/10')}>
                 <TableCell className="font-bold text-center text-lg">
                   <span className={cn(getRankColor(entry.rank), "flex items-center justify-center gap-1")}>
-                    {entry.rank <= 3 && <Trophy className="w-5 h-5" />}
-                    {entry.rank}
+                    {entry.rank <= 3 ? <Trophy className="w-6 h-6" /> : entry.rank}
                   </span>
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    <Avatar>
-                      <AvatarImage src={entry.user.name === user?.name ? DEFAULT_AVATAR : entry.user.avatar} alt={entry.user.name} />
+                    <Avatar className="w-10 h-10 border-2 border-primary/50">
+                      <AvatarImage src={entry.user.name === user?.name ? user?.avatar : entry.user.avatar} alt={entry.user.name} />
                       <AvatarFallback>{entry.user.name.charAt(0).toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <span className="font-medium">{entry.user.name}</span>
