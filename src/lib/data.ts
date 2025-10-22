@@ -94,23 +94,23 @@ export const MOCK_CASES: Case[] = [
       items: [
         { itemId: 'item-cup', probability: 0.18 }, // 100
         { itemId: 'item-diamond', probability: 0.18 }, // 100
-        { itemId: 'item-desk-calendar', probability: 0.14 }, // 300
-        { itemId: 'item-candy-cane', probability: 0.14 }, // 300
-        { itemId: 'item-lol-pop-random', probability: 0.10 }, // 360
-        { itemId: 'item-ginger-cookie', probability: 0.08 }, // 440
-        { itemId: 'item-party-sparkler', probability: 0.05 }, // 450
+        { itemId: 'item-desk-calendar', probability: 0.14 }, // 235
+        { itemId: 'item-candy-cane', probability: 0.14 }, // 273
+        { itemId: 'item-lol-pop-random', probability: 0.10 }, // 245
+        { itemId: 'item-ginger-cookie', probability: 0.08 }, // 325
+        { itemId: 'item-party-sparkler', probability: 0.05 }, // 373
         { itemId: 'item-clover-pin', probability: 0.04 }, // 470
         { itemId: 'item-input-key', probability: 0.03 }, // 500
         { itemId: 'item-fresh-socks', probability: 0.02 }, // 550
-        { itemId: 'item-tama-gadget', probability: 0.015 }, // 600
+        { itemId: 'item-tama-gadget', probability: 0.015 }, // 377
         { itemId: 'item-jelly-bunny', probability: 0.01 }, // 800
-        { itemId: 'item-evil-eye', probability: 0.01 }, // 800
-        { itemId: 'item-sakura-flower', probability: 0.002 }, // 1200
+        { itemId: 'item-evil-eye', probability: 0.01 }, // 629
+        { itemId: 'item-sakura-flower', probability: 0.002 }, // 660
         { itemId: 'item-love-potion', probability: 0.001 }, // 1800
         { itemId: 'item-cupid-charm', probability: 0.0009 }, // 2000
-        { itemId: 'item-voodoo-doll', probability: 0.0007 }, // 3800
+        { itemId: 'item-voodoo-doll', probability: 0.0007 }, // 2438
         { itemId: 'item-diamond-ring', probability: 0.0006 }, // 4000
-        { itemId: 'item-toy-bear', probability: 0.0005 }, // 4100
+        { itemId: 'item-toy-bear', probability: 0.0005 }, // 3027
       ],
     },
     {
@@ -143,9 +143,9 @@ export const MOCK_CASES: Case[] = [
       imageHint: 'golden legendary case',
       items: [
         { itemId: 'item-cupid-charm', probability: 0.45 },       // 2000
-        { itemId: 'item-voodoo-doll', probability: 0.25 },     // 3800
+        { itemId: 'item-voodoo-doll', probability: 0.25 },     // 2438
         { itemId: 'item-diamond-ring', probability: 0.15 },     // 4000
-        { itemId: 'item-toy-bear', probability: 0.08 },         // 4100
+        { itemId: 'item-toy-bear', probability: 0.08 },         // 3027
         { itemId: 'item-bonded-ring', probability: 0.05 },      // 8700
         { itemId: 'item-scared-cat', probability: 0.015 },       // 10000
         { itemId: 'item-nft-nail-bracelet', probability: 0.005 },// 20000
