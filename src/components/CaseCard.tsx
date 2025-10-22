@@ -50,7 +50,7 @@ export function CaseCard({ caseData, onOpen }: CaseCardProps) {
   const canOpenFreeCase = isFree && cooldownTime <= 0;
 
   return (
-    <Card className="flex flex-col group overflow-hidden bg-card shadow-lg rounded-xl p-3 relative text-white border-2 border-card">
+    <Card className="flex flex-col group overflow-hidden bg-card shadow-lg rounded-xl p-3 relative text-white border-2 border-card hover:border-primary transition-all duration-300">
       <CardContent className="p-0 relative mb-2">
          <div className="aspect-square relative overflow-hidden rounded-lg">
           <Image
@@ -73,7 +73,7 @@ export function CaseCard({ caseData, onOpen }: CaseCardProps) {
         {isFree ? (
            <>
             {canOpenFreeCase ? (
-              <Button onClick={onOpen} variant="default" className="w-full font-bold h-auto py-2.5 bg-blue-600 hover:bg-blue-700 text-base">
+              <Button onClick={onOpen} className="w-full font-bold h-auto py-2.5 text-base">
                 Open
               </Button>
             ) : (
@@ -83,9 +83,9 @@ export function CaseCard({ caseData, onOpen }: CaseCardProps) {
             )}
            </>
         ) : (
-            <Button onClick={onOpen} variant="default" className="w-full font-bold h-auto py-2.5 bg-blue-600 hover:bg-blue-700 text-base" size="lg">
+            <Button onClick={onOpen} className="w-full font-bold h-auto py-2.5 text-base" size="lg">
                 <div className="flex items-center justify-center gap-1">
-                    <span>{formatPrice(caseData.price)}</span>
+                    <span className="text-primary-foreground">{formatPrice(caseData.price)}</span>
                     <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={20} height={20} className="h-5 w-5 object-contain" />
                 </div>
             </Button>

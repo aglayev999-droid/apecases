@@ -230,7 +230,7 @@ export default function CasePage() {
                     </div>
                     <div className="text-center w-full mt-1">
                         <p className="text-xs font-bold truncate">{item.name}</p>
-                        <div className="flex items-center justify-center gap-1 text-xs text-amber-400">
+                        <div className="flex items-center justify-center gap-1 text-xs text-primary">
                             <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={12} height={12} className="h-3 w-3 object-contain" />
                             <span>{item.value}</span>
                         </div>
@@ -272,7 +272,7 @@ export default function CasePage() {
                  <div className="relative w-full flex flex-col items-center justify-center my-4 sm:my-8 gap-2">
                     {rouletteItems.map((reel, reelIndex) => (
                         <div key={reelIndex} className="relative w-full flex items-center justify-center">
-                           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-white z-10"></div>
+                           <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-t-[8px] border-l-transparent border-r-transparent border-t-primary z-10"></div>
                             
                             <div className="w-full h-28 sm:h-32 md:h-36 overflow-hidden">
                                 <div 
@@ -298,7 +298,7 @@ export default function CasePage() {
                                 </div>
                             </div>
                             
-                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-b-[8px] border-l-transparent border-r-transparent border-b-white z-10"></div>
+                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1 w-0 h-0 border-l-[8px] border-r-[8px] border-b-[8px] border-l-transparent border-r-transparent border-b-primary z-10"></div>
                         </div>
                     ))}
                 </div>
@@ -308,11 +308,11 @@ export default function CasePage() {
                      <Button 
                         onClick={handleSpin}
                         disabled={isSpinning} 
-                        className="w-full h-14 text-lg bg-blue-600 hover:bg-blue-700"
+                        className="w-full h-14 text-lg"
                         size="lg"
                     >
                        <div className="flex items-center justify-center gap-2">
-                           <span>{`${t('casePage.spinButton')} ${caseData.price * multiplier}`}</span>
+                           <span className="text-primary-foreground">{`${t('casePage.spinButton')} ${caseData.price * multiplier}`}</span>
                            <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={24} height={24} className="h-6 w-6 object-contain" />
                        </div>
                     </Button>
@@ -352,7 +352,7 @@ export default function CasePage() {
                         .
                     </DialogDescription>
                      <DialogFooter className="p-4">
-                        <Button className="w-full bg-blue-600 hover:bg-blue-700 h-12 text-base" onClick={closeModal}>{t('casePage.winModalContinue')}</Button>
+                        <Button className="w-full h-12 text-base" onClick={closeModal}>{t('casePage.winModalContinue')}</Button>
                      </DialogFooter>
                 </DialogContent>
             </Dialog>

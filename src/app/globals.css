@@ -10,42 +10,42 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 195 91% 51%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 45 100% 50%;
+    --primary-foreground: 240 10% 3.9%;
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 240 3.8% 46.1%;
-    --accent: 282 57% 67%;
+    --accent: 240 4.8% 95.9%;
     --accent-foreground: 240 5.9% 10%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 195 91% 61%;
+    --ring: 240 5.9% 10%;
     --radius: 0.75rem;
   }
 
   .dark {
-    --background: 240 10% 4%;
-    --foreground: 0 0% 98%;
-    --card: 240 4% 17%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 4%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 195 91% 51%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4% 17%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 4% 25%;
+    --background: 240 3% 7%; /* Almost black */
+    --foreground: 0 0% 88%; /* Light gray for text */
+    --card: 240 3% 13%; /* Lighter dark gray for cards */
+    --card-foreground: 0 0% 90%;
+    --popover: 240 3% 7%;
+    --popover-foreground: 0 0% 90%;
+    --primary: 45 100% 50%; /* Gold */
+    --primary-foreground: 240 10% 3.9%; /* Black for text on gold buttons */
+    --secondary: 240 3% 16%;
+    --secondary-foreground: 0 0% 90%;
+    --muted: 240 3% 20%;
     --muted-foreground: 0 0% 63.9%;
-    --accent: 282 57% 67%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --accent: 45 90% 60%; /* Slightly lighter gold for accents */
+    --accent-foreground: 240 10% 3.9%;
+    --destructive: 0 62.8% 50.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 4% 25%;
-    --input: 240 4% 25%;
-    --ring: 195 91% 61%;
+    --border: 38 71% 29%; /* Muted gold for borders */
+    --input: 240 3% 16%;
+    --ring: 45 100% 50%;
   }
 }
 

@@ -80,7 +80,7 @@ const LiveDrops = () => {
     return (
         <div className="mb-6 flex items-center gap-4">
              <div className="flex items-center gap-2 self-stretch">
-                <div className="w-1 h-full bg-green-400/50 rounded-full" />
+                <div className="w-1 h-full bg-green-400/50 rounded-full shadow-[0_0_8px_rgba(52,211,153,0.7)]" />
                 <span className="text-sm font-bold text-green-400 tracking-wider">{t('mainPage.liveDrops')}</span>
             </div>
 
