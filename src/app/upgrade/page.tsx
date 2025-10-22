@@ -123,7 +123,11 @@ export default function UpgradePage() {
                         </DialogTitle>
                     </DialogHeader>
                      <div className="flex flex-col items-center gap-4 py-2 px-6">
-                        <Card className={cn("p-4 flex flex-col items-center justify-center w-40 h-40 border-0 shadow-lg", isSuccess ? "bg-green-900/20" : "bg-red-900/20")}>
+                        <Card className={cn(
+                          "p-4 flex flex-col items-center justify-center w-40 h-40 border-0 shadow-lg", 
+                          isSuccess ? "bg-green-900/20" : "bg-red-900/20",
+                          isSuccess && 'shadow-[0_0_20px_5px_theme(colors.green.500)]'
+                        )}>
                             <div className={cn("aspect-square relative w-32 h-32", !isSuccess && "opacity-50 grayscale")}>
                                 <Image src={item.image} alt={item.name} fill sizes="30vw" className="object-contain drop-shadow-lg" data-ai-hint={item.imageHint} />
                             </div>
@@ -230,7 +234,7 @@ export default function UpgradePage() {
                  setShowResultModal(true);
             }, 1000);
             
-        }, 5000); // Corresponds to animation duration + a small buffer
+        }, 5000);
     };
 
     const resetUpgrade = () => {
@@ -240,32 +244,28 @@ export default function UpgradePage() {
         setTargetItem(null);
         setIsUpgrading(false);
         
-        // Reset rotation logic
-        setUseTransition(false); // Disable transition for instant reset
+        setUseTransition(false);
         setSpinnerRotation(0);
         
-        // Force a reflow to ensure the transform is applied without transition
         if(spinnerRef.current) {
-            // Reading a property like offsetHeight forces the browser to reflow
             void spinnerRef.current.offsetHeight;
         }
 
-        // Re-enable transition for the next spin
         setTimeout(() => {
             setUseTransition(true);
         }, 50);
     };
     
     const resultGlowClass = upgradeResult === 'success' 
-        ? 'shadow-[0_0_30px_8px_theme(colors.green.500)]' 
+        ? 'shadow-[0_0_30px_8px_theme(colors.primary)]' 
         : upgradeResult === 'failure' 
         ? 'shadow-[0_0_30px_8px_theme(colors.red.600)]'
         : '';
         
-    const spinnerBgClass = isUpgrading 
+    const spinnerBgClass = isUpgrading && !upgradeResult
         ? 'animate-pulse' 
         : (upgradeResult === 'success' 
-            ? 'bg-green-500' 
+            ? 'bg-primary' 
             : (upgradeResult === 'failure' ? 'bg-red-600' : ''));
 
     return (
@@ -276,39 +276,45 @@ export default function UpgradePage() {
                 </h1>
 
                 <div className="relative flex items-center justify-center mb-6">
-                    <div className="absolute left-0 text-lg font-bold text-green-400">{chance}%</div>
                      <div className="relative w-40 h-40">
                          <div 
                             className={cn(
                                 "w-full h-full rounded-full transition-all duration-500",
+                                isUpgrading && upgradeResult && 'opacity-50',
                                 spinnerBgClass,
                                 resultGlowClass
                             )}
                             style={{
-                                background: !isUpgrading && !upgradeResult
-                                    ? `conic-gradient(from 0deg, hsl(var(--primary)) 0deg ${greenZoneAngle}deg, #3f3f46 ${greenZoneAngle}deg 360deg)`
-                                    : '',
+                                background: `conic-gradient(from 0deg, hsl(var(--primary)) 0deg ${greenZoneAngle}deg, #202020 ${greenZoneAngle}deg 360deg)`
                             }}
                         />
                         
-                        <div className="absolute inset-1.5 bg-card rounded-full" />
+                        <div className="absolute inset-1.5 bg-background rounded-full" />
+
+                        { /* Pointer */}
+                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[6px] border-r-[6px] border-b-[10px] border-l-transparent border-r-transparent border-b-white z-10"/>
                         
                         <div 
                             ref={spinnerRef}
-                            className="absolute inset-0 flex items-start justify-center"
+                            className="absolute inset-0"
                             style={{ 
                                 transform: `rotate(${spinnerRotation}deg)`,
                                 transition: useTransition ? `transform 4500ms cubic-bezier(0.25, 1, 0.5, 1)` : 'none',
                              }}
                         >
-                             <div className="h-1/2 w-0.5 bg-white shadow-lg" style={{ boxShadow: '0 0 10px white' }}/>
+                            <div className="absolute inset-0 rounded-full" style={{
+                                background: `conic-gradient(from 0deg, hsl(var(--primary)) 0deg ${greenZoneAngle}deg, #3f3f46 ${greenZoneAngle}deg 360deg)`,
+                                opacity: isUpgrading ? 1 : 0,
+                                transition: 'opacity 0.3s ease-in-out'
+                            }}/>
                         </div>
 
-                        <div className="absolute inset-0 flex items-center justify-center text-primary text-4xl font-bold">
-                            {isUpgrading ? '' : `x${multiplier.toFixed(1)}`}
+
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
+                           <div className="text-3xl font-bold text-primary" style={{ textShadow: '0 0 10px hsl(var(--primary))' }}>{chance}%</div>
+                           <div className="text-sm font-bold text-muted-foreground">x{multiplier.toFixed(1)}</div>
                         </div>
                      </div>
-                    <div className="absolute right-0 text-lg font-bold text-primary">x{multiplier.toFixed(1)}</div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4 mb-4">
@@ -355,7 +361,7 @@ export default function UpgradePage() {
                     </Card>
                 </div>
                 
-                 <Button className="w-full h-14 text-lg mb-4 bg-gradient-to-r from-primary to-amber-400 hover:from-primary/90 hover:to-amber-400/90 text-black" disabled={yourItems.length === 0 || !targetItem || isUpgrading} onClick={handleUpgrade}>
+                 <Button className="w-full h-14 text-lg mb-4 bg-gradient-to-r from-primary to-amber-400 hover:from-primary/90 hover:to-amber-400/90 text-black font-bold" disabled={yourItems.length === 0 || !targetItem || isUpgrading} onClick={handleUpgrade}>
                     {isUpgrading ? "Upgrading..." : t('upgradePage.upgradeButton')}
                 </Button>
 
@@ -363,7 +369,7 @@ export default function UpgradePage() {
                     <div className="flex justify-between items-center mb-2">
                         <p className="text-center font-bold">{t('upgradePage.yourInventoryForUpgrade')}</p>
                         {yourItems.length > 0 && (
-                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setYourItems([])}>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => !isUpgrading && setYourItems([])}>
                                 <X className="h-4 w-4" />
                             </Button>
                         )}
@@ -421,5 +427,7 @@ export default function UpgradePage() {
         </>
     );
 }
+
+    
 
     
