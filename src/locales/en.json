@@ -18,7 +18,12 @@
     "balanceLabel": "Balance",
     "topUpButton": "Top Up",
     "orSeparator": "OR",
-    "sendGiftButton": "Send Gift"
+    "sendGiftButton": "Send Gift",
+    "sendGiftTitle": "Send a Gift",
+    "sortByValue": "Sort",
+    "recipientIdLabel": "Recipient's ID",
+    "recipientIdPlaceholder": "Enter user ID or nickname",
+    "confirmSendButton": "Send Gift"
   },
   "alertDialog": {
     "ok": "OK"

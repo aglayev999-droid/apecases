@@ -18,7 +18,12 @@
     "balanceLabel": "Баланс",
     "topUpButton": "Пополнить",
     "orSeparator": "ИЛИ",
-    "sendGiftButton": "Отправить подарок"
+    "sendGiftButton": "Отправить подарок",
+    "sendGiftTitle": "Отправить подарок",
+    "sortByValue": "Сортировать",
+    "recipientIdLabel": "ID получателя",
+    "recipientIdPlaceholder": "Введите ID или никнейм",
+    "confirmSendButton": "Отправить подарок"
   },
   "alertDialog": {
     "ok": "OK"

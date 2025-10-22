@@ -18,7 +18,12 @@
     "balanceLabel": "Balans",
     "topUpButton": "To'ldirish",
     "orSeparator": "YOKI",
-    "sendGiftButton": "Sovg'a yuborish"
+    "sendGiftButton": "Sovg'a yuborish",
+    "sendGiftTitle": "Sovg'a yuborish",
+    "sortByValue": "Saralash",
+    "recipientIdLabel": "Qabul qiluvchi IDsi",
+    "recipientIdPlaceholder": "Foydalanuvchi IDsi yoki nomini kiriting",
+    "confirmSendButton": "Sovg'ani yuborish"
   },
   "alertDialog": {
     "ok": "OK"

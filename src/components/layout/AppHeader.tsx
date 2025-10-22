@@ -2,30 +2,150 @@
 
 import { useUser } from '@/contexts/UserContext';
 import { Button } from '@/components/ui/button';
-import { Plus, X } from 'lucide-react';
+import { Plus, X, Search, ArrowUpDown, Send } from 'lucide-react';
 import Link from 'next/link';
 import { TonConnectButton, useTonWallet } from '@tonconnect/ui-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Image from 'next/image';
 import { Skeleton } from '../ui/skeleton';
-import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
+import { useState, useEffect, useMemo } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose, DialogFooter } from '@/components/ui/dialog';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/contexts/LanguageContext';
+import type { InventoryItem } from '@/lib/types';
+import { ScrollArea } from '../ui/scroll-area';
 
 const DEFAULT_AVATAR = 'https://i.ibb.co/M5yHjvyp/23b1daa04911dc4a29803397ce300416.jpg';
 
 const starPackages = [200, 500, 1000, 2500, 5000];
 
+const SendGiftDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (open: boolean) => void }) => {
+    const { inventory } = useUser();
+    const { t } = useTranslation();
+    const [searchQuery, setSearchQuery] = useState('');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+    const [recipientId, setRecipientId] = useState('');
+
+    const giftableItems = useMemo(() => {
+        return inventory?.filter(item => item.isUpgradable) || [];
+    }, [inventory]);
+
+    const filteredAndSortedItems = useMemo(() => {
+        let items = [...giftableItems];
+        if (searchQuery) {
+            items = items.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase()));
+        }
+        items.sort((a, b) => {
+            if (sortOrder === 'desc') return b.value - a.value;
+            return a.value - b.value;
+        });
+        return items;
+    }, [giftableItems, searchQuery, sortOrder]);
+
+    const handleSendGift = () => {
+        // Placeholder for gift sending logic
+        console.log(`Sending item ${selectedItem?.id} to user ${recipientId}`);
+        onOpenChange(false);
+    }
+    
+    useEffect(() => {
+        if (!isOpen) {
+            setSelectedItem(null);
+            setRecipientId('');
+        }
+    }, [isOpen]);
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-md p-4 flex flex-col h-[80vh]">
+                <DialogHeader className="text-center items-center">
+                    <DialogTitle className="text-xl font-bold text-primary">{t('header.sendGiftTitle')}</DialogTitle>
+                </DialogHeader>
+                
+                 <div className="flex gap-2">
+                    <div className="relative flex-grow">
+                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                        <Input 
+                            placeholder={t('upgradePage.quickSearch')}
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            className="pl-10"
+                        />
+                    </div>
+                    <Button variant="outline" onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}>
+                        <ArrowUpDown className="h-4 w-4 mr-2" />
+                        {t('header.sortByValue')}
+                    </Button>
+                </div>
+
+                <ScrollArea className="flex-grow my-2">
+                    <div className="space-y-2">
+                        {filteredAndSortedItems.map(item => (
+                            <Card 
+                                key={item.inventoryId}
+                                className={cn(
+                                    "p-2 flex items-center justify-between cursor-pointer border-2",
+                                    selectedItem?.inventoryId === item.inventoryId ? 'border-primary' : 'border-transparent'
+                                )}
+                                onClick={() => setSelectedItem(item)}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="relative w-12 h-12 rounded-md overflow-hidden bg-card p-1">
+                                        <Image src={item.image} alt={item.name} fill sizes="10vw" className="object-contain" />
+                                    </div>
+                                    <span className="font-semibold">{item.name}</span>
+                                </div>
+                                 <div className="flex items-center gap-1 font-bold text-primary">
+                                    {item.value.toLocaleString()}
+                                    <Image src="https://i.ibb.co/WN2md4DV/stars.png" alt="stars" width={16} height={16} className="h-4 w-4" />
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                </ScrollArea>
+                
+                {selectedItem && (
+                    <DialogFooter className="flex-col gap-2 pt-2 border-t">
+                        <div className="w-full">
+                             <label className="text-sm font-bold text-primary">{t('header.recipientIdLabel')}</label>
+                            <Input 
+                                placeholder={t('header.recipientIdPlaceholder')}
+                                value={recipientId}
+                                onChange={(e) => setRecipientId(e.target.value)}
+                            />
+                        </div>
+                        <Button
+                            className="w-full h-12 text-lg font-bold bg-gradient-to-r from-primary to-amber-400 hover:from-primary/90 hover:to-amber-400/90 text-black"
+                            disabled={!recipientId}
+                            onClick={handleSendGift}
+                        >
+                            <Send className="mr-2 h-5 w-5" />
+                            {t('header.confirmSendButton')}
+                        </Button>
+                    </DialogFooter>
+                )}
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 const BalanceTopUpDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenChange: (open: boolean) => void }) => {
     const { user } = useUser();
     const { t } = useTranslation();
     const [amount, setAmount] = useState('');
+    const [isSendGiftOpen, setIsSendGiftOpen] = useState(false);
+
+    const handleSendGiftClick = () => {
+        onOpenChange(false); // Close top-up dialog
+        setIsSendGiftOpen(true); // Open send gift dialog
+    };
 
     return (
+        <>
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-sm p-4">
                 <DialogHeader className="text-center items-center -mb-2">
@@ -83,7 +203,7 @@ const BalanceTopUpDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenC
                             <div className="flex-grow border-t border-dashed"></div>
                         </div>
 
-                        <Button variant="secondary" className="w-full h-12 text-base" onClick={() => window.open('https://t.me/nullprime', '_blank')}>
+                        <Button variant="secondary" className="w-full h-12 text-base" onClick={handleSendGiftClick}>
                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 h-5 w-5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                            {t('header.sendGiftButton')}
                         </Button>
@@ -92,6 +212,8 @@ const BalanceTopUpDialog = ({ isOpen, onOpenChange }: { isOpen: boolean, onOpenC
                 </Tabs>
             </DialogContent>
         </Dialog>
+        <SendGiftDialog isOpen={isSendGiftOpen} onOpenChange={setIsSendGiftOpen} />
+        </>
     )
 }
 
